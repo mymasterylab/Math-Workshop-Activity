@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Geometry Detectives — MyMasteryLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky1:#8FD3F4; --sky2:#5FB8E8;
+    --grass:#6FBE7C; --grass-dark:#4E9A5C;
+    --castle:#8B6FB0; --castle-dark:#6B4FA0;
+    --teal:#00A7B2; --teal-glow:#3FD6DF;
+    --gold:#FAA71C; --gold-light:#FFD37A; --burnt:#D77F28;
+    --paper:#FFFCF4; --paper-dim:#F3E9D2; --ink-text:#2B2140;
+    --shadow:0 18px 40px rgba(20,10,40,0.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background:linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 45%, var(--grass) 46%, var(--grass-dark) 100%);
+    min-height:100vh;color:var(--ink-text);overflow-x:hidden;position:relative;
+  }
+
+  .sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .cloud{position:absolute;font-size:46px;opacity:.85;animation:driftCloud 50s linear infinite;}
+  @keyframes driftCloud{0%{transform:translateX(-15vw);}100%{transform:translateX(115vw);}}
+  .castle-deco{position:absolute;bottom:14%;font-size:70px;opacity:.9;filter:drop-shadow(0 8px 10px rgba(0,0,0,0.2));}
+
+  .app{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:22px 18px 60px;min-height:100vh;display:flex;flex-direction:column;}
+  .brandbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-family:'Nunito';font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#fff;opacity:.9;text-shadow:0 1px 2px rgba(0,0,0,0.25);}
+  .brandbar span.dot{color:var(--gold);margin:0 6px;}
+
+  .screen{display:none;flex:1;flex-direction:column;}
+  .screen.active{display:flex;animation:fadeIn .5s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- VIDEO SCREEN ---------- */
+  #screen-video{align-items:center;justify-content:center;}
+  .video-frame{position:relative;width:100%;max-width:640px;aspect-ratio:16/9;border-radius:20px;overflow:hidden;box-shadow:var(--shadow);border:6px solid var(--paper);background:#000;}
+  .video-frame iframe{display:block;width:100%;height:100%;border:none;}
+  .video-caption{margin-top:16px;font-family:'Baloo 2';font-weight:700;color:#fff;font-size:14px;text-shadow:0 2px 6px rgba(0,0,0,0.35);text-align:center;}
+  .continue-video-btn{margin-top:14px;font-family:'Baloo 2';font-weight:800;font-size:17px;color:var(--ink-text);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:none;padding:14px 36px;border-radius:999px;cursor:pointer;box-shadow:0 9px 0 var(--burnt), 0 14px 22px rgba(0,0,0,0.3);animation:pulseBtn 1.8s ease-in-out infinite;}
+  .continue-video-btn:active{transform:translateY(5px);box-shadow:0 4px 0 var(--burnt);}
+  @keyframes pulseBtn{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+
+  /* ---------- INTRO TEXT SCREEN ---------- */
+  #screen-intro{align-items:center;justify-content:center;text-align:center;}
+  .intro-card{background:linear-gradient(180deg, var(--paper), var(--paper-dim));border-radius:26px;padding:34px 26px;box-shadow:var(--shadow);border:5px solid var(--castle-dark);max-width:560px;width:100%;position:relative;}
+  .intro-card::before{content:"🔍";position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:44px;background:var(--paper);border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;border:5px solid var(--castle-dark);box-shadow:0 6px 0 rgba(0,0,0,0.15);}
+  .intro-lines{min-height:190px;display:flex;flex-direction:column;justify-content:center;gap:10px;margin-top:20px;}
+  .intro-line{font-family:'Baloo 2';font-weight:700;font-size:clamp(17px,4.4vw,22px);color:var(--ink-text);opacity:0;transform:translateY(10px);transition:opacity .5s ease, transform .5s ease;}
+  .intro-line.show{opacity:1;transform:translateY(0);}
+  .intro-line.emphasis{color:var(--burnt);}
+  .yes-btn{display:none;margin:22px auto 0;font-family:'Baloo 2';font-weight:800;font-size:24px;color:var(--ink-text);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:none;padding:16px 52px;border-radius:999px;cursor:pointer;box-shadow:0 10px 0 var(--burnt), 0 16px 24px rgba(0,0,0,0.3);animation:bounceIn .6s cubic-bezier(.34,1.56,.64,1);}
+  .yes-btn.show{display:inline-block;}
+  .yes-btn:active{transform:translateY(6px);box-shadow:0 4px 0 var(--burnt);}
+  @keyframes bounceIn{0%{transform:scale(0);opacity:0;}70%{transform:scale(1.1);opacity:1;}100%{transform:scale(1);}}
+  .replay-audio-btn{margin-top:16px;background:transparent;border:2px solid var(--castle-dark);color:var(--ink-text);font-family:'Nunito';font-weight:700;font-size:12px;padding:7px 16px;border-radius:999px;cursor:pointer;}
+
+  /* ---------- CHEST MAP SCREEN ---------- */
+  .map-title-wrap{text-align:center;margin-bottom:16px;}
+  .map-title{font-family:'Baloo 2';font-weight:800;font-size:clamp(22px,5.6vw,30px);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,0.25);}
+  .map-sub{font-weight:700;color:#fff;opacity:.9;font-size:13px;text-shadow:0 1px 2px rgba(0,0,0,0.2);}
+
+  .chest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;max-width:640px;margin:0 auto;position:relative;z-index:1;}
+  .chest-card{background:linear-gradient(180deg,var(--paper),var(--paper-dim));border:4px solid var(--castle-dark);border-radius:18px;padding:16px 10px 14px;text-align:center;box-shadow:0 8px 0 rgba(0,0,0,0.2);position:relative;transition:transform .15s ease;}
+  .chest-card.unlocked{cursor:pointer;}
+  .chest-card.unlocked:hover{transform:translateY(-4px);}
+  .chest-card.unlocked:active{transform:translateY(2px);}
+  .chest-card.locked{opacity:.65;}
+  .chest-card.done{border-color:var(--gold);background:linear-gradient(180deg,#FFF3D6,#FFE2A0);}
+  .chest-emoji{font-size:40px;display:block;margin-bottom:6px;}
+  .chest-num{font-family:'Baloo 2';font-weight:800;font-size:13px;color:var(--ink-text);}
+  .chest-name{font-family:'Nunito';font-weight:700;font-size:11px;color:#6a5a80;margin-top:2px;min-height:14px;}
+  .lock-badge{position:absolute;top:-8px;right:-8px;background:var(--castle-dark);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 3px 0 rgba(0,0,0,0.2);}
+
+  /* Professor Crooked (roaming villain) */
+  .crooked{position:fixed;z-index:60;display:flex;flex-direction:column;align-items:center;transition:top 1s ease, left 1s ease;pointer-events:none;}
+  .crooked-char{font-size:44px;display:inline-block;filter:drop-shadow(0 6px 8px rgba(0,0,0,0.4));animation:crookedBob 1.7s ease-in-out infinite;transform-origin:bottom center;}
+  @keyframes crookedBob{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-6px) rotate(3deg);}}
+  .crooked-char.mood-wrong{animation:crookedGloat .7s ease;}
+  @keyframes crookedGloat{0%{transform:scale(1) rotate(0);}30%{transform:scale(1.3) rotate(-12deg);}60%{transform:scale(1.15) rotate(10deg);}100%{transform:scale(1) rotate(0);}}
+  .crooked-char.mood-right{animation:crookedShock .7s ease;}
+  @keyframes crookedShock{0%{transform:scale(1);}30%{transform:scale(1.2) translateY(-10px);}60%{transform:scale(0.9) translateY(4px);}100%{transform:scale(1);}}
+  .crooked-bubble{position:relative;max-width:170px;margin-bottom:6px;background:#2B2140;color:#fff;font-family:'Baloo 2';font-weight:700;font-size:11.5px;line-height:1.3;padding:8px 12px;border-radius:12px;border:2px solid var(--burnt);opacity:0;transform:translateY(6px) scale(.9);transition:opacity .25s ease, transform .25s ease;text-align:center;}
+  .crooked-bubble::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border-width:7px 6px 0 6px;border-style:solid;border-color:var(--burnt) transparent transparent transparent;}
+  .crooked-bubble.show{opacity:1;transform:translateY(0) scale(1);}
+
+  /* ---------- MISSION SCREEN ---------- */
+  .mission-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+  .mission-tag{background:rgba(255,255,255,0.9);padding:7px 14px;border-radius:999px;font-family:'Baloo 2';font-weight:800;font-size:12.5px;color:var(--ink-text);}
+  .hero-progress{display:flex;gap:6px;}
+  .hero-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.5);}
+  .hero-dot.done{background:var(--gold);}
+  .hero-dot.current{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,0.4);}
+
+  .hero-panel{background:linear-gradient(180deg, var(--paper), var(--paper-dim));border:5px solid var(--castle-dark);border-radius:24px;padding:24px 20px 26px;box-shadow:var(--shadow);position:relative;overflow:visible;min-height:400px;}
+
+  .hero-stage{display:flex;flex-direction:column;align-items:center;position:relative;min-height:150px;justify-content:center;}
+  .hero-shape{position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 8px 10px rgba(0,0,0,0.25));animation:heroBounce 2.2s ease-in-out infinite;}
+  @keyframes heroBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  .hero-shape.spin{animation:heroSpin 3s linear infinite;}
+  @keyframes heroSpin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+  .hero-shape.cheer{animation:heroCheer .7s ease;}
+  @keyframes heroCheer{0%{transform:scale(1) rotate(0);}40%{transform:scale(1.25) rotate(-10deg);}70%{transform:scale(1.1) rotate(8deg);}100%{transform:scale(1) rotate(0);}}
+  .hero-shape.wobble{animation:heroWobble .5s ease;}
+  @keyframes heroWobble{0%,100%{transform:translateX(0) rotate(0);}25%{transform:translateX(-8px) rotate(-6deg);}75%{transform:translateX(8px) rotate(6deg);}}
+
+  .shape-body{width:100%;height:100%;}
+  .shape-body.circle{border-radius:50%;}
+  .shape-body.triangle{clip-path:polygon(50% 0%,0% 100%,100% 100%);}
+  .shape-body.square{border-radius:6px;}
+  .shape-body.rectangle{border-radius:6px;}
+  .shape-body.pentagon{clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);}
+  .shape-body.hexagon{clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);}
+  .shape-body.octagon{clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);}
+
+  .hero-face{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;}
+  .hero-eyes{display:flex;gap:10px;}
+  .hero-eye{width:8px;height:8px;background:#2B2140;border-radius:50%;}
+  .hero-mouth{width:16px;height:8px;border-bottom:3px solid #2B2140;border-radius:0 0 10px 10px;}
+  .hero-mouth.sad{border-bottom:none;border-top:3px solid #2B2140;border-radius:10px 10px 0 0;margin-top:4px;}
+
+  .hero-name{font-family:'Baloo 2';font-weight:800;font-size:18px;color:var(--castle-dark);text-align:center;margin-top:10px;}
+
+  .question-head{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 2px;}
+  .audio-btn{background:var(--paper);border:2px solid var(--castle-dark);color:var(--ink-text);width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(0,0,0,0.2);flex-shrink:0;}
+  .audio-btn:hover{transform:scale(1.08);}
+  .audio-btn:active{transform:translateY(2px);}
+  .audio-btn.speaking{animation:speakPulse .6s ease-in-out infinite;}
+  @keyframes speakPulse{0%,100%{box-shadow:0 3px 0 rgba(0,0,0,0.2), 0 0 0 0 rgba(250,167,28,0.7);}50%{box-shadow:0 3px 0 rgba(0,0,0,0.2), 0 0 0 9px rgba(250,167,28,0);}}
+
+  .hero-lines{max-width:420px;margin:6px auto 0;text-align:center;}
+  .hero-line{font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--ink-text);background:#fff;border:2px solid var(--paper-dim);border-radius:14px;padding:8px 14px;margin-bottom:6px;box-shadow:0 3px 0 rgba(0,0,0,0.06);}
+
+  .variant-row{display:flex;justify-content:center;gap:14px;margin:16px 0 6px;flex-wrap:wrap;}
+  .variant-tri{width:44px;height:44px;background:linear-gradient(160deg,#FFB86B,#F08A3C);}
+
+  .question-text{font-family:'Baloo 2';font-weight:700;font-size:15.5px;color:var(--castle-dark);text-align:center;margin:14px 0 10px;}
+  .yn-row{display:flex;justify-content:center;gap:14px;}
+  .yn-btn{font-family:'Baloo 2';font-weight:800;font-size:16px;color:var(--ink-text);background:linear-gradient(180deg,#fff,var(--paper-dim));border:2px solid var(--castle-dark);border-radius:14px;padding:12px 30px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,0.2);transition:transform .12s ease;}
+  .yn-btn:hover:not(:disabled){transform:translateY(-2px);}
+  .yn-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,0.2);}
+  .yn-btn:disabled{cursor:default;}
+  .yn-btn.correct{background:linear-gradient(180deg,#BFF0CE,#7ED89A);border-color:#2E6B4A;}
+  .yn-btn.wrong{background:linear-gradient(180deg,#F6C4BA,#E4886F);border-color:#A6402A;animation:shake .4s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .explain-box{max-width:440px;margin:14px auto 0;background:rgba(0,167,178,0.1);border:1.5px dashed var(--teal);border-radius:14px;padding:11px 16px;font-size:13.5px;line-height:1.5;text-align:center;display:none;}
+  .explain-box.show{display:block;animation:fadeIn .3s ease;}
+
+  .next-hero-btn{display:none;margin:18px auto 0;font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--ink-text);background:linear-gradient(180deg, var(--teal-glow), var(--teal));border:none;padding:12px 30px;border-radius:999px;cursor:pointer;box-shadow:0 7px 0 #04747c;}
+  .next-hero-btn.show{display:block;}
+  .next-hero-btn:active{transform:translateY(5px);box-shadow:0 3px 0 #04747c;}
+
+  .reveal-btn{font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--ink-text);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:none;padding:11px 26px;border-radius:999px;cursor:pointer;box-shadow:0 6px 0 var(--burnt);display:block;margin:8px auto 0;}
+
+  /* ---------- MISSION COMPLETE SCREEN ---------- */
+  .complete-wrap{text-align:center;margin:auto 0;padding:20px 0;}
+  .gem-earned{font-size:76px;margin-bottom:8px;animation:gemPop .7s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes gemPop{0%{transform:scale(0) rotate(-30deg);opacity:0}70%{transform:scale(1.15) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0);}}
+  .complete-title{font-family:'Baloo 2';font-weight:800;font-size:26px;color:#fff;margin-bottom:6px;text-shadow:0 3px 0 rgba(0,0,0,0.25);}
+  .complete-sub{color:var(--gold-light);font-weight:700;margin-bottom:24px;font-family:'Nunito';text-shadow:0 1px 2px rgba(0,0,0,0.2);}
+  .btn-start{font-family:'Baloo 2';font-weight:700;font-size:17px;color:var(--ink-text);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:none;padding:14px 38px;border-radius:999px;cursor:pointer;box-shadow:0 9px 0 var(--burnt);}
+  .btn-start:active{transform:translateY(5px);box-shadow:0 4px 0 var(--burnt);}
+
+  footer.credit{text-align:center;margin-top:26px;font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:.05em;}
+
+  @media(max-width:480px){
+    .hero-panel{padding:20px 14px 22px;}
+    .yn-btn{padding:11px 20px;font-size:14px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<div class="app">
+  <div class="brandbar">MyMasteryLab <span class="dot">•</span> Geometry Kingdom</div>
+
+  <!-- SCREEN 0: VIDEO -->
+  <section class="screen active" id="screen-video">
+    <div class="video-frame">
+      <iframe id="introVideo" src="https://drive.google.com/file/d/1yihBAZok29qgPlIZGjwjdlwyfen4UMeB/preview" allow="autoplay" allowfullscreen title="Geometry Gems Intro Video"></iframe>
+    </div>
+    <div class="video-caption">Watch the video, then tap Continue!</div>
+    <button class="continue-video-btn" id="continueVideoBtn">Continue to Mission ▶</button>
+  </section>
+
+  <!-- SCREEN 1: INTRO TEXT -->
+  <section class="screen" id="screen-intro">
+    <div class="intro-card">
+      <div class="intro-lines" id="introLines"></div>
+      <button class="yes-btn" id="yesBtn">YES!! 🙌</button>
+      <br>
+      <button class="replay-audio-btn" id="replayIntroBtn">🔊 Replay Audio</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: CHEST MAP -->
+  <section class="screen" id="screen-map">
+    <div class="map-title-wrap">
+      <div class="map-title">🗺️ Geometry Kingdom Map</div>
+      <div class="map-sub">Complete each mission to unlock a Gem Chest!</div>
+    </div>
+    <div class="chest-grid" id="chestGrid"></div>
+  </section>
+
+  <!-- SCREEN 3: MISSION 1 -->
+  <section class="screen" id="screen-mission1">
+    <div class="mission-header">
+      <div class="mission-tag">🟢 Mission 1 — Meet the Shape Heroes</div>
+      <div class="hero-progress" id="heroProgress"></div>
+    </div>
+
+    <div class="hero-panel" id="heroPanel">
+      <div class="hero-stage" id="heroStage"></div>
+      <div class="hero-name" id="heroName">Captain Circle</div>
+
+      <div class="question-head">
+        <button class="audio-btn" id="audioBtn" title="Read aloud">🔊</button>
+      </div>
+
+      <div class="hero-lines" id="heroLines"></div>
+      <div class="variant-row" id="variantRow"></div>
+
+      <div id="questionArea"></div>
+
+      <div class="explain-box" id="explainBox"></div>
+      <button class="next-hero-btn" id="nextHeroBtn">Next Hero →</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: MISSION 1 COMPLETE -->
+  <section class="screen" id="screen-complete">
+    <div class="complete-wrap">
+      <div class="gem-earned">💎</div>
+      <div class="complete-title">Mission 1 Complete!</div>
+      <div class="complete-sub">You rescued the Geometry Gem — Professor Crooked fled in defeat!</div>
+      <button class="btn-start" id="backToMapBtn">Back to the Map</button>
+    </div>
+  </section>
+
+  <footer class="credit">MyMasteryLab · Geometry Detectives · Shape Classification Adventure</footer>
+</div>
+
+<div class="crooked" id="crooked">
+  <div class="crooked-bubble" id="crookedBubble">You'll never get my gems!</div>
+  <div class="crooked-char" id="crookedChar">👽</div>
+</div>
+
+<script>
+(function(){
+  // ---------- Ambient scene ----------
+  const sky = document.getElementById('sky');
+  const cloudSpots=[{top:'6%',delay:'0s',size:'50px'},{top:'13%',delay:'14s',size:'36px'},{top:'20%',delay:'28s',size:'44px'}];
+  cloudSpots.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='cloud'; el.textContent='☁️';
+    el.style.top=c.top; el.style.fontSize=c.size; el.style.animationDelay=c.delay;
+    sky.appendChild(el);
+  });
+  const castleSpots = [{left:'4%',emo:'🏰'},{left:'88%',emo:'🏯'}];
+  castleSpots.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='castle-deco'; el.textContent=c.emo; el.style.left=c.left;
+    sky.appendChild(el);
+  });
+
+  // ---------- Audio helper: pick a smooth female voice ----------
+  let cachedFemaleVoice = null;
+  let voicesReady = false;
+
+  const FEMALE_VOICE_HINTS = [
+    'female','samantha','victoria','karen','moira','tessa','fiona','zira',
+    'susan','allison','ava','serena','kate','emma','joanna','salli',
+    'google us english','google uk english female','microsoft zira'
+  ];
+
+  function pickFemaleVoice(){
+    if(!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if(!voices || !voices.length) return null;
+
+    let match = voices.find(v => /female/i.test(v.name));
+    if(!match){
+      match = voices.find(v => FEMALE_VOICE_HINTS.some(hint => v.name.toLowerCase().includes(hint)));
+    }
+    if(!match){
+      const enVoices = voices.filter(v => /^en/i.test(v.lang));
+      match = enVoices[0] || voices[0];
+    }
+    return match || null;
+  }
+
+  function refreshVoices(){
+    cachedFemaleVoice = pickFemaleVoice();
+    voicesReady = true;
+  }
+  if('speechSynthesis' in window){
+    refreshVoices();
+    window.speechSynthesis.onvoiceschanged = refreshVoices;
+  }
+
+  // ---------- Audio helper ----------
+  function speak(text, rate, pitch, onEnd){
+    if(!('speechSynthesis' in window)){ if(onEnd) onEnd(); return; }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = rate || 0.94;
+    utter.pitch = pitch || 1.12;
+    utter.volume = 1;
+    if(!voicesReady || !cachedFemaleVoice) refreshVoices();
+    if(cachedFemaleVoice) utter.voice = cachedFemaleVoice;
+    if(onEnd) utter.onend = onEnd;
+    window.speechSynthesis.speak(utter);
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ---------- Professor Crooked (roaming villain) ----------
+  const crooked = document.getElementById('crooked');
+  const crookedChar = document.getElementById('crookedChar');
+  const crookedBubble = document.getElementById('crookedBubble');
+  let crookedIdleTimer = null;
+
+  function randomCrookedSpot(){
+    const top = 8 + Math.random()*70;
+    const left = 6 + Math.random()*78;
+    crooked.style.top = top + '%';
+    crooked.style.left = left + '%';
+  }
+  randomCrookedSpot();
+
+  function crookedSay(msg, duration){
+    crookedBubble.textContent = msg;
+    crookedBubble.classList.add('show');
+    setTimeout(()=> crookedBubble.classList.remove('show'), duration || 3000);
+  }
+
+  const crookedIdleLines = [
+    "You'll never get my gems!",
+    "Heh heh... shapes are MINE now.",
+    "Can you even tell a square from a rectangle?",
+    "I'm too crooked to catch!",
+  ];
+  function startCrookedRoam(){
+    clearInterval(crookedIdleTimer);
+    crookedIdleTimer = setInterval(()=>{
+      randomCrookedSpot();
+      crookedChar.textContent = '👽';
+      if(Math.random() < 0.6){
+        crookedSay(crookedIdleLines[Math.floor(Math.random()*crookedIdleLines.length)], 2800);
+      }
+    }, 6500);
+  }
+  startCrookedRoam();
+
+  function crookedReact(isCorrect){
+    randomCrookedSpot();
+    crookedChar.classList.remove('mood-wrong','mood-right');
+    void crookedChar.offsetWidth;
+    if(isCorrect){
+      crookedChar.textContent = '😱';
+      crookedChar.classList.add('mood-right');
+      const lines = ["Noo! Not the gems!","Argh! You're too smart!","Curses! Foiled again!","My plan is ruined!"];
+      crookedSay(lines[Math.floor(Math.random()*lines.length)], 3200);
+    } else {
+      crookedChar.textContent = '😈';
+      crookedChar.classList.add('mood-wrong');
+      const lines = ["Ha! The gems stay with ME!","Wrong! Shapes stay confused!","Muahaha, try again, detective!"];
+      crookedSay(lines[Math.floor(Math.random()*lines.length)], 3200);
+    }
+    setTimeout(()=>{ crookedChar.textContent = '👽'; }, 1600);
+  }
+
+  function crookedFlee(){
+    clearInterval(crookedIdleTimer);
+    crooked.style.top = '-20%';
+    crooked.style.left = '104%';
+    crookedSay("I'll be back for the next gem!!", 3000);
+    setTimeout(()=>{ randomCrookedSpot(); startCrookedRoam(); }, 2600);
+  }
+
+  // ================= SCREEN 0: VIDEO =================
+  const continueVideoBtn = document.getElementById('continueVideoBtn');
+  continueVideoBtn.addEventListener('click', ()=> goToIntroText());
+
+  function goToIntroText(){
+    showScreen('screen-intro');
+    runIntroSequence();
+  }
+
+  // ================= SCREEN 1: INTRO TEXT =================
+  const introLinesData = [
+    "Geometry Detectives...",
+    "Emergency!",
+    "Professor Crooked has stolen six Geometry Gems.",
+    "Without those gems...",
+    "Shapes have forgotten who they are!",
+    "Can YOU help rescue Geometry Kingdom?"
+  ];
+  const introContainer = document.getElementById('introLines');
+  const yesBtn = document.getElementById('yesBtn');
+  let introRunning = false;
+
+  function runIntroSequence(){
+    if(introRunning) return;
+    introRunning = true;
+    introContainer.innerHTML = '';
+    yesBtn.classList.remove('show');
+    introLinesData.forEach(()=>{
+      const p = document.createElement('div');
+      p.className = 'intro-line';
+      introContainer.appendChild(p);
+    });
+    playIntroLine(0);
+  }
+
+  function playIntroLine(i){
+    const els = introContainer.children;
+    if(i >= introLinesData.length){
+      yesBtn.classList.add('show');
+      introRunning = false;
+      return;
+    }
+    els[i].textContent = introLinesData[i];
+    if(i >= 2 && i <= 4) els[i].classList.add('emphasis');
+    els[i].classList.add('show');
+    speak(introLinesData[i], 0.93, 1.12, ()=> setTimeout(()=> playIntroLine(i+1), 300));
+  }
+
+  document.getElementById('replayIntroBtn').addEventListener('click', ()=>{
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    introRunning = false;
+    runIntroSequence();
+  });
+
+  yesBtn.addEventListener('click', ()=>{
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    renderChestMap();
+    showScreen('screen-map');
+  });
+
+  // ================= SCREEN 2: CHEST MAP =================
+  const MISSIONS = [
+    { id:1, name:'Shape Heroes', emoji:'📦', available:true },
+    { id:2, name:'Coming Soon',  emoji:'🔒', available:false },
+    { id:3, name:'Coming Soon',  emoji:'🔒', available:false },
+    { id:4, name:'Coming Soon',  emoji:'🔒', available:false },
+    { id:5, name:'Coming Soon',  emoji:'🔒', available:false },
+    { id:6, name:'Coming Soon',  emoji:'🔒', available:false },
+  ];
+  let missionState = { 1: { unlocked:false } };
+
+  function renderChestMap(){
+    const grid = document.getElementById('chestGrid');
+    grid.innerHTML = '';
+    MISSIONS.forEach(m=>{
+      const solved = missionState[m.id] && missionState[m.id].unlocked;
+      const card = document.createElement('div');
+      let cls = 'chest-card';
+      if(solved) cls += ' done';
+      else if(m.available) cls += ' unlocked';
+      else cls += ' locked';
+      card.className = cls;
+      card.innerHTML = `
+        ${!m.available && !solved ? '<div class="lock-badge">🔒</div>' : ''}
+        <span class="chest-emoji">${solved ? '💎' : (m.available ? '📦' : '🔒')}</span>
+        <div class="chest-num">Chest ${m.id}</div>
+        <div class="chest-name">${solved ? 'Gem Found!' : (m.available ? 'Tap to Start' : 'Coming Soon')}</div>
+      `;
+      if(m.available && !solved){
+        card.addEventListener('click', ()=> startMission(m.id));
+      } else if(!m.available){
+        card.addEventListener('click', ()=> crookedSay("Ha! That gem isn't ready yet!", 2400));
+      }
+      grid.appendChild(card);
+    });
+  }
+
+  function startMission(id){
+    if(id === 1){
+      heroIndex = 0;
+      buildHeroProgress();
+      showScreen('screen-mission1');
+      loadHero(0);
+    }
+  }
+
+  // ================= SCREEN 3: MISSION 1 — SHAPE HEROES =================
+  const HEROES = [
+    {
+      id:'circle', name:'Captain Circle', shape:'circle', color1:'#6FD3F0', color2:'#2BA8D6', spin:true,
+      lines:["I never have corners.","I roll.","I can spin forever."],
+      question:"Can a circle have sides?",
+      options:["Yes","No"], correct:"No",
+      explain:"A circle is one curved line all the way around — it has no straight sides at all!"
+    },
+    {
+      id:'triangle', name:'Sir Triangle', shape:'triangle', color1:'#FFC978', color2:'#F08A3C',
+      lines:["I always have 3 sides and 3 corners."],
+      showVariants:true,
+      question:"Are ALL of these triangles?",
+      options:["Yes","No"], correct:"Yes",
+      explain:"Yes! No matter the size or which way they point, if it has 3 straight sides and 3 corners, it's a triangle."
+    },
+    {
+      id:'square', name:'Queen Square', shape:'square', color1:'#F49BC1', color2:'#D8578F',
+      lines:["I have 4 equal sides.","I have 4 right angles."]
+    },
+    {
+      id:'rectangle', name:'Rectangle Ranger', shape:'rectangle', color1:'#9BD68A', color2:'#4E9A5C',
+      lines:["I have 4 sides.","I have 4 right angles.","Opposite sides are equal."],
+      question:"Can I also belong to the Quadrilateral Family?",
+      options:["Yes","No"], correct:"Yes",
+      explain:"Yes! Quadrilateral just means ANY shape with four sides — squares, rectangles, and more all belong!"
+    },
+    {
+      id:'pentagon', name:'Pentagon Pete', shape:'pentagon', color1:'#C6A9F0', color2:'#8B5FD6',
+      lines:["I have 5 sides."]
+    },
+    {
+      id:'hexagon', name:'Hexagon Holly', shape:'hexagon', color1:'#FFE07A', color2:'#F0B23C',
+      lines:["I have 6 sides."]
+    },
+    {
+      id:'octagon', name:'Octagon Oscar', shape:'octagon', color1:'#FF9A9A', color2:'#E0524F',
+      lines:["I have 8 sides.","Have you seen me before?"],
+      reveal:"🛑 A STOP sign is an octagon shape!"
+    }
+  ];
+
+  let heroIndex = 0;
+  let heroMistakes = 0;
+
+  function buildHeroProgress(){
+    const row = document.getElementById('heroProgress');
+    row.innerHTML = '';
+    HEROES.forEach(()=>{
+      const dot = document.createElement('div');
+      dot.className = 'hero-dot';
+      row.appendChild(dot);
+    });
+    markHeroProgress();
+  }
+  function markHeroProgress(){
+    const row = document.getElementById('heroProgress');
+    [...row.children].forEach((el,i)=>{
+      el.classList.toggle('done', i < heroIndex);
+      el.classList.toggle('current', i === heroIndex);
+    });
+  }
+
+  function shapeBodyHTML(hero, extraClass){
+    return `<div class="shape-body ${hero.shape} ${extraClass||''}" style="background:linear-gradient(160deg, ${hero.color1}, ${hero.color2});"></div>
+      <div class="hero-face">
+        <div class="hero-eyes"><div class="hero-eye"></div><div class="hero-eye"></div></div>
+        <div class="hero-mouth" id="heroMouth"></div>
+      </div>`;
+  }
+
+  function loadHero(i){
+    heroMistakes = 0;
+    const hero = HEROES[i];
+    markHeroProgress();
+
+    const stage = document.getElementById('heroStage');
+    stage.innerHTML = `<div class="hero-shape ${hero.spin ? 'spin' : ''}" id="heroShapeEl">${shapeBodyHTML(hero)}</div>`;
+    document.getElementById('heroName').textContent = hero.name;
+
+    const linesBox = document.getElementById('heroLines');
+    linesBox.innerHTML = hero.lines.map(l => `<div class="hero-line">"${l}"</div>`).join('');
+
+    const variantRow = document.getElementById('variantRow');
+    variantRow.innerHTML = '';
+    if(hero.showVariants){
+      const transforms = ['scaleY(1.3)','scaleY(0.7)','rotate(180deg)','scaleX(0.6)'];
+      transforms.forEach(t=>{
+        const tri = document.createElement('div');
+        tri.className = 'variant-tri';
+        tri.style.clipPath = 'polygon(50% 0%,0% 100%,100% 100%)';
+        tri.style.transform = t;
+        variantRow.appendChild(tri);
+      });
+    }
+
+    const qArea = document.getElementById('questionArea');
+    qArea.innerHTML = '';
+    document.getElementById('explainBox').classList.remove('show');
+    document.getElementById('explainBox').textContent = '';
+    document.getElementById('nextHeroBtn').classList.remove('show');
+
+    if(hero.question){
+      const qDiv = document.createElement('div');
+      qDiv.className = 'question-text';
+      qDiv.textContent = hero.question;
+      qArea.appendChild(qDiv);
+
+      const ynRow = document.createElement('div');
+      ynRow.className = 'yn-row';
+      const opts = (hero.options && hero.options.length) ? hero.options : ['Yes','No'];
+      opts.forEach(opt=>{
+        const btn = document.createElement('button');
+        btn.className = 'yn-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', ()=> handleHeroAnswer(btn, opt, hero));
+        ynRow.appendChild(btn);
+      });
+      qArea.appendChild(ynRow);
+    } else if(hero.reveal){
+      const btn = document.createElement('button');
+      btn.className = 'reveal-btn';
+      btn.textContent = "Yes, I've seen you!";
+      btn.addEventListener('click', ()=>{
+        btn.disabled = true;
+        const box = document.getElementById('explainBox');
+        box.textContent = hero.reveal;
+        box.classList.add('show');
+        speak(hero.reveal, 0.94, 1.12);
+        document.getElementById('nextHeroBtn').classList.add('show');
+      });
+      qArea.appendChild(btn);
+    } else {
+      document.getElementById('nextHeroBtn').classList.add('show');
+    }
+  }
+
+  function handleHeroAnswer(btn, opt, hero){
+    const allBtns = document.querySelectorAll('.yn-btn');
+    if(btn.disabled) return;
+
+    // Lock every option the moment a choice is made — no re-clicking.
+    allBtns.forEach(b=> b.disabled = true);
+
+    const shapeEl = document.getElementById('heroShapeEl');
+    const mouth = document.getElementById('heroMouth');
+    const box = document.getElementById('explainBox');
+
+    if(opt === hero.correct){
+      btn.classList.add('correct');
+      shapeEl.classList.remove('wobble'); void shapeEl.offsetWidth; shapeEl.classList.add('cheer');
+      if(mouth) mouth.classList.remove('sad');
+
+      crookedReact(true);
+
+      box.textContent = hero.explain;
+      box.classList.add('show');
+      speak(hero.explain, 0.94, 1.14);
+    } else {
+      btn.classList.add('wrong');
+      // Highlight the correct choice so the child always sees the right answer.
+      allBtns.forEach(b=>{ if(b.textContent === hero.correct) b.classList.add('correct'); });
+
+      shapeEl.classList.remove('cheer'); void shapeEl.offsetWidth; shapeEl.classList.add('wobble');
+      if(mouth) mouth.classList.add('sad');
+
+      crookedReact(false);
+
+      box.textContent = hero.explain;
+      box.classList.add('show');
+      speak("Not quite! " + hero.explain, 0.94, 1.1);
+    }
+
+    document.getElementById('nextHeroBtn').classList.add('show');
+  }
+
+  document.getElementById('audioBtn').addEventListener('click', ()=>{
+    const hero = HEROES[heroIndex];
+    let text = hero.name + ". " + hero.lines.join(" ");
+    if(hero.question) text += " " + hero.question;
+    const btn = document.getElementById('audioBtn');
+    btn.classList.add('speaking');
+    speak(text, 0.93, 1.12, ()=> btn.classList.remove('speaking'));
+  });
+
+  document.getElementById('nextHeroBtn').addEventListener('click', ()=>{
+    heroIndex++;
+    if(heroIndex >= HEROES.length){
+      finishMission1();
+    } else {
+      loadHero(heroIndex);
+    }
+  });
+
+  function finishMission1(){
+    missionState[1] = { unlocked:true };
+    crookedFlee();
+    showScreen('screen-complete');
+  }
+
+  document.getElementById('backToMapBtn').addEventListener('click', ()=>{
+    renderChestMap();
+    showScreen('screen-map');
+  });
+
+})();
+</script>
+</body>
+</html>

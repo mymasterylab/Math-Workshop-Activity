@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Pirate Treasure Hunt — MyMasteryLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Pirata+One&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ocean-deep:#052A3A; --ocean-mid:#0B4059; --ocean-3:#0F5468;
+    --teal:#00A7B2; --teal-glow:#3FD6DF;
+    --gold:#FAA71C; --gold-light:#FFD37A; --burnt:#D77F28;
+    --wood:#6B4226; --wood-dark:#3E2712;
+    --paper:#F3E6C4; --paper-dim:#E4D2A5; --ink-text:#3A2415;
+    --shadow:0 18px 40px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background:
+      radial-gradient(ellipse 800px 500px at 88% 6%, rgba(250,167,28,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 600px at 8% 92%, rgba(0,167,178,0.18), transparent 60%),
+      linear-gradient(180deg, var(--ocean-deep) 0%, var(--ocean-mid) 55%, var(--ocean-3) 100%);
+    min-height:100vh;color:var(--paper);overflow-x:hidden;position:relative;
+  }
+  *{ -webkit-tap-highlight-color: transparent; }
+
+  .sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .star{position:absolute;background:#fff;border-radius:50%;opacity:.5;animation:twinkle 3.5s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.8}}
+  .cloud{position:absolute;font-size:44px;opacity:.35;filter:blur(.4px);animation:driftCloud 40s linear infinite;}
+  @keyframes driftCloud{0%{transform:translateX(-10vw);}100%{transform:translateX(110vw);}}
+  .wave-strip{position:absolute;bottom:0;left:0;right:0;height:70px;background:repeating-linear-gradient(90deg, rgba(63,214,223,0.08) 0 40px, transparent 40px 80px);animation:waveMove 8s linear infinite;}
+  @keyframes waveMove{0%{background-position-x:0;}100%{background-position-x:80px;}}
+
+  .app{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:28px 18px 60px;min-height:100vh;display:flex;flex-direction:column;}
+  .brandbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-family:'Nunito';font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-glow);opacity:.9;}
+  .brandbar span.dot{color:var(--gold);margin:0 6px;}
+
+  .screen{display:none;flex:1;flex-direction:column;}
+  .screen.active{display:flex;animation:fadeIn .5s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- Title screen ---------- */
+  .title-wrap{text-align:center;padding-top:6px;}
+  .pirate-badge{font-size:54px;filter:drop-shadow(0 8px 18px rgba(0,0,0,0.5));display:inline-block;animation:idleSway 2.6s ease-in-out infinite;}
+  @keyframes idleSway{0%,100%{transform:rotate(-6deg);}50%{transform:rotate(6deg);}}
+  h1.gametitle{font-family:'Pirata One',cursive;font-weight:400;font-size:clamp(32px,8vw,50px);margin:8px 0 4px;color:var(--paper);text-shadow:0 4px 0 rgba(0,0,0,0.35), 0 0 20px rgba(250,167,28,0.3);letter-spacing:.02em;}
+  .gametitle .accent{color:var(--gold);}
+  .subtitle{font-weight:700;color:var(--teal-glow);font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px;}
+  .storycard{background:linear-gradient(180deg, var(--paper), var(--paper-dim));color:var(--ink-text);border-radius:20px;padding:20px 22px;text-align:left;box-shadow:var(--shadow);position:relative;overflow:hidden;border:3px solid var(--wood);}
+  .storycard::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--teal),var(--gold),var(--burnt));}
+  .storycard p{margin:0 0 10px;line-height:1.55;font-size:15px;}
+  .storycard p:last-child{margin-bottom:0;}
+  .storycard .ico{font-size:20px;margin-right:6px;}
+
+  .diff-title{margin-top:26px;font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--paper);text-transform:uppercase;letter-spacing:.08em;text-align:center;}
+  .diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+  .diff-card{background:var(--ocean-3);border:2px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;transition:transform .15s ease, border-color .15s ease, background .15s ease;}
+  .diff-card:hover{transform:translateY(-3px);border-color:var(--teal);}
+  .diff-card.selected{border-color:var(--gold);background:#164a56;box-shadow:0 0 0 3px rgba(250,167,28,0.3);}
+  .diff-icon{font-size:26px;display:block;margin-bottom:6px;}
+  .diff-name{font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--paper);}
+  .diff-sample{font-family:'Nunito';font-weight:700;font-size:11.5px;color:var(--teal-glow);margin-top:4px;}
+
+  .btn-start{margin-top:26px;align-self:center;font-family:'Baloo 2';font-weight:700;font-size:18px;color:var(--ink-text);background:linear-gradient(180deg, var(--gold-light), var(--gold));border:none;padding:14px 40px;border-radius:999px;cursor:pointer;box-shadow:0 10px 0 var(--burnt), 0 16px 24px rgba(0,0,0,0.35);transition:transform .12s ease, box-shadow .12s ease;}
+  .btn-start:active{transform:translateY(6px);box-shadow:0 4px 0 var(--burnt), 0 8px 14px rgba(0,0,0,0.3);}
+  .btn-start:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+
+  /* ---------- Map screen ---------- */
+  .hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .hud-left{display:flex;align-items:center;gap:8px;background:var(--ocean-3);padding:8px 14px;border-radius:999px;font-weight:800;font-family:'Baloo 2';font-size:13px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);}
+  .hud-rewards{display:flex;gap:6px;flex-wrap:wrap;}
+  .hud-pill{display:flex;align-items:center;gap:5px;background:var(--ocean-3);padding:7px 11px;border-radius:999px;font-weight:800;font-family:'Baloo 2';font-size:12.5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);}
+
+  .map-panel{background:
+      radial-gradient(ellipse at top, #a9885a 0%, #8a6b40 45%, #6b4e2c 100%);
+    border:6px solid var(--wood-dark);border-radius:22px;padding:26px 18px 30px;box-shadow:var(--shadow);position:relative;overflow:hidden;color:var(--ink-text);}
+  .map-panel::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0 2px, transparent 2px 6px);pointer-events:none;}
+  .map-title{text-align:center;font-family:'Pirata One',cursive;font-size:24px;color:#3a2712;margin-bottom:4px;text-shadow:0 1px 0 rgba(255,255,255,0.2);}
+  .map-sub{text-align:center;font-weight:700;font-size:12.5px;color:#5a4020;text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px;}
+
+  .chest-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(110px,1fr));gap:16px;max-width:560px;margin:0 auto;position:relative;z-index:1;}
+  .chest-card{background:linear-gradient(180deg,#7a5230,#5a3a1e);border:3px solid var(--wood-dark);border-radius:16px;padding:16px 8px 12px;text-align:center;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;box-shadow:0 6px 0 rgba(0,0,0,0.3);}
+  .chest-card:hover{transform:translateY(-4px);}
+  .chest-card:active{transform:translateY(2px);box-shadow:0 3px 0 rgba(0,0,0,0.3);}
+  .chest-card.solved{background:linear-gradient(180deg,#d8a02c,#a97318);border-color:var(--gold);}
+  .chest-icon{font-size:36px;margin-bottom:6px;display:block;}
+  .chest-label{font-family:'Baloo 2';font-weight:700;font-size:13px;color:var(--paper);}
+  .chest-stars{font-size:12px;margin-top:3px;letter-spacing:1px;min-height:14px;}
+
+  .compass-deco{position:absolute;top:10px;right:14px;font-size:40px;opacity:.5;animation:spinCompass 12s linear infinite;}
+  @keyframes spinCompass{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+  /* ---------- Chest detail screen ---------- */
+  .chest-panel{background:radial-gradient(ellipse at top, #0d4a52, #082f36 75%);border:1px solid rgba(255,255,255,0.08);border-radius:22px;padding:22px 18px 26px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .chest-panel .glow{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:280px;height:200px;background:radial-gradient(circle, rgba(250,167,28,0.16), transparent 70%);pointer-events:none;}
+
+  .back-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;z-index:1;}
+  .back-btn{background:var(--paper);border:2px solid var(--wood);color:var(--ink-text);font-family:'Baloo 2';font-weight:700;font-size:12.5px;padding:6px 14px;border-radius:999px;cursor:pointer;}
+  .chest-title{font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--gold-light);}
+
+  .question-head{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 4px;position:relative;z-index:2;}
+  .audio-btn{background:var(--paper);border:2px solid var(--wood);color:var(--ink-text);width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,0.3);transition:transform .12s ease;flex-shrink:0;}
+  .audio-btn:hover{transform:scale(1.08);}
+  .audio-btn:active{transform:translateY(2px);}
+  .audio-btn.speaking{animation:speakPulse .6s ease-in-out infinite;}
+  @keyframes speakPulse{0%,100%{box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(250,167,28,0.7);}50%{box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 0 0 10px rgba(250,167,28,0);}}
+  .equation{font-family:'Baloo 2';font-weight:800;font-size:clamp(28px,7vw,38px);color:var(--paper);text-shadow:0 0 12px rgba(250,167,28,0.3);}
+  .equation .op{color:var(--teal-glow);margin:0 8px;}
+
+  /* Treasure path preview (text + animation together) */
+  .path-track{position:relative;height:104px;margin:14px auto 6px;max-width:480px;}
+  .path-line{position:absolute;left:6%;right:6%;top:58px;height:3px;background:repeating-linear-gradient(90deg, rgba(250,211,122,0.5) 0 8px, transparent 8px 16px);border-radius:2px;}
+  .path-node{position:absolute;top:38px;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#EFE6CE,#D8C89C);border:3px solid var(--wood);display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo 2';font-weight:800;font-size:12px;color:var(--ink-text);box-shadow:0 5px 0 rgba(0,0,0,0.3);transition:all .4s ease;}
+  .path-node.start{left:6%;}
+  .path-node.mid{left:50%;background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold));border-color:var(--burnt);}
+  .path-node.mid .v{opacity:0;}
+  .path-node.mid.revealed{animation:burstPulse .6s ease;}
+  .path-node.mid.revealed .v{opacity:1;}
+  @keyframes burstPulse{0%{box-shadow:0 5px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(250,167,28,0.7);}70%{box-shadow:0 5px 0 rgba(0,0,0,0.3), 0 0 0 20px rgba(250,167,28,0);}100%{box-shadow:0 5px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(250,167,28,0);}}
+  .path-node.chestend{left:94%;border-color:var(--teal);font-size:20px;}
+  .ship-sprite{position:absolute;top:38px;left:6%;transform:translate(-50%,-50%);font-size:28px;transition:left .8s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 4px 6px rgba(0,0,0,0.4));z-index:5;animation:shipBob 1.8s ease-in-out infinite;}
+  @keyframes shipBob{0%,100%{transform:translate(-50%,-50%) translateY(0) rotate(-3deg);}50%{transform:translate(-50%,-50%) translateY(-5px) rotate(3deg);}}
+  .ship-sprite.sailing{animation:shipSail .8s ease;}
+  @keyframes shipSail{0%{transform:translate(-50%,-50%) translateY(0) scale(1);}30%{transform:translate(-50%,-50%) translateY(-10px) scale(1.1);}100%{transform:translate(-50%,-50%) translateY(0) scale(1);}}
+  .ship-sprite.wobble{animation:shipWobble .5s ease;}
+  @keyframes shipWobble{0%,100%{transform:translate(-50%,-50%) rotate(-3deg);}25%{transform:translate(-50%,-50%) rotate(-20deg);}75%{transform:translate(-50%,-50%) rotate(14deg);}}
+  .splash{position:absolute;top:58px;width:12px;height:12px;border:3px solid var(--teal-glow);border-radius:50%;transform:translate(-50%,-50%);opacity:0;pointer-events:none;}
+  .splash.play{animation:splashOut .7s ease-out;}
+  @keyframes splashOut{0%{opacity:.9;width:12px;height:12px;}100%{opacity:0;width:60px;height:60px;}}
+
+  /* Strategy chooser */
+  .strategy-label{text-align:center;font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--paper);margin:14px 0 10px;position:relative;z-index:1;}
+  .strategy-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:420px;margin:0 auto;position:relative;z-index:1;}
+  .strat-btn{font-family:'Baloo 2';font-weight:700;font-size:12.5px;color:var(--ink-text);background:linear-gradient(180deg,#fff,#EFE6CE);border:2px solid var(--wood);border-radius:14px;padding:12px 6px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;box-shadow:0 4px 0 rgba(0,0,0,0.3);}
+  .strat-btn .emo{font-size:20px;display:block;margin-bottom:4px;}
+  .strat-btn:hover{transform:translateY(-2px);}
+  .strat-btn.selected{background:linear-gradient(180deg,#BFE9EC,#7FD3D9);border-color:var(--teal);box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 0 0 3px rgba(0,167,178,0.35);}
+
+  .answer-row{display:flex;justify-content:center;gap:10px;margin-top:18px;position:relative;z-index:1;flex-wrap:wrap;align-items:center;}
+  .answer-input{font-family:'Baloo 2';font-weight:800;font-size:22px;color:var(--ink-text);background:var(--paper);border:3px solid var(--wood);border-radius:12px;padding:10px 8px;width:110px;text-align:center;}
+  .answer-input:disabled{opacity:.6;}
+  .submit-btn{font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--ink-text);background:linear-gradient(180deg, var(--gold-light), var(--gold));border:none;padding:12px 26px;border-radius:999px;cursor:pointer;box-shadow:0 6px 0 var(--burnt);transition:transform .1s ease;}
+  .submit-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--burnt);}
+  .submit-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+
+  .reveal-btn{display:none;margin:10px auto 0;font-family:'Nunito';font-weight:700;font-size:12.5px;color:var(--teal-glow);background:transparent;border:1.5px dashed var(--teal-glow);padding:7px 14px;border-radius:999px;cursor:pointer;position:relative;z-index:1;}
+  .reveal-btn.show{display:block;}
+
+  .hint-box{max-width:460px;margin:14px auto 0;background:rgba(215,127,40,0.2);border:1.5px dashed var(--burnt);border-radius:14px;padding:12px 16px;font-size:13.5px;line-height:1.5;text-align:left;display:none;position:relative;z-index:1;}
+  .hint-box.show{display:block;animation:fadeIn .3s ease;}
+  .hint-box .ico{font-size:16px;margin-right:4px;}
+
+  .feedback-banner{text-align:center;margin-top:14px;font-family:'Baloo 2';font-weight:800;font-size:16px;min-height:24px;position:relative;z-index:1;}
+  .feedback-banner.good{color:var(--gold-light);}
+  .feedback-banner.bad{color:#ff9a8a;}
+  .feedback-banner.stars{font-size:20px;letter-spacing:3px;}
+
+  .chest-open-fx{text-align:center;font-size:48px;margin-top:6px;min-height:56px;position:relative;z-index:1;}
+
+  .back-map-btn{display:none;margin:16px auto 0;font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--ink-text);background:linear-gradient(180deg, var(--teal-glow), var(--teal));border:none;padding:11px 28px;border-radius:999px;cursor:pointer;box-shadow:0 8px 0 #04747c;position:relative;z-index:1;}
+  .back-map-btn.show{display:block;}
+  .back-map-btn:active{transform:translateY(5px);box-shadow:0 3px 0 #04747c;}
+
+  .celebrate-particle{position:absolute;font-size:20px;pointer-events:none;z-index:8;opacity:0;}
+
+  /* ---------- Complete screen ---------- */
+  .complete-wrap{text-align:center;margin:auto 0;padding:20px 0;}
+  .chest-final{font-size:80px;margin-bottom:8px;animation:badgePop .7s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes badgePop{0%{transform:scale(0) rotate(-30deg);opacity:0}70%{transform:scale(1.15) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0);}}
+  .complete-title{font-family:'Pirata One',cursive;font-weight:400;font-size:28px;color:var(--paper);margin-bottom:6px;}
+  .complete-sub{color:var(--gold-light);font-weight:700;margin-bottom:8px;font-family:'Nunito';}
+  .compass-line{color:var(--teal-glow);font-weight:700;font-size:13px;margin-bottom:20px;}
+  .stat-row{display:flex;justify-content:center;gap:12px;margin-bottom:26px;flex-wrap:wrap;}
+  .stat-pill{background:var(--ocean-3);border-radius:16px;padding:14px 18px;min-width:96px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);}
+  .stat-pill .num{font-family:'Baloo 2';font-weight:800;font-size:22px;color:var(--gold);}
+  .stat-pill .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--teal-glow);font-weight:700;margin-top:2px;}
+  .complete-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .btn-secondary{font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--paper);background:transparent;border:2px solid var(--teal);padding:12px 24px;border-radius:999px;cursor:pointer;}
+
+  footer.credit{text-align:center;margin-top:30px;font-size:11px;color:rgba(247,241,228,0.4);letter-spacing:.05em;}
+
+  /* ---------- Parrot assistant ---------- */
+  .assistant-parrot{position:fixed;bottom:14px;left:6vw;z-index:50;display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:parrotWalk 17s ease-in-out infinite;}
+  @keyframes parrotWalk{0%{left:6vw;}22%{left:68vw;}28%{left:68vw;}50%{left:24vw;}56%{left:24vw;}78%{left:80vw;}84%{left:80vw;}100%{left:6vw;}}
+  .parrot-char{font-size:34px;display:inline-block;cursor:pointer;pointer-events:auto;filter:drop-shadow(0 6px 8px rgba(0,0,0,0.5));animation:parrotBob 1.6s ease-in-out infinite;transform-origin:bottom center;}
+  @keyframes parrotBob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-6px) rotate(2deg);}}
+  .parrot-char.mood-happy{animation:parrotCheer .7s ease;}
+  @keyframes parrotCheer{0%{transform:translateY(0) rotate(0);}30%{transform:translateY(-22px) rotate(-18deg) scale(1.15);}60%{transform:translateY(-8px) rotate(14deg) scale(1.1);}100%{transform:translateY(0) rotate(0) scale(1);}}
+  .parrot-char.mood-oops{animation:parrotShake .5s ease;}
+  @keyframes parrotShake{0%,100%{transform:translateX(0) rotate(0);}25%{transform:translateX(-6px) rotate(-8deg);}75%{transform:translateX(6px) rotate(8deg);}}
+  .parrot-char.mood-proud{animation:parrotCheer .9s ease 2;}
+
+  .speech-bubble{position:relative;max-width:200px;margin-bottom:8px;background:var(--paper);color:var(--ink-text);font-family:'Baloo 2';font-weight:700;font-size:12.5px;line-height:1.35;padding:9px 13px;border-radius:14px;border:2px solid var(--wood);box-shadow:0 6px 14px rgba(0,0,0,0.4);opacity:0;transform:translateY(6px) scale(.9);transition:opacity .25s ease, transform .25s ease;text-align:center;pointer-events:none;}
+  .speech-bubble::after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);border-width:8px 7px 0 7px;border-style:solid;border-color:var(--wood) transparent transparent transparent;}
+  .speech-bubble::before{content:"";position:absolute;left:50%;bottom:-5.5px;transform:translateX(-50%);border-width:6.5px 5.5px 0 5.5px;border-style:solid;border-color:var(--paper) transparent transparent transparent;z-index:1;}
+  .speech-bubble.show{opacity:1;transform:translateY(0) scale(1);}
+  .speech-bubble.mood-happy{border-color:var(--gold);}
+  .speech-bubble.mood-oops{border-color:var(--burnt);}
+  .speech-bubble.mood-proud{border-color:var(--teal);}
+
+  @media (max-width:520px){
+    .assistant-parrot{bottom:10px;}
+    .parrot-char{font-size:28px;}
+    .speech-bubble{max-width:150px;font-size:11.5px;}
+    .strategy-row{max-width:100%;}
+    .strat-btn{font-size:11px;padding:10px 4px;}
+    @keyframes parrotWalk{0%{left:4vw;}22%{left:56vw;}28%{left:56vw;}50%{left:16vw;}56%{left:16vw;}78%{left:68vw;}84%{left:68vw;}100%{left:4vw;}}
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<div class="app">
+  <div class="brandbar">MyMasteryLab <span class="dot">•</span> Pirate Cove Review</div>
+
+  <!-- TITLE SCREEN -->
+  <section class="screen active" id="screen-title">
+    <div class="title-wrap">
+      <div class="pirate-badge">🏴‍☠️</div>
+      <h1 class="gametitle">Pirate <span class="accent">Treasure</span> Hunt</h1>
+      <div class="subtitle">Mixed Strategy Review</div>
+    </div>
+
+    <div class="storycard">
+      <p><span class="ico">💀</span><strong>Captain Minus</strong> has hidden treasure across five locked chests! Each chest guards one subtraction puzzle.</p>
+      <p>Before you crack each chest, pick the trick you'll use — <strong>Make 10</strong>, <strong>Count Up</strong>, or <strong>Near Numbers</strong> — then type your answer to claim the gold!</p>
+    </div>
+
+    <div class="diff-title">Choose Your Map</div>
+    <div class="diff-grid" id="diffGrid">
+      <div class="diff-card" data-diff="easy">
+        <span class="diff-icon">🗺️</span>
+        <div class="diff-name">Novice</div>
+        <div class="diff-sample">Small numbers</div>
+      </div>
+      <div class="diff-card" data-diff="medium">
+        <span class="diff-icon">🗺️</span>
+        <div class="diff-name">Buccaneer</div>
+        <div class="diff-sample">Medium numbers</div>
+      </div>
+      <div class="diff-card" data-diff="hard">
+        <span class="diff-icon">🗺️</span>
+        <div class="diff-name">Legendary</div>
+        <div class="diff-sample">Big numbers</div>
+      </div>
+    </div>
+
+    <button class="btn-start" id="startBtn" disabled>Set Sail!</button>
+  </section>
+
+  <!-- MAP SCREEN -->
+  <section class="screen" id="screen-map">
+    <div class="hud">
+      <div class="hud-left">🗺️ <span id="hudDiff">Novice</span></div>
+      <div class="hud-rewards">
+        <div class="hud-pill">🪙 <span id="hudCoins">0</span></div>
+        <div class="hud-pill">🗝️ <span id="hudKeys">0</span></div>
+        <div class="hud-pill">💎 <span id="hudDiamonds">0</span></div>
+      </div>
+    </div>
+
+    <div class="map-panel">
+      <div class="compass-deco">🧭</div>
+      <div class="map-title">X Marks the Spot</div>
+      <div class="map-sub">Click a chest to begin</div>
+      <div class="chest-grid" id="chestGrid"></div>
+    </div>
+  </section>
+
+  <!-- CHEST DETAIL SCREEN -->
+  <section class="screen" id="screen-chest">
+    <div class="chest-panel">
+      <div class="glow"></div>
+      <div class="back-row">
+        <button class="back-btn" id="backBtn">← Map</button>
+        <div class="chest-title" id="chestTitle">Chest 1</div>
+      </div>
+
+      <div class="question-head">
+        <button class="audio-btn" id="audioBtn" title="Read puzzle aloud">🔊</button>
+        <div class="equation" id="equationText">16 <span class="op">−</span> 8</div>
+      </div>
+
+      <div class="path-track" id="pathTrack">
+        <div class="path-line"></div>
+        <div class="path-node start" id="nodeStart">16</div>
+        <div class="path-node mid" id="nodeMid"><span class="v">10</span></div>
+        <div class="path-node chestend" id="nodeChest">📦</div>
+        <div class="splash" id="splashFx"></div>
+        <div class="ship-sprite" id="shipSprite">⛵</div>
+      </div>
+
+      <div class="strategy-label">Choose your trick:</div>
+      <div class="strategy-row" id="strategyRow">
+        <button class="strat-btn" data-strat="maketen"><span class="emo">🥋</span>Make 10</button>
+        <button class="strat-btn" data-strat="countup"><span class="emo">🐸</span>Count Up</button>
+        <button class="strat-btn" data-strat="nearnumbers"><span class="emo">🚀</span>Near Numbers</button>
+      </div>
+
+      <div class="answer-row">
+        <input type="text" inputmode="numeric" class="answer-input" id="answerInput" placeholder="?" disabled>
+        <button class="submit-btn" id="submitBtn" disabled>Unlock Chest</button>
+      </div>
+      <button class="reveal-btn" id="revealBtn">Show me the answer</button>
+
+      <div class="hint-box" id="hintBox">
+        <span class="ico">🦜</span><span id="hintText"></span>
+      </div>
+
+      <div class="feedback-banner" id="feedbackBanner"></div>
+      <div class="chest-open-fx" id="chestOpenFx"></div>
+      <button class="back-map-btn" id="backMapBtn">Back to Map →</button>
+    </div>
+  </section>
+
+  <!-- COMPLETE SCREEN -->
+  <section class="screen" id="screen-complete">
+    <div class="complete-wrap">
+      <div class="chest-final" id="finalChestEmoji">🏆</div>
+      <div class="complete-title" id="completeTitle">Legendary Golden Chest!</div>
+      <div class="complete-sub" id="completeSub">You found every treasure!</div>
+      <div class="compass-line" id="compassLine">🧭 Golden Compass Earned!</div>
+      <div class="stat-row">
+        <div class="stat-pill"><div class="num" id="finalCoins">0</div><div class="lbl">Coins</div></div>
+        <div class="stat-pill"><div class="num" id="finalKeys">0</div><div class="lbl">Keys</div></div>
+        <div class="stat-pill"><div class="num" id="finalDiamonds">0</div><div class="lbl">Diamonds</div></div>
+        <div class="stat-pill"><div class="num" id="finalAccuracy">0%</div><div class="lbl">First-Try</div></div>
+      </div>
+      <div class="complete-actions">
+        <button class="btn-start" id="playAgainBtn" style="margin-top:0;">Hunt Again</button>
+        <button class="btn-secondary" id="newDiffBtn">Choose New Map</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="credit">MyMasteryLab · Pirate Treasure Hunt · Mixed Subtraction Strategy Review</footer>
+</div>
+
+<div class="assistant-parrot" id="assistantParrot">
+  <div class="speech-bubble" id="assistantBubble">Squawk! Ready to hunt? 🏴‍☠️</div>
+  <div class="parrot-char" id="assistantChar">🦜</div>
+</div>
+
+<script>
+(function(){
+  // ---------- Ambient scene ----------
+  const sky = document.getElementById('sky');
+  for(let i=0;i<50;i++){
+    const s = document.createElement('div');
+    s.className='star';
+    const size = Math.random()*2+1;
+    s.style.width=size+'px'; s.style.height=size+'px';
+    s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*60+'%';
+    s.style.animationDelay=(Math.random()*3)+'s';
+    sky.appendChild(s);
+  }
+  const cloudSpots=[{top:'6%',delay:'0s',size:'50px'},{top:'14%',delay:'12s',size:'34px'},{top:'22%',delay:'24s',size:'42px'}];
+  cloudSpots.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='cloud'; el.textContent='☁️';
+    el.style.top=c.top; el.style.fontSize=c.size; el.style.animationDelay=c.delay;
+    sky.appendChild(el);
+  });
+  const wave = document.createElement('div');
+  wave.className='wave-strip';
+  sky.appendChild(wave);
+
+  // ---------- Parrot assistant ----------
+  const assistantChar = document.getElementById('assistantChar');
+  const assistantBubble = document.getElementById('assistantBubble');
+  const idleTips = [
+    "Squawk! Pick yer trick wisely!",
+    "Make 10 be handy for a quick hop!",
+    "Count Up works great for near numbers!",
+    "Near Numbers trick be lightning fast!",
+    "Every chest brings more gold, matey!",
+    "Type yer answer and claim the loot!"
+  ];
+  let idleTimer=null, hideTimer=null;
+  function clearMoods(){
+    assistantChar.classList.remove('mood-happy','mood-oops','mood-proud');
+    assistantBubble.classList.remove('mood-happy','mood-oops','mood-proud');
+  }
+  function assistantSay(msg, mood, duration){
+    clearTimeout(hideTimer);
+    clearMoods();
+    assistantBubble.textContent = msg;
+    assistantBubble.classList.add('show');
+    if(mood){ assistantChar.classList.add(mood); assistantBubble.classList.add(mood); }
+    hideTimer = setTimeout(()=> assistantBubble.classList.remove('show'), duration || 3200);
+  }
+  function startIdleChatter(){
+    clearInterval(idleTimer);
+    idleTimer = setInterval(()=>{
+      const tip = idleTips[Math.floor(Math.random()*idleTips.length)];
+      assistantSay(tip, null, 3600);
+    }, 11000);
+  }
+  document.getElementById('assistantParrot').addEventListener('click', ()=>{
+    const tip = idleTips[Math.floor(Math.random()*idleTips.length)];
+    assistantSay(tip, null, 3200);
+  });
+  startIdleChatter();
+  setTimeout(()=> assistantSay("Choose a map to begin! 🗺️", null, 4200), 600);
+
+  // ---------- Audio ----------
+  function speak(text, rate, pitch){
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = rate || 0.95;
+    utter.pitch = pitch || 1.0;
+    window.speechSynthesis.speak(utter);
+  }
+  document.getElementById('audioBtn').addEventListener('click', ()=>{
+    const chest = state.chests[state.activeChestIndex];
+    if(!chest) return;
+    if(!('speechSynthesis' in window)){
+      assistantSay("Audio isn't supported here.", 'mood-oops', 3000);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(`Chest puzzle: ${chest.problem.a} minus ${chest.problem.b}. Choose your trick, then type the answer!`);
+    utter.rate = 0.92;
+    const btn = document.getElementById('audioBtn');
+    btn.classList.add('speaking');
+    utter.onend = ()=> btn.classList.remove('speaking');
+    utter.onerror = ()=> btn.classList.remove('speaking');
+    window.speechSynthesis.speak(utter);
+  });
+
+  const wrongLines = [
+    "Arrr! That be the wrong number, matey!",
+    "Blimey! The chest be laughing at ye!",
+    "Shiver me timbers, try again!",
+    "Nay! Davy Jones has yer answer!"
+  ];
+  const correctLines = [
+    "Yo ho ho! Treasure found!",
+    "Shiver me timbers, ye did it!",
+    "Arrr, a true pirate's answer!",
+    "Gold and glory be yers!"
+  ];
+
+  // ---------- Problem generators (reusing prior game strategies) ----------
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function shuffleArr(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function genMakeTen(diff){
+    let range = diff==='easy' ? [11,19] : diff==='medium' ? [21,49] : [50,98];
+    let a,tries=0;
+    do{ a = randInt(range[0],range[1]); tries++; }
+    while(a%10===0 && tries<200);
+    const b = randInt(Math.max((a%10)+1,2), 9);
+    const landmark = a - (a%10);
+    const firstHop = a - landmark;      // amount to reach the ten going down from a
+    const secondHop = b - firstHop;     // remaining amount to subtract after reaching landmark
+    const total = a - b;                // landmark - secondHop, matches a - b
+    return {a,b,landmark,firstHop,secondHop,total};
+  }
+  function genCountUp(diff){
+    let startRange = diff==='easy' ? [1,20] : diff==='medium' ? [15,60] : [45,140];
+    let start,tries=0;
+    do{ start = randInt(startRange[0],startRange[1]); tries++; }
+    while(start%10===0 && tries<200);
+    const landmark = Math.ceil(start/10)*10;
+    const firstHop = landmark-start;
+    const secondHop = randInt(1,9);
+    const end = landmark+secondHop;
+    const total = end-start;
+    return {a:end,b:start,landmark,firstHop,secondHop,total};
+  }
+  function genNearNumbers(diff){
+    let landmarkStep = diff==='easy' ? 10 : diff==='medium' ? 10 : 100;
+    let multMin = diff==='easy' ? 1 : 2, multMax = 9;
+    let hopRange = diff==='easy' ? [1,3] : diff==='medium' ? [2,5] : [3,9];
+    const landmark = randInt(multMin,multMax)*landmarkStep;
+    const firstHop = randInt(hopRange[0],hopRange[1]);
+    const secondHop = randInt(hopRange[0],hopRange[1]);
+    const b = landmark-firstHop;
+    const a = landmark+secondHop;
+    return {a,b,landmark,firstHop,secondHop,total:a-b};
+  }
+  function generateProblem(diff, strategy){
+    if(strategy==='maketen') return {...genMakeTen(diff), idealStrategy:'maketen'};
+    if(strategy==='countup') return {...genCountUp(diff), idealStrategy:'countup'};
+    return {...genNearNumbers(diff), idealStrategy:'nearnumbers'};
+  }
+
+  const STRAT_META = {
+    maketen:{ name:'Make 10', emoji:'🥋' },
+    countup:{ name:'Count Up', emoji:'🐸' },
+    nearnumbers:{ name:'Near Numbers', emoji:'🚀' }
+  };
+
+  const CHEST_TIER = [
+    { min:0,    name:'Rusty Old Chest',       emoji:'🧰', compass:false },
+    { min:0.4,  name:'Bronze Treasure Chest', emoji:'🥉', compass:false },
+    { min:0.7,  name:'Silver Treasure Chest', emoji:'🥈', compass:false },
+    { min:0.9,  name:'Legendary Golden Chest',emoji:'🏆', compass:true  }
+  ];
+  const DIFF_LABEL = { easy:'Novice', medium:'Buccaneer', hard:'Legendary Pirate' };
+
+  const ROUND_LENGTH = 5;
+  let state = {
+    difficulty:null, chests:[], activeChestIndex:null,
+    coins:0, keys:0, diamonds:0, totalStars:0, firstTryCount:0
+  };
+
+  // ---------- Title screen ----------
+  const diffGrid = document.getElementById('diffGrid');
+  const startBtn = document.getElementById('startBtn');
+  diffGrid.addEventListener('click', (e)=>{
+    const card = e.target.closest('.diff-card');
+    if(!card) return;
+    [...diffGrid.children].forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.difficulty = card.dataset.diff;
+    startBtn.disabled = false;
+  });
+  startBtn.addEventListener('click', startHunt);
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function startHunt(){
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    const stratPattern = shuffleArr(['maketen','countup','nearnumbers','maketen','countup']);
+    state.chests = stratPattern.map(strat => ({
+      problem: generateProblem(state.difficulty, strat),
+      solved:false, mistakes:0, starsEarned:0, chosenStrategy:null
+    }));
+    state.coins=0; state.keys=0; state.diamonds=0; state.totalStars=0; state.firstTryCount=0;
+
+    document.getElementById('hudDiff').textContent = DIFF_LABEL[state.difficulty];
+    updateHud();
+    renderMap();
+    showScreen('screen-map');
+    assistantSay("Ahoy! Pick a chest to start! 🏴‍☠️", null, 3400);
+  }
+
+  function updateHud(){
+    document.getElementById('hudCoins').textContent = state.coins;
+    document.getElementById('hudKeys').textContent = state.keys;
+    document.getElementById('hudDiamonds').textContent = state.diamonds;
+  }
+
+  function renderMap(){
+    const grid = document.getElementById('chestGrid');
+    grid.innerHTML = '';
+    state.chests.forEach((chest,i)=>{
+      const card = document.createElement('div');
+      card.className = 'chest-card' + (chest.solved ? ' solved' : '');
+      card.innerHTML = `
+        <span class="chest-icon">${chest.solved ? '💰' : '📦'}</span>
+        <div class="chest-label">Chest ${i+1}</div>
+        <div class="chest-stars">${chest.solved ? '⭐'.repeat(chest.starsEarned) : ''}</div>
+      `;
+      card.addEventListener('click', ()=> openChest(i));
+      grid.appendChild(card);
+    });
+  }
+
+  function openChest(i){
+    const chest = state.chests[i];
+    if(chest.solved){
+      assistantSay("Already claimed that one, matey! 💰", null, 2600);
+      return;
+    }
+    state.activeChestIndex = i;
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    loadChestUI(chest, i);
+    showScreen('screen-chest');
+  }
+
+  function loadChestUI(chest, i){
+    const q = chest.problem;
+    document.getElementById('chestTitle').textContent = 'Chest ' + (i+1);
+    document.getElementById('equationText').innerHTML = q.a + ' <span class="op">−</span> ' + q.b;
+
+    document.getElementById('nodeStart').textContent = (q.idealStrategy === 'maketen') ? q.a : q.b;
+    const mid = document.getElementById('nodeMid');
+    mid.className = 'path-node mid';
+    mid.innerHTML = '<span class="v">' + q.landmark + '</span>';
+    document.getElementById('nodeChest').textContent = '📦';
+
+    const ship = document.getElementById('shipSprite');
+    ship.className = 'ship-sprite';
+    ship.style.left = '6%';
+
+    document.querySelectorAll('.strat-btn').forEach(b=>{
+      b.classList.remove('selected');
+      b.disabled = false;
+    });
+    chest.chosenStrategy = null;
+
+    const input = document.getElementById('answerInput');
+    input.value = '';
+    input.disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('revealBtn').classList.remove('show');
+    document.getElementById('hintBox').classList.remove('show');
+    document.getElementById('feedbackBanner').textContent = '';
+    document.getElementById('feedbackBanner').className = 'feedback-banner';
+    document.getElementById('chestOpenFx').textContent = '';
+    document.getElementById('backMapBtn').classList.remove('show');
+    chest.mistakes = 0;
+  }
+
+  document.getElementById('backBtn').addEventListener('click', ()=>{
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    renderMap();
+    showScreen('screen-map');
+  });
+  document.getElementById('backMapBtn').addEventListener('click', ()=>{
+    renderMap();
+    showScreen('screen-map');
+    checkAllSolved();
+  });
+
+  document.getElementById('strategyRow').addEventListener('click', (e)=>{
+    const btn = e.target.closest('.strat-btn');
+    if(!btn) return;
+    const chest = state.chests[state.activeChestIndex];
+    if(chest.solved) return;
+    document.querySelectorAll('.strat-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    chest.chosenStrategy = btn.dataset.strat;
+    document.getElementById('answerInput').disabled = false;
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('answerInput').focus();
+  });
+
+  const answerInput = document.getElementById('answerInput');
+  answerInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') document.getElementById('submitBtn').click();
+  });
+
+  document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+  document.getElementById('revealBtn').addEventListener('click', ()=>{
+    const chest = state.chests[state.activeChestIndex];
+    answerInput.value = chest.problem.total;
+    assistantSay("There ye go — now click Unlock Chest!", null, 3000);
+  });
+
+  function submitAnswer(){
+    const chest = state.chests[state.activeChestIndex];
+    if(chest.solved) return;
+    const q = chest.problem;
+    const val = parseInt(answerInput.value, 10);
+    if(isNaN(val)){
+      assistantSay("Type a number first, matey!", 'mood-oops', 2600);
+      return;
+    }
+    if(val === q.total){
+      handleCorrect(chest, q);
+    } else {
+      handleWrong(chest, q);
+    }
+  }
+
+  function handleWrong(chest, q){
+    chest.mistakes++;
+    const banner = document.getElementById('feedbackBanner');
+    banner.textContent = '🔒 Locked! Try again.';
+    banner.className = 'feedback-banner bad';
+
+    const ship = document.getElementById('shipSprite');
+    ship.classList.remove('wobble'); void ship.offsetWidth; ship.classList.add('wobble');
+
+    const line = wrongLines[Math.floor(Math.random()*wrongLines.length)];
+    speak(line, 1.0, 0.85);
+    assistantSay(line, 'mood-oops', 3200);
+
+    const box = document.getElementById('hintBox');
+    const txt = document.getElementById('hintText');
+    if(chest.mistakes === 1){
+      if(q.idealStrategy === 'maketen'){
+        txt.innerHTML = `Break <strong>${q.b}</strong> apart: first subtract <strong>${q.firstHop}</strong> from <strong>${q.a}</strong> to land on the friendly number <strong>${q.landmark}</strong>, then subtract <strong>${q.secondHop}</strong> more to reach the answer.`;
+      } else {
+        txt.innerHTML = `Try bridging through <strong>${q.landmark}</strong>: first go from <strong>${q.b}</strong> to <strong>${q.landmark}</strong> (<strong>${q.firstHop}</strong>), then to <strong>${q.a}</strong> (<strong>${q.secondHop}</strong> more).`;
+      }
+    } else {
+      if(q.idealStrategy === 'maketen'){
+        txt.innerHTML = `${q.a} − ${q.firstHop} − ${q.secondHop} = ${q.total}. That's the treasure's true number — give it another go!`;
+      } else {
+        txt.innerHTML = `${q.firstHop} + ${q.secondHop} = ${q.total}. That's the treasure's true number — give it another go!`;
+      }
+    }
+    box.classList.add('show');
+
+    if(chest.mistakes >= 3){
+      document.getElementById('revealBtn').classList.add('show');
+    }
+    answerInput.value = '';
+    answerInput.focus();
+  }
+
+  function spawnSplash(leftPercent){
+    const track = document.getElementById('pathTrack');
+    const s = document.createElement('div');
+    s.className = 'splash play';
+    s.style.left = leftPercent;
+    track.appendChild(s);
+    setTimeout(()=> s.remove(), 750);
+  }
+
+  function spawnTreasureBurst(){
+    const track = document.getElementById('pathTrack');
+    const emojis = ['💰','💎','✨','🪙','⭐'];
+    for(let i=0;i<10;i++){
+      const p = document.createElement('div');
+      p.className = 'celebrate-particle';
+      p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      p.style.left = '94%'; p.style.top = '38px';
+      track.appendChild(p);
+      const dx = (Math.random()-0.5)*160;
+      const dy = -40 - Math.random()*70;
+      const anim = p.animate([
+        { transform:'translate(-50%,-50%) scale(.4)', opacity:1 },
+        { transform:'translate(' + (dx-50) + '%,' + dy + 'px) scale(1.1)', opacity:1, offset:.6 },
+        { transform:'translate(' + (dx-50) + '%,' + (dy+30) + 'px) scale(.8)', opacity:0 }
+      ], { duration: 1100 + Math.random()*400, easing:'ease-out' });
+      anim.onfinish = ()=> p.remove();
+    }
+  }
+
+  function handleCorrect(chest, q){
+    const ship = document.getElementById('shipSprite');
+    const mid = document.getElementById('nodeMid');
+    const banner = document.getElementById('feedbackBanner');
+    const chestFx = document.getElementById('chestOpenFx');
+
+    document.querySelectorAll('.strat-btn').forEach(b=> b.disabled = true);
+    document.getElementById('submitBtn').disabled = true;
+    answerInput.disabled = true;
+
+    const firstTry = chest.mistakes === 0;
+    const starsEarned = firstTry ? 3 : chest.mistakes === 1 ? 2 : 1;
+    if(firstTry) state.firstTryCount++;
+    const strategyMatched = chest.chosenStrategy === q.idealStrategy;
+
+    const startVal = (q.idealStrategy === 'maketen') ? q.a : q.b;
+    const endVal = (q.idealStrategy === 'maketen') ? q.total : q.a;
+
+    setTimeout(()=>{
+      ship.classList.add('sailing');
+      ship.style.left = '50%';
+      spawnSplash('6%');
+      banner.textContent = startVal + ' → ' + q.landmark;
+      banner.classList.add('good');
+    }, 150);
+
+    setTimeout(()=>{
+      mid.classList.add('revealed');
+      spawnSplash('50%');
+      ship.classList.remove('sailing');
+    }, 900);
+
+    setTimeout(()=>{
+      ship.classList.add('sailing');
+      ship.style.left = '94%';
+      banner.textContent = q.landmark + ' → ' + endVal;
+    }, 1250);
+
+    setTimeout(()=>{
+      ship.classList.remove('sailing');
+      document.getElementById('nodeChest').textContent = '💎';
+      spawnSplash('94%');
+      spawnTreasureBurst();
+
+      chest.solved = true;
+      chest.starsEarned = starsEarned;
+      state.totalStars += starsEarned;
+      state.coins += 10;
+      let rewardMsg = '+10 Coins 🪙';
+      if(strategyMatched){
+        state.keys += 1;
+        rewardMsg += '  +1 Key 🗝️ (perfect trick!)';
+      }
+      if(firstTry){
+        state.diamonds += 1;
+        rewardMsg += '  +1 Diamond 💎';
+      }
+      updateHud();
+
+      const line = correctLines[Math.floor(Math.random()*correctLines.length)];
+      speak(line, 1.0, 1.05);
+      assistantSay(firstTry ? "Perfect plundering! 🎉" : "Ye got the gold anyway!", 'mood-happy', 3400);
+
+      chestFx.textContent = '💎';
+      let starStr = '⭐'.repeat(starsEarned);
+      const eqLine = (q.idealStrategy === 'maketen')
+        ? (q.a + ' − ' + q.firstHop + ' − ' + q.secondHop + ' = ' + q.total)
+        : (q.firstHop + ' + ' + q.secondHop + ' = ' + q.total);
+      banner.innerHTML = eqLine + '! ' + starStr + '<br>' + rewardMsg;
+      banner.className = 'feedback-banner good stars';
+
+      document.getElementById('backMapBtn').classList.add('show');
+    }, 2050);
+  }
+
+  function checkAllSolved(){
+    if(state.chests.every(c=>c.solved)){
+      finishHunt();
+    }
+  }
+
+  function finishHunt(){
+    const pct = state.totalStars / (ROUND_LENGTH*3);
+    let tier = CHEST_TIER[0];
+    CHEST_TIER.forEach(t=>{ if(pct >= t.min) tier = t; });
+
+    document.getElementById('finalChestEmoji').textContent = tier.emoji;
+    document.getElementById('completeTitle').textContent = DIFF_LABEL[state.difficulty] + ' ' + tier.name + '!';
+    document.getElementById('completeSub').textContent = 'You cracked every chest on the map!';
+    document.getElementById('compassLine').style.display = tier.compass ? 'block' : 'none';
+    document.getElementById('compassLine').textContent = '🧭 Golden Compass Earned!';
+
+    document.getElementById('finalCoins').textContent = state.coins;
+    document.getElementById('finalKeys').textContent = state.keys;
+    document.getElementById('finalDiamonds').textContent = state.diamonds;
+    const accuracy = Math.round((state.firstTryCount / ROUND_LENGTH) * 100);
+    document.getElementById('finalAccuracy').textContent = accuracy + '%';
+
+    assistantSay("Ye be a true Treasure Master! 🏆", 'mood-proud', 4500);
+    showScreen('screen-complete');
+  }
+
+  document.getElementById('playAgainBtn').addEventListener('click', startHunt);
+  document.getElementById('newDiffBtn').addEventListener('click', ()=> showScreen('screen-title'));
+
+})();
+</script>
+</body>
+</html>

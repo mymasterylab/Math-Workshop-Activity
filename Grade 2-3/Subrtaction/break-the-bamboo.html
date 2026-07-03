@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Break the Bamboo — MyMasteryLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A211F;
+    --ink-2:#0F2E2A;
+    --ink-3:#153A34;
+    --bamboo:#4F9E6E;
+    --bamboo-dark:#2E6B4A;
+    --bamboo-light:#8FD3A5;
+    --teal:#00A7B2;
+    --teal-glow:#3FD6DF;
+    --gold:#FAA71C;
+    --gold-light:#FFD37A;
+    --burnt:#D77F28;
+    --paper:#F7F1E4;
+    --paper-dim:#EAE1CC;
+    --ink-text:#12302B;
+    --danger:#E4644A;
+    --shadow: 0 18px 40px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% 8%, rgba(250,167,28,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 90%, rgba(0,167,178,0.14), transparent 60%),
+      linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 55%, var(--ink-3) 100%);
+    min-height:100vh;
+    color:var(--paper);
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* ---------- Ambient background: moon + stars + bamboo silhouettes ---------- */
+  .sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .moon{
+    position:absolute;top:6%;right:8%;width:90px;height:90px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #FFF6DA, var(--gold-light) 55%, var(--gold) 100%);
+    box-shadow:0 0 60px 12px rgba(250,211,122,0.35);
+  }
+  .star{position:absolute;background:#fff;border-radius:50%;opacity:.6;animation:twinkle 3.5s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.2}50%{opacity:.9}}
+  .silhouette{
+    position:absolute;bottom:-10px;width:100%;height:130px;
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,0.35));
+  }
+  .stalk-bg{
+    position:absolute;bottom:0;width:14px;background:var(--bamboo-dark);border-radius:6px 6px 0 0;
+    opacity:.35;transform-origin:bottom center;animation:sway 6s ease-in-out infinite;
+  }
+  @keyframes sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+
+  .app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 18px 60px;min-height:100vh;display:flex;flex-direction:column;}
+
+  .brandbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-family:'Nunito';font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--bamboo-light);opacity:.85;}
+  .brandbar span.dot{color:var(--gold);margin:0 6px;}
+
+  /* ---------- Screens ---------- */
+  .screen{display:none;flex:1;flex-direction:column;}
+  .screen.active{display:flex;animation:fadeIn .5s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- Title screen ---------- */
+  .title-wrap{text-align:center;padding-top:6px;}
+  .ninja-badge{font-size:52px;filter:drop-shadow(0 8px 18px rgba(0,0,0,0.5));}
+  h1.gametitle{
+    font-family:'Baloo 2',sans-serif;font-weight:800;font-size:clamp(28px,7vw,42px);
+    margin:10px 0 4px;color:var(--paper);
+    text-shadow:0 4px 0 rgba(0,0,0,0.25);
+    letter-spacing:.01em;
+  }
+  .gametitle .accent{color:var(--gold);}
+  .subtitle{font-weight:700;color:var(--teal-glow);font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:18px;}
+  .storycard{
+    background:linear-gradient(180deg, var(--paper), var(--paper-dim));
+    color:var(--ink-text);border-radius:20px;padding:20px 22px;text-align:left;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .storycard::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:6px;
+    background:linear-gradient(90deg,var(--teal),var(--gold),var(--burnt));
+  }
+  .storycard p{margin:0 0 10px;line-height:1.55;font-size:15px;}
+  .storycard p:last-child{margin-bottom:0;}
+  .storycard .panda{font-size:20px;margin-right:6px;}
+
+  .diff-title{margin-top:26px;font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--paper);text-transform:uppercase;letter-spacing:.08em;text-align:center;}
+  .diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+  .diff-card{
+    background:var(--ink-3);border:2px solid rgba(255,255,255,0.06);
+    border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .diff-card:hover{transform:translateY(-3px);border-color:var(--teal);}
+  .diff-card.selected{border-color:var(--gold);background:#1c4a3f;box-shadow:0 0 0 3px rgba(250,167,28,0.25);}
+  .diff-belt{font-size:26px;display:block;margin-bottom:6px;}
+  .diff-name{font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--paper);}
+  .diff-sample{font-family:'Nunito';font-weight:700;font-size:12px;color:var(--bamboo-light);margin-top:4px;}
+
+  .btn-start{
+    margin-top:26px;align-self:center;
+    font-family:'Baloo 2';font-weight:700;font-size:18px;color:var(--ink);
+    background:linear-gradient(180deg, var(--gold-light), var(--gold));
+    border:none;padding:14px 40px;border-radius:999px;cursor:pointer;
+    box-shadow:0 10px 0 var(--burnt), 0 16px 24px rgba(0,0,0,0.35);
+    transition:transform .12s ease, box-shadow .12s ease;
+    letter-spacing:.02em;
+  }
+  .btn-start:active{transform:translateY(6px);box-shadow:0 4px 0 var(--burnt), 0 8px 14px rgba(0,0,0,0.3);}
+  .btn-start:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+
+  /* ---------- Game screen ---------- */
+  .hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .hud-left, .hud-right{display:flex;align-items:center;gap:8px;background:var(--ink-3);padding:8px 14px;border-radius:999px;font-weight:800;font-family:'Baloo 2';font-size:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);}
+  .hud-belt{font-size:18px;}
+
+  .progress-row{display:flex;justify-content:center;gap:10px;margin-bottom:16px;}
+  .progress-stalk{font-size:24px;transition:transform .35s ease, filter .35s ease;filter:grayscale(0);}
+  .progress-stalk.done{filter:grayscale(1) brightness(1.6);transform:translateY(4px) rotate(8deg);}
+  .progress-stalk.current{transform:scale(1.25);filter:drop-shadow(0 0 8px rgba(250,167,28,0.7));}
+
+  .forest-panel{
+    background:radial-gradient(ellipse at top, #123a34, #0d2b27 70%);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:22px;padding:22px 18px 26px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  .forest-panel .glow{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:260px;height:180px;background:radial-gradient(circle, rgba(250,167,28,0.18), transparent 70%);pointer-events:none;}
+
+  .problem-line{text-align:center;position:relative;z-index:1;}
+  .reach10-label{font-family:'Baloo 2';font-weight:700;color:var(--gold);font-size:13px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+  .equation{font-family:'Baloo 2';font-weight:800;font-size:clamp(30px,8vw,44px);color:var(--paper);margin-bottom:14px;}
+  .equation .op{color:var(--teal-glow);margin:0 8px;}
+
+  /* Bamboo stalk visual: 3 nodes (start -> ten -> answer) */
+  .stalk-visual{display:flex;flex-direction:column;align-items:center;gap:0;margin:10px auto 6px;position:relative;z-index:1;max-width:220px;}
+  .node{
+    font-family:'Baloo 2';font-weight:800;font-size:20px;color:var(--ink);
+    background:linear-gradient(180deg,#EFE6CE,#D8C89C);
+    border:3px solid var(--bamboo-dark);
+    width:58px;height:58px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 0 rgba(0,0,0,0.25);
+    transition:all .4s ease;position:relative;
+  }
+  .node.ten{border-color:var(--gold);}
+  .node.hidden-val{color:transparent;}
+  .node.answer{border-color:var(--teal);}
+  .node.burst{animation:burstPulse .6s ease;}
+  @keyframes burstPulse{0%{box-shadow:0 6px 0 rgba(0,0,0,0.25), 0 0 0 0 rgba(250,167,28,0.6);}70%{box-shadow:0 6px 0 rgba(0,0,0,0.25), 0 0 0 22px rgba(250,167,28,0);}100%{box-shadow:0 6px 0 rgba(0,0,0,0.25), 0 0 0 0 rgba(250,167,28,0);}}
+  .segment{
+    width:10px;height:46px;background:repeating-linear-gradient(180deg, var(--bamboo) 0 8px, var(--bamboo-dark) 8px 10px);
+    border-radius:4px;position:relative;transition:opacity .5s ease, transform .5s ease;
+  }
+  .segment .tag{
+    position:absolute;left:22px;top:50%;transform:translateY(-50%);
+    font-family:'Baloo 2';font-weight:700;font-size:13px;color:var(--bamboo-light);
+    white-space:nowrap;
+  }
+  .segment.cut{opacity:0;transform:translateX(40px) rotate(25deg);}
+  .ninja-pos{position:absolute;font-size:26px;transition:top .5s ease;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.4));}
+
+  .ask{text-align:center;margin-top:18px;position:relative;z-index:1;}
+  .ask-label{font-family:'Baloo 2';font-weight:700;font-size:16px;color:var(--paper);margin-bottom:12px;}
+  .ask-label .b-num{color:var(--gold);}
+
+  .options{display:grid;grid-template-columns:1fr;gap:10px;max-width:280px;margin:0 auto;}
+  @media(min-width:420px){.options{grid-template-columns:repeat(3,1fr);max-width:none;}}
+  .opt{
+    font-family:'Baloo 2';font-weight:700;font-size:18px;color:var(--ink);
+    background:linear-gradient(180deg,#fff,#EFE6CE);
+    border:2px solid var(--bamboo-dark);border-radius:14px;
+    padding:14px 8px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, background .2s ease;
+    box-shadow:0 5px 0 rgba(0,0,0,0.25);
+  }
+  .opt:hover:not(:disabled){transform:translateY(-2px);}
+  .opt:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,0.25);}
+  .opt:disabled{cursor:default;}
+  .opt.correct{background:linear-gradient(180deg,#BFF0CE,#7ED89A);border-color:#2E6B4A;}
+  .opt.wrong{background:linear-gradient(180deg,#F6C4BA,#E4886F);border-color:#A6402A;animation:shake .4s ease;}
+  .opt.reveal{outline:3px solid var(--gold);animation:pulseGlow 1s ease infinite;}
+  @keyframes pulseGlow{0%,100%{box-shadow:0 5px 0 rgba(0,0,0,0.25), 0 0 0 0 rgba(250,167,28,0.6);}50%{box-shadow:0 5px 0 rgba(0,0,0,0.25), 0 0 0 10px rgba(250,167,28,0);}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .hint-box{
+    max-width:420px;margin:16px auto 0;background:rgba(215,127,40,0.15);
+    border:1.5px dashed var(--burnt);border-radius:14px;padding:12px 16px;
+    font-size:14px;line-height:1.5;text-align:left;display:none;position:relative;z-index:1;
+  }
+  .hint-box.show{display:block;animation:fadeIn .3s ease;}
+  .hint-box .panda-ico{font-size:16px;margin-right:4px;}
+
+  .feedback-banner{
+    text-align:center;margin-top:14px;font-family:'Baloo 2';font-weight:800;font-size:16px;
+    min-height:24px;position:relative;z-index:1;
+  }
+  .feedback-banner.good{color:var(--gold-light);}
+  .feedback-banner.stars{font-size:20px;letter-spacing:3px;}
+
+  .next-btn{
+    display:none;margin:18px auto 0;font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--ink);
+    background:linear-gradient(180deg, var(--teal-glow), var(--teal));
+    border:none;padding:11px 30px;border-radius:999px;cursor:pointer;
+    box-shadow:0 8px 0 #04747c;position:relative;z-index:1;
+  }
+  .next-btn.show{display:block;}
+  .next-btn:active{transform:translateY(5px);box-shadow:0 3px 0 #04747c;}
+
+  /* ---------- Round complete screen ---------- */
+  .complete-wrap{text-align:center;margin:auto 0;padding:20px 0;}
+  .belt-earned{font-size:70px;margin-bottom:8px;animation:beltPop .7s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes beltPop{0%{transform:scale(0) rotate(-30deg);opacity:0}70%{transform:scale(1.15) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0);}}
+  .complete-title{font-family:'Baloo 2';font-weight:800;font-size:26px;color:var(--paper);margin-bottom:6px;}
+  .complete-sub{color:var(--gold-light);font-weight:700;margin-bottom:20px;}
+  .stat-row{display:flex;justify-content:center;gap:14px;margin-bottom:26px;flex-wrap:wrap;}
+  .stat-pill{background:var(--ink-3);border-radius:16px;padding:14px 22px;min-width:110px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);}
+  .stat-pill .num{font-family:'Baloo 2';font-weight:800;font-size:26px;color:var(--gold);}
+  .stat-pill .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--bamboo-light);font-weight:700;margin-top:2px;}
+  .complete-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .btn-secondary{
+    font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--paper);
+    background:transparent;border:2px solid var(--teal);padding:12px 24px;border-radius:999px;cursor:pointer;
+  }
+
+  footer.credit{text-align:center;margin-top:30px;font-size:11px;color:rgba(247,241,228,0.4);letter-spacing:.05em;}
+
+  /* ---------- Assistant Ninja companion ---------- */
+  .assistant-ninja{
+    position:fixed;bottom:14px;left:6vw;z-index:50;
+    display:flex;flex-direction:column;align-items:center;
+    pointer-events:none;
+    animation:ninjaWalk 16s ease-in-out infinite;
+  }
+  @keyframes ninjaWalk{
+    0%   { left:6vw; }
+    22%  { left:70vw; }
+    28%  { left:70vw; }
+    50%  { left:20vw; }
+    56%  { left:20vw; }
+    78%  { left:82vw; }
+    84%  { left:82vw; }
+    100% { left:6vw; }
+  }
+  .ninja-char{
+    font-size:34px;display:inline-block;cursor:pointer;pointer-events:auto;
+    filter:drop-shadow(0 6px 8px rgba(0,0,0,0.5));
+    animation:ninjaBob 1.6s ease-in-out infinite;
+    transform-origin:bottom center;
+  }
+  @keyframes ninjaBob{
+    0%,100%{ transform:translateY(0) rotate(-2deg); }
+    50%{ transform:translateY(-6px) rotate(2deg); }
+  }
+  .ninja-char.mood-happy{ animation:ninjaCheer .7s ease; }
+  @keyframes ninjaCheer{
+    0%{ transform:translateY(0) rotate(0); }
+    30%{ transform:translateY(-22px) rotate(-18deg) scale(1.15); }
+    60%{ transform:translateY(-8px) rotate(14deg) scale(1.1); }
+    100%{ transform:translateY(0) rotate(0) scale(1); }
+  }
+  .ninja-char.mood-oops{ animation:ninjaShake .5s ease; }
+  @keyframes ninjaShake{
+    0%,100%{ transform:translateX(0) rotate(0); }
+    25%{ transform:translateX(-6px) rotate(-8deg); }
+    75%{ transform:translateX(6px) rotate(8deg); }
+  }
+  .ninja-char.mood-proud{ animation:ninjaCheer .9s ease 2; }
+
+  .speech-bubble{
+    position:relative;max-width:190px;margin-bottom:8px;
+    background:var(--paper);color:var(--ink-text);
+    font-family:'Baloo 2';font-weight:700;font-size:12.5px;line-height:1.35;
+    padding:9px 13px;border-radius:14px;border:2px solid var(--bamboo-dark);
+    box-shadow:0 6px 14px rgba(0,0,0,0.35);
+    opacity:0;transform:translateY(6px) scale(.9);
+    transition:opacity .25s ease, transform .25s ease;
+    text-align:center;pointer-events:none;
+  }
+  .speech-bubble::after{
+    content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);
+    border-width:8px 7px 0 7px;border-style:solid;
+    border-color:var(--bamboo-dark) transparent transparent transparent;
+  }
+  .speech-bubble::before{
+    content:"";position:absolute;left:50%;bottom:-5.5px;transform:translateX(-50%);
+    border-width:6.5px 5.5px 0 5.5px;border-style:solid;
+    border-color:var(--paper) transparent transparent transparent;z-index:1;
+  }
+  .speech-bubble.show{ opacity:1;transform:translateY(0) scale(1); }
+  .speech-bubble.mood-happy{ border-color:var(--gold); }
+  .speech-bubble.mood-oops{ border-color:var(--burnt); }
+  .speech-bubble.mood-proud{ border-color:var(--teal); }
+
+  @media (max-width:520px){
+    .assistant-ninja{ bottom:10px; }
+    .ninja-char{ font-size:28px; }
+    .speech-bubble{ max-width:150px;font-size:11.5px; }
+    @keyframes ninjaWalk{
+      0%   { left:4vw; }
+      22%  { left:58vw; }
+      28%  { left:58vw; }
+      50%  { left:14vw; }
+      56%  { left:14vw; }
+      78%  { left:70vw; }
+      84%  { left:70vw; }
+      100% { left:4vw; }
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<div class="app">
+  <div class="brandbar">MyMasteryLab <span class="dot">•</span> Ninja Math Dojo</div>
+
+  <!-- TITLE SCREEN -->
+  <section class="screen active" id="screen-title">
+    <div class="title-wrap">
+      <div class="ninja-badge">🥷</div>
+      <h1 class="gametitle">Break the <span class="accent">Bamboo</span></h1>
+      <div class="subtitle">Make 10 First — Subtraction Training</div>
+    </div>
+
+    <div class="storycard">
+      <p><span class="panda">🐼</span><strong>Master Panda</strong> has stacked magical bamboo stalks deep in the forest. Every bamboo can only be cut once a ninja reaches <strong>10</strong> along the way.</p>
+      <p>Break the number apart, land exactly on the golden joint, then finish the cut. Can you clear the whole forest?</p>
+    </div>
+
+    <div class="diff-title">Choose Your Training Ground</div>
+    <div class="diff-grid" id="diffGrid">
+      <div class="diff-card" data-diff="easy">
+        <span class="diff-belt">🥋</span>
+        <div class="diff-name">Easy</div>
+        <div class="diff-sample">e.g. 13 − 5</div>
+      </div>
+      <div class="diff-card" data-diff="medium">
+        <span class="diff-belt">🥋</span>
+        <div class="diff-name">Medium</div>
+        <div class="diff-sample">e.g. 27 − 8</div>
+      </div>
+      <div class="diff-card" data-diff="hard">
+        <span class="diff-belt">🥋</span>
+        <div class="diff-name">Hard</div>
+        <div class="diff-sample">e.g. 54 − 9</div>
+      </div>
+    </div>
+
+    <button class="btn-start" id="startBtn" disabled>Enter the Bamboo Forest</button>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-left"><span class="hud-belt" id="hudBelt">🥋</span><span id="hudDiff">Easy</span></div>
+      <div class="hud-right">🍃 <span id="hudLeaves">0</span></div>
+    </div>
+
+    <div class="progress-row" id="progressRow"></div>
+
+    <div class="forest-panel">
+      <div class="glow"></div>
+      <div class="problem-line">
+        <div class="reach10-label">🎍 Reach 10 First!</div>
+        <div class="equation" id="equationText">17 <span class="op">−</span> 8</div>
+      </div>
+
+      <div class="stalk-visual" id="stalkVisual">
+        <!-- built by JS -->
+      </div>
+
+      <div class="ask">
+        <div class="ask-label">Break <span class="b-num" id="bValue">8</span> into?</div>
+        <div class="options" id="optionsRow"></div>
+      </div>
+
+      <div class="hint-box" id="hintBox">
+        <span class="panda-ico">🐼</span><span id="hintText"></span>
+      </div>
+
+      <div class="feedback-banner" id="feedbackBanner"></div>
+      <button class="next-btn" id="nextBtn">Next Bamboo →</button>
+    </div>
+  </section>
+
+  <!-- ROUND COMPLETE SCREEN -->
+  <section class="screen" id="screen-complete">
+    <div class="complete-wrap">
+      <div class="belt-earned" id="beltEmoji">🥋</div>
+      <div class="complete-title" id="completeTitle">Forest Cleared!</div>
+      <div class="complete-sub" id="completeSub">You earned the White Belt</div>
+      <div class="stat-row">
+        <div class="stat-pill"><div class="num" id="finalLeaves">0</div><div class="lbl">Leaves</div></div>
+        <div class="stat-pill"><div class="num" id="finalStars">0</div><div class="lbl">Stars</div></div>
+        <div class="stat-pill"><div class="num" id="finalAccuracy">0%</div><div class="lbl">First-Try</div></div>
+      </div>
+      <div class="complete-actions">
+        <button class="btn-start" id="playAgainBtn" style="margin-top:0;">Play Again</button>
+        <button class="btn-secondary" id="newDiffBtn">Choose New Level</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="credit">MyMasteryLab · Break the Bamboo · Aligned to Make-10 Subtraction Strategy</footer>
+</div>
+
+<div class="assistant-ninja" id="assistantNinja">
+  <div class="speech-bubble" id="assistantBubble">Ready to train? 🎍</div>
+  <div class="ninja-char" id="assistantChar">🥷</div>
+</div>
+
+<script>
+(function(){
+  // ---------- Ambient sky ----------
+  const sky = document.getElementById('sky');
+  sky.innerHTML += '<div class="moon"></div>';
+  for(let i=0;i<40;i++){
+    const s = document.createElement('div');
+    s.className='star';
+    const size = Math.random()*2+1;
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    s.style.left = Math.random()*100+'%';
+    s.style.top = Math.random()*55+'%';
+    s.style.animationDelay = (Math.random()*3)+'s';
+    sky.appendChild(s);
+  }
+  const stalkPositions = [4,12,22,34,46,58,70,82,92];
+  stalkPositions.forEach((left,i)=>{
+    const st = document.createElement('div');
+    st.className='stalk-bg';
+    const h = 60 + Math.random()*70;
+    st.style.height = h+'px';
+    st.style.left = left+'%';
+    st.style.animationDelay = (i*0.4)+'s';
+    sky.appendChild(st);
+  });
+
+  // ---------- Assistant Ninja companion ----------
+  const assistantChar = document.getElementById('assistantChar');
+  const assistantBubble = document.getElementById('assistantBubble');
+  const idleTips = [
+    "Find 10 first, then finish the cut! 🎍",
+    "Look at the ones digit — it's your first clue!",
+    "Every bamboo falls if you reach the golden joint.",
+    "Take your time, ninja. Precision beats speed.",
+    "You've got this — Master Panda believes in you!",
+    "Ten is the secret checkpoint. Aim for it!"
+  ];
+  let idleTimer = null;
+  let hideTimer = null;
+
+  function clearMoods(){
+    assistantChar.classList.remove('mood-happy','mood-oops','mood-proud');
+    assistantBubble.classList.remove('mood-happy','mood-oops','mood-proud');
+  }
+
+  function assistantSay(msg, mood, duration){
+    clearTimeout(hideTimer);
+    clearMoods();
+    assistantBubble.textContent = msg;
+    assistantBubble.classList.add('show');
+    if(mood){
+      assistantChar.classList.add(mood);
+      assistantBubble.classList.add(mood);
+    }
+    hideTimer = setTimeout(()=>{
+      assistantBubble.classList.remove('show');
+    }, duration || 3200);
+  }
+
+  function startIdleChatter(){
+    clearInterval(idleTimer);
+    idleTimer = setInterval(()=>{
+      const tip = idleTips[Math.floor(Math.random()*idleTips.length)];
+      assistantSay(tip, null, 3600);
+    }, 11000);
+  }
+
+  document.getElementById('assistantNinja').addEventListener('click', ()=>{
+    const tip = idleTips[Math.floor(Math.random()*idleTips.length)];
+    assistantSay(tip, null, 3200);
+  });
+
+  startIdleChatter();
+  setTimeout(()=> assistantSay("Ready to train? Pick a level! 🎍", null, 4200), 600);
+
+  // ---------- Belts / difficulty config ----------
+  const BELTS = {
+    easy:   { name:'White Belt',  emoji:'🥋', color:'#F7F1E4' },
+    medium: { name:'Green Belt',  emoji:'🥋', color:'#4F9E6E' },
+    hard:   { name:'Black Belt',  emoji:'🥋', color:'#111' }
+  };
+  const ROUND_LENGTH = 5;
+
+  let state = {
+    difficulty: null,
+    questions: [],
+    index: 0,
+    leaves: 0,
+    stars: 0,
+    firstTryCount: 0,
+    mistakes: 0,
+    locked: false
+  };
+
+  // ---------- Problem generator ----------
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+  function generateProblem(diff){
+    let a,b;
+    let range = diff==='easy' ? [11,19] : diff==='medium' ? [21,49] : [50,98];
+    let tries = 0;
+    // require: ones digit >=1 (a real "make 10" case), ones digit < b, b big enough
+    // to guarantee at least 3 distinct ways to split it, and a positive result.
+    do{
+      a = randInt(range[0], range[1]);
+      b = randInt(4,9);
+      tries++;
+    } while(!((a%10) >= 1 && (a%10) < b && (a-b) >= 1) && tries < 300);
+
+    const b1 = a % 10;          // amount needed to reach the ten-joint
+    const b2 = b - b1;          // remainder after reaching ten
+    const ten = a - b1;
+    const answer = ten - b2;
+    const correct = {x:b1,y:b2};
+
+    // Enumerate every ordered pair (x,y) with x+y=b, x,y>=1 -- this always has
+    // b-1 pairs, and b>=4 guarantees at least 3 of them, so option selection
+    // can never come up short.
+    const allPairs = [];
+    for(let x=1; x<b; x++){
+      allPairs.push({x, y: b-x});
+    }
+    const distractorPool = allPairs.filter(p => !(p.x===correct.x && p.y===correct.y));
+    // shuffle distractor pool
+    for(let i=distractorPool.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [distractorPool[i],distractorPool[j]] = [distractorPool[j],distractorPool[i]];
+    }
+    let options = [correct, ...distractorPool.slice(0,2)];
+    // shuffle final options
+    for(let i=options.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [options[i],options[j]] = [options[j],options[i]];
+    }
+    return {a,b,b1,b2,ten,answer,correct,options};
+  }
+
+  // ---------- Title screen: difficulty selection ----------
+  const diffGrid = document.getElementById('diffGrid');
+  const startBtn = document.getElementById('startBtn');
+  diffGrid.addEventListener('click', (e)=>{
+    const card = e.target.closest('.diff-card');
+    if(!card) return;
+    [...diffGrid.children].forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.difficulty = card.dataset.diff;
+    startBtn.disabled = false;
+  });
+  startBtn.addEventListener('click', startRound);
+
+  // ---------- Screen switching ----------
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ---------- Round management ----------
+  function startRound(){
+    state.questions = Array.from({length:ROUND_LENGTH}, ()=>generateProblem(state.difficulty));
+    state.index = 0;
+    state.leaves = 0;
+    state.stars = 0;
+    state.firstTryCount = 0;
+
+    document.getElementById('hudBelt').textContent = BELTS[state.difficulty].emoji;
+    document.getElementById('hudDiff').textContent = state.difficulty[0].toUpperCase()+state.difficulty.slice(1);
+    updateHud();
+    buildProgressRow();
+    showScreen('screen-game');
+    assistantSay("Let's cut some bamboo! 🎍", null, 3000);
+    loadQuestion();
+  }
+
+  function updateHud(){
+    document.getElementById('hudLeaves').textContent = state.leaves;
+  }
+
+  function buildProgressRow(){
+    const row = document.getElementById('progressRow');
+    row.innerHTML = '';
+    for(let i=0;i<ROUND_LENGTH;i++){
+      const el = document.createElement('div');
+      el.className = 'progress-stalk';
+      el.textContent = '🎍';
+      el.dataset.i = i;
+      row.appendChild(el);
+    }
+    markProgress();
+  }
+
+  function markProgress(){
+    const row = document.getElementById('progressRow');
+    [...row.children].forEach((el,i)=>{
+      el.classList.toggle('done', i < state.index);
+      el.classList.toggle('current', i === state.index);
+    });
+  }
+
+  // ---------- Question rendering ----------
+  function loadQuestion(){
+    state.mistakes = 0;
+    state.locked = false;
+    const q = state.questions[state.index];
+    markProgress();
+
+    document.getElementById('equationText').innerHTML =
+      q.a + ' <span class="op">−</span> ' + q.b;
+    document.getElementById('bValue').textContent = q.b;
+
+    // Build stalk visual: start node -> segment(b1) -> ten node -> segment(b2) -> answer node
+    const visual = document.getElementById('stalkVisual');
+    visual.innerHTML = `
+      <div class="node start">${q.a}</div>
+      <div class="segment seg1"><span class="tag">−${q.b1}</span></div>
+      <div class="node ten hidden-val" id="tenNode">10</div>
+      <div class="segment seg2"><span class="tag">−${q.b2}</span></div>
+      <div class="node answer hidden-val" id="answerNode">${q.answer}</div>
+    `;
+
+    const optionsRow = document.getElementById('optionsRow');
+    optionsRow.innerHTML = '';
+    q.options.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = opt.x + ' + ' + opt.y;
+      btn.dataset.x = opt.x;
+      btn.dataset.y = opt.y;
+      btn.addEventListener('click', ()=>handleAnswer(btn, opt, q));
+      optionsRow.appendChild(btn);
+    });
+
+    document.getElementById('hintBox').classList.remove('show');
+    document.getElementById('feedbackBanner').textContent = '';
+    document.getElementById('feedbackBanner').className = 'feedback-banner';
+    document.getElementById('nextBtn').classList.remove('show');
+  }
+
+  function handleAnswer(btn, opt, q){
+    if(state.locked) return;
+    const isCorrect = opt.x === q.correct.x && opt.y === q.correct.y;
+
+    if(isCorrect){
+      state.locked = true;
+      btn.classList.add('correct');
+      disableOptions();
+      playCorrectAnimation(q);
+    } else {
+      btn.classList.add('wrong');
+      btn.disabled = true;
+      state.mistakes++;
+      showHint(q);
+      setTimeout(()=>btn.classList.remove('wrong'), 450);
+
+      if(state.mistakes === 1){
+        assistantSay("Not quite! Check the ones digit. 🤔", 'mood-oops', 3400);
+      } else if(state.mistakes >= 2){
+        assistantSay("Here, I'll glow the answer for you!", 'mood-oops', 3400);
+      }
+
+      if(state.mistakes >= 2){
+        // reveal correct answer after two misses
+        const allOpts = document.querySelectorAll('.opt');
+        allOpts.forEach(o=>{
+          if(parseInt(o.dataset.x)===q.correct.x && parseInt(o.dataset.y)===q.correct.y){
+            o.classList.add('reveal');
+          }
+        });
+      }
+    }
+  }
+
+  function disableOptions(){
+    document.querySelectorAll('.opt').forEach(o=> o.disabled = true);
+  }
+
+  function showHint(q){
+    const box = document.getElementById('hintBox');
+    const txt = document.getElementById('hintText');
+    if(state.mistakes === 1){
+      txt.innerHTML = `Look at the ones digit of <strong>${q.a}</strong> — it's <strong>${q.b1}</strong>. Break <strong>${q.b}</strong> so one part is exactly <strong>${q.b1}</strong>. That's the piece that gets you to the golden joint at 10!`;
+    } else {
+      txt.innerHTML = `Almost there! <strong>${q.b1} + ${q.b2} = ${q.b}</strong>. First cut ${q.b1} to land on the joint (${q.a} → 10), then cut ${q.b2} more (10 → ${q.answer}). Tap the glowing choice to continue.`;
+    }
+    box.classList.add('show');
+  }
+
+  function playCorrectAnimation(q){
+    const seg1 = document.querySelector('.seg1');
+    const tenNode = document.getElementById('tenNode');
+    const seg2 = document.querySelector('.seg2');
+    const answerNode = document.getElementById('answerNode');
+    const banner = document.getElementById('feedbackBanner');
+
+    // stars: 3 if first try, 2 if one miss, 1 if two+ misses
+    const starsEarned = state.mistakes === 0 ? 3 : state.mistakes === 1 ? 2 : 1;
+    if(state.mistakes === 0) state.firstTryCount++;
+
+    const cheer = starsEarned === 3
+      ? ["Perfect cut! 🎉", "Ninja precision!", "First try — amazing!"]
+      : starsEarned === 2
+      ? ["Nice recovery!", "You got it!"]
+      : ["Bamboo down anyway!", "On to the next one!"];
+    assistantSay(cheer[Math.floor(Math.random()*cheer.length)], 'mood-happy', 3200);
+
+    setTimeout(()=>{
+      seg1.classList.add('cut');
+      tenNode.classList.remove('hidden-val');
+      tenNode.classList.add('burst');
+      banner.textContent = q.a + ' → 10 ✂️';
+      banner.classList.add('good');
+    }, 250);
+
+    setTimeout(()=>{
+      seg2.classList.add('cut');
+      answerNode.classList.remove('hidden-val');
+      answerNode.classList.add('burst');
+      banner.textContent = '10 → ' + q.answer + '  🎍 Bamboo cut!';
+    }, 1000);
+
+    setTimeout(()=>{
+      state.leaves += 1;
+      state.stars += starsEarned;
+      updateHud();
+      let starStr = '⭐'.repeat(starsEarned);
+      banner.innerHTML = 'Bamboo down! ' + starStr;
+      banner.className = 'feedback-banner good stars';
+      document.getElementById('nextBtn').classList.add('show');
+    }, 1600);
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    state.index++;
+    if(state.index >= ROUND_LENGTH){
+      finishRound();
+    } else {
+      loadQuestion();
+    }
+  });
+
+  function finishRound(){
+    markProgress();
+    const belt = BELTS[state.difficulty];
+    document.getElementById('beltEmoji').textContent = belt.emoji;
+    document.getElementById('completeTitle').textContent = 'Forest Cleared!';
+    document.getElementById('completeSub').textContent = 'You earned the ' + belt.name;
+    document.getElementById('finalLeaves').textContent = state.leaves;
+    document.getElementById('finalStars').textContent = state.stars;
+    const accuracy = Math.round((state.firstTryCount / ROUND_LENGTH) * 100);
+    document.getElementById('finalAccuracy').textContent = accuracy + '%';
+    assistantSay("You earned the " + belt.name + "! Incredible! 🥋", 'mood-proud', 4200);
+    showScreen('screen-complete');
+  }
+
+  document.getElementById('playAgainBtn').addEventListener('click', startRound);
+  document.getElementById('newDiffBtn').addEventListener('click', ()=>{
+    showScreen('screen-title');
+  });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Frog Jump Race — MyMasteryLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --jungle-dark:#0A2A1C;
+    --jungle-mid:#0F3B26;
+    --jungle-3:#154A2F;
+    --water:#0E5E68;
+    --water-light:#1BA6A0;
+    --water-glow:#3FD6DF;
+    --lily-green:#4CAF6D;
+    --lily-dark:#2E7D4C;
+    --teal:#00A7B2;
+    --gold:#FAA71C;
+    --gold-light:#FFD37A;
+    --burnt:#D77F28;
+    --paper:#F7F1E4;
+    --paper-dim:#EAE1CC;
+    --ink-text:#12302B;
+    --shadow:0 18px 40px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background:
+      radial-gradient(ellipse 900px 500px at 85% 6%, rgba(250,167,28,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 10% 92%, rgba(27,166,160,0.16), transparent 60%),
+      linear-gradient(180deg, var(--jungle-dark) 0%, var(--jungle-mid) 55%, var(--water) 100%);
+    min-height:100vh;color:var(--paper);overflow-x:hidden;position:relative;
+  }
+
+  /* ---------- Ambient jungle background ---------- */
+  .sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .sun{position:absolute;top:5%;right:9%;width:80px;height:80px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #FFF6DA, var(--gold-light) 55%, var(--gold) 100%);
+    box-shadow:0 0 60px 14px rgba(250,211,122,0.35);}
+  .leaf-corner{position:absolute;font-size:70px;opacity:.5;filter:drop-shadow(0 8px 10px rgba(0,0,0,0.4));animation:leafSway 5s ease-in-out infinite;}
+  .leaf-corner.tl{top:-18px;left:-10px;transform:rotate(-15deg);}
+  .leaf-corner.tr{top:-18px;right:-14px;transform:rotate(200deg) scaleX(-1);animation-delay:.8s;}
+  @keyframes leafSway{0%,100%{transform:rotate(-15deg);}50%{transform:rotate(-8deg);}}
+
+  .drifter{position:absolute;font-size:22px;opacity:.85;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.35));}
+  .butterfly{animation:flutter 9s ease-in-out infinite;}
+  @keyframes flutter{
+    0%{transform:translate(0,0) rotate(0deg);}
+    25%{transform:translate(40px,-30px) rotate(8deg);}
+    50%{transform:translate(90px,10px) rotate(-6deg);}
+    75%{transform:translate(140px,-20px) rotate(6deg);}
+    100%{transform:translate(190px,0) rotate(0deg);}
+  }
+  .dragonfly{animation:zip 6.5s linear infinite;}
+  @keyframes zip{
+    0%{transform:translate(0,0);}
+    20%{transform:translate(-60px,14px);}
+    45%{transform:translate(-120px,-10px);}
+    70%{transform:translate(-180px,18px);}
+    100%{transform:translate(-260px,0);}
+  }
+  .turtle{position:absolute;bottom:4%;font-size:26px;opacity:.75;animation:paddle 22s linear infinite;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.4));}
+  @keyframes paddle{0%{left:-8%;}100%{left:108%;}}
+
+  .app{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:28px 18px 60px;min-height:100vh;display:flex;flex-direction:column;}
+
+  .brandbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-family:'Nunito';font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--water-light);opacity:.9;}
+  .brandbar span.dot{color:var(--gold);margin:0 6px;}
+
+  .screen{display:none;flex:1;flex-direction:column;}
+  .screen.active{display:flex;animation:fadeIn .5s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- Title screen ---------- */
+  .title-wrap{text-align:center;padding-top:6px;}
+  .frog-badge{font-size:54px;filter:drop-shadow(0 8px 18px rgba(0,0,0,0.5));display:inline-block;animation:idleHop 1.8s ease-in-out infinite;}
+  @keyframes idleHop{0%,100%{transform:translateY(0) scale(1,1);}45%{transform:translateY(-14px) scale(1.05,0.95);}55%{transform:translateY(-14px) scale(0.95,1.05);}}
+  h1.gametitle{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:clamp(28px,7vw,42px);margin:10px 0 4px;color:var(--paper);text-shadow:0 4px 0 rgba(0,0,0,0.25);}
+  .gametitle .accent{color:var(--gold);}
+  .subtitle{font-weight:700;color:var(--water-glow);font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:18px;}
+  .storycard{background:linear-gradient(180deg, var(--paper), var(--paper-dim));color:var(--ink-text);border-radius:20px;padding:20px 22px;text-align:left;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .storycard::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--teal),var(--gold),var(--burnt));}
+  .storycard p{margin:0 0 10px;line-height:1.55;font-size:15px;}
+  .storycard p:last-child{margin-bottom:0;}
+  .storycard .ico{font-size:20px;margin-right:6px;}
+
+  .diff-title{margin-top:26px;font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--paper);text-transform:uppercase;letter-spacing:.08em;text-align:center;}
+  .diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+  .diff-card{background:var(--jungle-3);border:2px solid rgba(255,255,255,0.06);border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;transition:transform .15s ease, border-color .15s ease, background .15s ease;}
+  .diff-card:hover{transform:translateY(-3px);border-color:var(--teal);}
+  .diff-card.selected{border-color:var(--gold);background:#1e5a3d;box-shadow:0 0 0 3px rgba(250,167,28,0.25);}
+  .diff-lily{font-size:26px;display:block;margin-bottom:6px;}
+  .diff-name{font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--paper);}
+  .diff-sample{font-family:'Nunito';font-weight:700;font-size:12px;color:var(--water-glow);margin-top:4px;}
+
+  .btn-start{margin-top:26px;align-self:center;font-family:'Baloo 2';font-weight:700;font-size:18px;color:var(--ink-text);background:linear-gradient(180deg, var(--gold-light), var(--gold));border:none;padding:14px 40px;border-radius:999px;cursor:pointer;box-shadow:0 10px 0 var(--burnt), 0 16px 24px rgba(0,0,0,0.35);transition:transform .12s ease, box-shadow .12s ease;}
+  .btn-start:active{transform:translateY(6px);box-shadow:0 4px 0 var(--burnt), 0 8px 14px rgba(0,0,0,0.3);}
+  .btn-start:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+
+  /* ---------- Game screen ---------- */
+  .hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .hud-left, .hud-right{display:flex;align-items:center;gap:8px;background:var(--jungle-3);padding:8px 14px;border-radius:999px;font-weight:800;font-family:'Baloo 2';font-size:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);}
+
+  .progress-row{display:flex;justify-content:center;gap:10px;margin-bottom:16px;}
+  .progress-lily{font-size:22px;transition:transform .35s ease, filter .35s ease;}
+  .progress-lily.done{filter:grayscale(.4) brightness(1.4);transform:translateY(3px);}
+  .progress-lily.current{transform:scale(1.3);filter:drop-shadow(0 0 8px rgba(250,167,28,0.7));}
+
+  .pond-panel{background:radial-gradient(ellipse at top, #0d4a52, #082f36 75%);border:1px solid rgba(255,255,255,0.06);border-radius:22px;padding:22px 18px 26px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .pond-panel .glow{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:260px;height:180px;background:radial-gradient(circle, rgba(27,166,160,0.22), transparent 70%);pointer-events:none;}
+
+  .question-head{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;position:relative;z-index:2;}
+  .audio-btn{background:var(--paper);border:2px solid var(--lily-dark);color:var(--ink-text);width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,0.25);transition:transform .12s ease;flex-shrink:0;}
+  .audio-btn:hover{transform:scale(1.08);}
+  .audio-btn:active{transform:translateY(2px);}
+  .audio-btn.speaking{animation:speakPulse .6s ease-in-out infinite;}
+  @keyframes speakPulse{0%,100%{box-shadow:0 4px 0 rgba(0,0,0,0.25), 0 0 0 0 rgba(250,167,28,0.6);}50%{box-shadow:0 4px 0 rgba(0,0,0,0.25), 0 0 0 10px rgba(250,167,28,0);}}
+
+  .question-text{font-family:'Baloo 2';font-weight:700;font-size:clamp(15px,3.6vw,17px);color:var(--paper);text-align:center;}
+  .question-text .num{color:var(--gold);font-weight:800;}
+
+  /* Pond number-line: lily pads + hopping frog */
+  .pond-track{position:relative;height:120px;margin:22px auto 8px;max-width:520px;}
+  .track-line{position:absolute;left:6%;right:6%;top:70px;height:4px;background:repeating-linear-gradient(90deg, rgba(247,241,228,0.35) 0 8px, transparent 8px 16px);border-radius:2px;}
+  .lily{position:absolute;top:48px;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #7ED99B, var(--lily-green) 60%, var(--lily-dark) 100%);
+    border:3px solid var(--lily-dark);display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo 2';font-weight:800;font-size:15px;color:#0a2a1c;box-shadow:0 6px 0 rgba(0,0,0,0.25);transition:all .4s ease;}
+  .lily.start{left:6%;}
+  .lily.mystery{left:50%;background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 70%);border-color:var(--burnt);}
+  .lily.mystery.revealed{animation:burstPulse .6s ease;}
+  @keyframes burstPulse{0%{box-shadow:0 6px 0 rgba(0,0,0,0.25), 0 0 0 0 rgba(250,167,28,0.6);}70%{box-shadow:0 6px 0 rgba(0,0,0,0.25), 0 0 0 22px rgba(250,167,28,0);}100%{box-shadow:0 6px 0 rgba(0,0,0,0.25), 0 0 0 0 rgba(250,167,28,0);}}
+  .lily.end{left:94%;border-color:var(--teal);}
+  .lily .flag{position:absolute;top:-26px;font-size:18px;}
+  .lily .qmark{font-size:20px;}
+
+  .frog-sprite{position:absolute;top:48px;left:6%;transform:translate(-50%,-50%);font-size:36px;
+    transition:left .8s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 6px 6px rgba(0,0,0,0.4));z-index:5;}
+  .frog-sprite.hopping{animation:frogHopArc .8s ease;}
+  @keyframes frogHopArc{
+    0%{transform:translate(-50%,-50%) translateY(0) scale(1,1);}
+    20%{transform:translate(-50%,-50%) translateY(0) scale(1.2,0.8);}
+    50%{transform:translate(-50%,-50%) translateY(-40px) scale(0.9,1.1);}
+    80%{transform:translate(-50%,-50%) translateY(0) scale(1.15,0.85);}
+    100%{transform:translate(-50%,-50%) translateY(0) scale(1,1);}
+  }
+  .frog-sprite.wobble{animation:frogWobble .5s ease;}
+  @keyframes frogWobble{0%,100%{transform:translate(-50%,-50%) rotate(0);}25%{transform:translate(-50%,-50%) rotate(-14deg);}75%{transform:translate(-50%,-50%) rotate(14deg);}}
+
+  .ripple{position:absolute;top:70px;width:14px;height:14px;border:3px solid var(--water-glow);border-radius:50%;transform:translate(-50%,-50%);opacity:0;pointer-events:none;}
+  .ripple.play{animation:rippleOut .7s ease-out;}
+  @keyframes rippleOut{0%{opacity:.9;width:14px;height:14px;}100%{opacity:0;width:70px;height:70px;}}
+
+  .ask{text-align:center;margin-top:10px;position:relative;z-index:1;}
+  .ask-label{font-family:'Baloo 2';font-weight:700;font-size:16px;color:var(--paper);margin-bottom:12px;}
+
+  .options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:340px;margin:0 auto;}
+  .opt{font-family:'Baloo 2';font-weight:700;font-size:19px;color:var(--ink-text);background:linear-gradient(180deg,#fff,#EFE6CE);border:2px solid var(--lily-dark);border-radius:14px;padding:14px 8px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, background .2s ease;box-shadow:0 5px 0 rgba(0,0,0,0.25);}
+  .opt:hover:not(:disabled){transform:translateY(-2px);}
+  .opt:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,0.25);}
+  .opt:disabled{cursor:default;}
+  .opt.correct{background:linear-gradient(180deg,#BFF0CE,#7ED89A);border-color:#2E6B4A;}
+  .opt.wrong{background:linear-gradient(180deg,#F6C4BA,#E4886F);border-color:#A6402A;animation:shake .4s ease;}
+  .opt.reveal{outline:3px solid var(--gold);animation:pulseGlow 1s ease infinite;}
+  @keyframes pulseGlow{0%,100%{box-shadow:0 5px 0 rgba(0,0,0,0.25), 0 0 0 0 rgba(250,167,28,0.6);}50%{box-shadow:0 5px 0 rgba(0,0,0,0.25), 0 0 0 10px rgba(250,167,28,0);}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .hint-box{max-width:440px;margin:16px auto 0;background:rgba(215,127,40,0.18);border:1.5px dashed var(--burnt);border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.5;text-align:left;display:none;position:relative;z-index:1;}
+  .hint-box.show{display:block;animation:fadeIn .3s ease;}
+  .hint-box .ico{font-size:16px;margin-right:4px;}
+
+  .feedback-banner{text-align:center;margin-top:14px;font-family:'Baloo 2';font-weight:800;font-size:16px;min-height:24px;position:relative;z-index:1;}
+  .feedback-banner.good{color:var(--gold-light);}
+  .feedback-banner.stars{font-size:20px;letter-spacing:3px;}
+
+  .next-btn{display:none;margin:18px auto 0;font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--ink-text);background:linear-gradient(180deg, var(--water-glow), var(--teal));border:none;padding:11px 30px;border-radius:999px;cursor:pointer;box-shadow:0 8px 0 #04747c;position:relative;z-index:1;}
+  .next-btn.show{display:block;}
+  .next-btn:active{transform:translateY(5px);box-shadow:0 3px 0 #04747c;}
+
+  /* ---------- Round complete screen ---------- */
+  .complete-wrap{text-align:center;margin:auto 0;padding:20px 0;}
+  .badge-earned{font-size:70px;margin-bottom:8px;animation:badgePop .7s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes badgePop{0%{transform:scale(0) rotate(-30deg);opacity:0}70%{transform:scale(1.15) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0);}}
+  .complete-title{font-family:'Baloo 2';font-weight:800;font-size:26px;color:var(--paper);margin-bottom:6px;}
+  .complete-sub{color:var(--gold-light);font-weight:700;margin-bottom:20px;}
+  .stat-row{display:flex;justify-content:center;gap:14px;margin-bottom:26px;flex-wrap:wrap;}
+  .stat-pill{background:var(--jungle-3);border-radius:16px;padding:14px 22px;min-width:110px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);}
+  .stat-pill .num{font-family:'Baloo 2';font-weight:800;font-size:26px;color:var(--gold);}
+  .stat-pill .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--water-glow);font-weight:700;margin-top:2px;}
+  .complete-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .btn-secondary{font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--paper);background:transparent;border:2px solid var(--teal);padding:12px 24px;border-radius:999px;cursor:pointer;}
+
+  footer.credit{text-align:center;margin-top:30px;font-size:11px;color:rgba(247,241,228,0.4);letter-spacing:.05em;}
+
+  /* ---------- Toucan assistant ---------- */
+  .assistant-toucan{position:fixed;bottom:14px;left:6vw;z-index:50;display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:toucanWalk 17s ease-in-out infinite;}
+  @keyframes toucanWalk{
+    0%{left:6vw;}22%{left:68vw;}28%{left:68vw;}50%{left:24vw;}56%{left:24vw;}78%{left:80vw;}84%{left:80vw;}100%{left:6vw;}
+  }
+  .toucan-char{font-size:34px;display:inline-block;cursor:pointer;pointer-events:auto;filter:drop-shadow(0 6px 8px rgba(0,0,0,0.5));animation:toucanBob 1.7s ease-in-out infinite;transform-origin:bottom center;}
+  @keyframes toucanBob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-6px) rotate(2deg);}}
+  .toucan-char.mood-happy{animation:toucanCheer .7s ease;}
+  @keyframes toucanCheer{0%{transform:translateY(0) rotate(0);}30%{transform:translateY(-22px) rotate(-16deg) scale(1.15);}60%{transform:translateY(-8px) rotate(12deg) scale(1.1);}100%{transform:translateY(0) rotate(0) scale(1);}}
+  .toucan-char.mood-oops{animation:toucanShake .5s ease;}
+  @keyframes toucanShake{0%,100%{transform:translateX(0) rotate(0);}25%{transform:translateX(-6px) rotate(-8deg);}75%{transform:translateX(6px) rotate(8deg);}}
+  .toucan-char.mood-proud{animation:toucanCheer .9s ease 2;}
+
+  .speech-bubble{position:relative;max-width:190px;margin-bottom:8px;background:var(--paper);color:var(--ink-text);font-family:'Baloo 2';font-weight:700;font-size:12.5px;line-height:1.35;padding:9px 13px;border-radius:14px;border:2px solid var(--lily-dark);box-shadow:0 6px 14px rgba(0,0,0,0.35);opacity:0;transform:translateY(6px) scale(.9);transition:opacity .25s ease, transform .25s ease;text-align:center;pointer-events:none;}
+  .speech-bubble::after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);border-width:8px 7px 0 7px;border-style:solid;border-color:var(--lily-dark) transparent transparent transparent;}
+  .speech-bubble::before{content:"";position:absolute;left:50%;bottom:-5.5px;transform:translateX(-50%);border-width:6.5px 5.5px 0 5.5px;border-style:solid;border-color:var(--paper) transparent transparent transparent;z-index:1;}
+  .speech-bubble.show{opacity:1;transform:translateY(0) scale(1);}
+  .speech-bubble.mood-happy{border-color:var(--gold);}
+  .speech-bubble.mood-oops{border-color:var(--burnt);}
+  .speech-bubble.mood-proud{border-color:var(--teal);}
+
+  @media (max-width:520px){
+    .assistant-toucan{bottom:10px;}
+    .toucan-char{font-size:28px;}
+    .speech-bubble{max-width:150px;font-size:11.5px;}
+    .pond-track{max-width:100%;}
+    .lily{width:44px;height:44px;font-size:13px;}
+    @keyframes toucanWalk{0%{left:4vw;}22%{left:56vw;}28%{left:56vw;}50%{left:16vw;}56%{left:16vw;}78%{left:68vw;}84%{left:68vw;}100%{left:4vw;}}
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<div class="app">
+  <div class="brandbar">MyMasteryLab <span class="dot">•</span> Jungle Math Pond</div>
+
+  <!-- TITLE SCREEN -->
+  <section class="screen active" id="screen-title">
+    <div class="title-wrap">
+      <div class="frog-badge">🐸</div>
+      <h1 class="gametitle">Frog Jump <span class="accent">Race</span></h1>
+      <div class="subtitle">Count the Total Jumps</div>
+    </div>
+
+    <div class="storycard">
+      <p><span class="ico">🦜</span><strong>Froggy</strong> is racing across the jungle pond to reach the golden lily pad! Along the way there's a hidden checkpoint lily pad hiding the secret to a quick hop.</p>
+      <p>Figure out how many total jumps Froggy takes from start to finish, then watch the race unfold. Ready to hop in?</p>
+    </div>
+
+    <div class="diff-title">Choose Your Pond</div>
+    <div class="diff-grid" id="diffGrid">
+      <div class="diff-card" data-diff="easy">
+        <span class="diff-lily">🪷</span>
+        <div class="diff-name">Easy</div>
+        <div class="diff-sample">e.g. 8 → 15</div>
+      </div>
+      <div class="diff-card" data-diff="medium">
+        <span class="diff-lily">🪷</span>
+        <div class="diff-name">Medium</div>
+        <div class="diff-sample">e.g. 24 → 38</div>
+      </div>
+      <div class="diff-card" data-diff="hard">
+        <span class="diff-lily">🪷</span>
+        <div class="diff-name">Hard</div>
+        <div class="diff-sample">e.g. 67 → 129</div>
+      </div>
+    </div>
+
+    <button class="btn-start" id="startBtn" disabled>Start the Race</button>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-left"><span id="hudBadgeIcon">🪷</span><span id="hudDiff">Easy</span></div>
+      <div class="hud-right">🪰 <span id="hudFlies">0</span></div>
+    </div>
+
+    <div class="progress-row" id="progressRow"></div>
+
+    <div class="pond-panel">
+      <div class="glow"></div>
+
+      <div class="question-head">
+        <button class="audio-btn" id="audioBtn" title="Read question aloud">🔊</button>
+        <div class="question-text" id="questionText">Froggy starts at <span class="num">8</span> and must reach <span class="num">15</span>.</div>
+      </div>
+
+      <div class="pond-track" id="pondTrack">
+        <div class="track-line"></div>
+        <div class="lily start" id="lilyStart"><span class="flag">🏁</span>8</div>
+        <div class="lily mystery" id="lilyMystery"><span class="qmark">?</span></div>
+        <div class="lily end" id="lilyEnd"><span class="flag">🚩</span>15</div>
+        <div class="ripple" id="rippleFx"></div>
+        <div class="frog-sprite" id="frogSprite">🐸</div>
+      </div>
+
+      <div class="ask">
+        <div class="ask-label">How many total jumps does Froggy make?</div>
+        <div class="options" id="optionsRow"></div>
+      </div>
+
+      <div class="hint-box" id="hintBox">
+        <span class="ico">🦜</span><span id="hintText"></span>
+      </div>
+
+      <div class="feedback-banner" id="feedbackBanner"></div>
+      <button class="next-btn" id="nextBtn">Next Lily Pad →</button>
+    </div>
+  </section>
+
+  <!-- ROUND COMPLETE SCREEN -->
+  <section class="screen" id="screen-complete">
+    <div class="complete-wrap">
+      <div class="badge-earned" id="badgeEmoji">🥉</div>
+      <div class="complete-title" id="completeTitle">Race Complete!</div>
+      <div class="complete-sub" id="completeSub">You earned the Bronze Lily Badge</div>
+      <div class="stat-row">
+        <div class="stat-pill"><div class="num" id="finalFlies">0</div><div class="lbl">Flies</div></div>
+        <div class="stat-pill"><div class="num" id="finalStars">0</div><div class="lbl">Stars</div></div>
+        <div class="stat-pill"><div class="num" id="finalAccuracy">0%</div><div class="lbl">First-Try</div></div>
+      </div>
+      <div class="complete-actions">
+        <button class="btn-start" id="playAgainBtn" style="margin-top:0;">Play Again</button>
+        <button class="btn-secondary" id="newDiffBtn">Choose New Pond</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="credit">MyMasteryLab · Frog Jump Race · Count-On Strategy Using Friendly Numbers</footer>
+</div>
+
+<div class="assistant-toucan" id="assistantToucan">
+  <div class="speech-bubble" id="assistantBubble">Ready to race? 🐸</div>
+  <div class="toucan-char" id="assistantChar">🦜</div>
+</div>
+
+<script>
+(function(){
+  // ---------- Ambient jungle scene ----------
+  const sky = document.getElementById('sky');
+  sky.innerHTML += '<div class="sun"></div>';
+  sky.innerHTML += '<div class="leaf-corner tl">🌿</div>';
+  sky.innerHTML += '<div class="leaf-corner tr">🌿</div>';
+
+  const butterflySpots = [{top:'10%',left:'8%'},{top:'22%',left:'60%'},{top:'14%',left:'40%'}];
+  butterflySpots.forEach((pos,i)=>{
+    const b = document.createElement('div');
+    b.className='drifter butterfly';
+    b.textContent='🦋';
+    b.style.top=pos.top; b.style.left=pos.left;
+    b.style.animationDelay=(i*1.4)+'s';
+    sky.appendChild(b);
+  });
+  const dragonflySpots = [{top:'30%',left:'85%'},{top:'45%',left:'70%'}];
+  dragonflySpots.forEach((pos,i)=>{
+    const d = document.createElement('div');
+    d.className='drifter dragonfly';
+    d.textContent='🐉';
+    d.style.fontSize='16px';
+    d.style.top=pos.top; d.style.left=pos.left;
+    d.style.animationDelay=(i*2)+'s';
+    sky.appendChild(d);
+  });
+  const turtle = document.createElement('div');
+  turtle.className='turtle';
+  turtle.textContent='🐢';
+  turtle.style.animationDelay='1s';
+  sky.appendChild(turtle);
+  const turtle2 = document.createElement('div');
+  turtle2.className='turtle';
+  turtle2.textContent='🐢';
+  turtle2.style.bottom='9%';
+  turtle2.style.animationDelay='11s';
+  turtle2.style.animationDuration='27s';
+  sky.appendChild(turtle2);
+
+  // ---------- Toucan assistant ----------
+  const assistantChar = document.getElementById('assistantChar');
+  const assistantBubble = document.getElementById('assistantBubble');
+  const idleTips = [
+    "Hop to the golden pad first! 🪷",
+    "Count both jumps, then add them up.",
+    "The checkpoint pad is your secret shortcut!",
+    "Take your time, racer — accuracy wins!",
+    "You're doing great, keep hopping!",
+    "Every pad brings you closer to the goal."
+  ];
+  let idleTimer=null, hideTimer=null;
+  function clearMoods(){
+    assistantChar.classList.remove('mood-happy','mood-oops','mood-proud');
+    assistantBubble.classList.remove('mood-happy','mood-oops','mood-proud');
+  }
+  function assistantSay(msg, mood, duration){
+    clearTimeout(hideTimer);
+    clearMoods();
+    assistantBubble.textContent = msg;
+    assistantBubble.classList.add('show');
+    if(mood){ assistantChar.classList.add(mood); assistantBubble.classList.add(mood); }
+    hideTimer = setTimeout(()=> assistantBubble.classList.remove('show'), duration || 3200);
+  }
+  function startIdleChatter(){
+    clearInterval(idleTimer);
+    idleTimer = setInterval(()=>{
+      const tip = idleTips[Math.floor(Math.random()*idleTips.length)];
+      assistantSay(tip, null, 3600);
+    }, 11000);
+  }
+  document.getElementById('assistantToucan').addEventListener('click', ()=>{
+    const tip = idleTips[Math.floor(Math.random()*idleTips.length)];
+    assistantSay(tip, null, 3200);
+  });
+  startIdleChatter();
+  setTimeout(()=> assistantSay("Pick a pond to begin! 🪷", null, 4200), 600);
+
+  // ---------- Audio (Web Speech API) ----------
+  let speaking = false;
+  function speakText(text){
+    if(!('speechSynthesis' in window)){
+      assistantSay("Audio isn't supported on this device.", 'mood-oops', 3000);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.92;
+    utter.pitch = 1.05;
+    const btn = document.getElementById('audioBtn');
+    speaking = true;
+    btn.classList.add('speaking');
+    utter.onend = ()=>{ speaking=false; btn.classList.remove('speaking'); };
+    utter.onerror = ()=>{ speaking=false; btn.classList.remove('speaking'); };
+    window.speechSynthesis.speak(utter);
+  }
+  document.getElementById('audioBtn').addEventListener('click', ()=>{
+    const q = state.questions[state.index];
+    if(!q) return;
+    speakText(`Froggy starts at ${q.start} and must reach ${q.end}. How many total jumps does Froggy make to get there?`);
+  });
+
+  // ---------- Belt/reward config ----------
+  const BADGES = {
+    easy:   { name:'Bronze Lily Badge', emoji:'🥉', icon:'🪷' },
+    medium: { name:'Silver Lily Badge', emoji:'🥈', icon:'🪷' },
+    hard:   { name:'Golden Lily Badge', emoji:'🥇', icon:'🪷' }
+  };
+  const ROUND_LENGTH = 5;
+
+  let state = {
+    difficulty:null, questions:[], index:0, flies:0, stars:0, firstTryCount:0, mistakes:0, locked:false
+  };
+
+  // ---------- Problem generator ----------
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function shuffleArr(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function generateProblem(diff){
+    let startRange = diff==='easy' ? [1,20] : diff==='medium' ? [15,60] : [45,140];
+    let start, tries=0;
+    do{
+      start = randInt(startRange[0], startRange[1]);
+      tries++;
+    } while(start % 10 === 0 && tries < 300);
+
+    const landmark = Math.ceil(start/10)*10;
+    const firstJump = landmark - start;
+    const secondJump = randInt(1,9);
+    const end = landmark + secondJump;
+    const total = end - start;
+    const correct = total;
+
+    let candidates = [firstJump, secondJump, total-1, total+1, total-2, total+2, landmark, total+3, total-3];
+    candidates = candidates.filter(v => v>=1 && v!==correct);
+    candidates = [...new Set(candidates)];
+    shuffleArr(candidates);
+    const distractors = candidates.slice(0,2);
+
+    let options = [correct, ...distractors];
+    options = shuffleArr(options.map(v=>({value:v})));
+
+    return {start, landmark, firstJump, secondJump, end, total, correct, options};
+  }
+
+  // ---------- Title screen: difficulty selection ----------
+  const diffGrid = document.getElementById('diffGrid');
+  const startBtn = document.getElementById('startBtn');
+  diffGrid.addEventListener('click', (e)=>{
+    const card = e.target.closest('.diff-card');
+    if(!card) return;
+    [...diffGrid.children].forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.difficulty = card.dataset.diff;
+    startBtn.disabled = false;
+  });
+  startBtn.addEventListener('click', startRound);
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function startRound(){
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    state.questions = Array.from({length:ROUND_LENGTH}, ()=>generateProblem(state.difficulty));
+    state.index = 0;
+    state.flies = 0;
+    state.stars = 0;
+    state.firstTryCount = 0;
+
+    document.getElementById('hudBadgeIcon').textContent = BADGES[state.difficulty].icon;
+    document.getElementById('hudDiff').textContent = state.difficulty[0].toUpperCase()+state.difficulty.slice(1);
+    updateHud();
+    buildProgressRow();
+    showScreen('screen-game');
+    assistantSay("Let's hop across the pond! 🐸", null, 3000);
+    loadQuestion();
+  }
+
+  function updateHud(){ document.getElementById('hudFlies').textContent = state.flies; }
+
+  function buildProgressRow(){
+    const row = document.getElementById('progressRow');
+    row.innerHTML = '';
+    for(let i=0;i<ROUND_LENGTH;i++){
+      const el = document.createElement('div');
+      el.className = 'progress-lily';
+      el.textContent = '🪷';
+      row.appendChild(el);
+    }
+    markProgress();
+  }
+  function markProgress(){
+    const row = document.getElementById('progressRow');
+    [...row.children].forEach((el,i)=>{
+      el.classList.toggle('done', i < state.index);
+      el.classList.toggle('current', i === state.index);
+    });
+  }
+
+  // ---------- Question rendering ----------
+  function loadQuestion(){
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    state.mistakes = 0;
+    state.locked = false;
+    const q = state.questions[state.index];
+    markProgress();
+
+    document.getElementById('questionText').innerHTML =
+      `Froggy starts at <span class="num">${q.start}</span> and must reach <span class="num">${q.end}</span>.`;
+
+    document.getElementById('lilyStart').innerHTML = `<span class="flag">🏁</span>${q.start}`;
+    document.getElementById('lilyEnd').innerHTML = `<span class="flag">🚩</span>${q.end}`;
+    const mystery = document.getElementById('lilyMystery');
+    mystery.className = 'lily mystery';
+    mystery.innerHTML = '<span class="qmark">?</span>';
+    mystery.style.left = '50%';
+
+    const frog = document.getElementById('frogSprite');
+    frog.className = 'frog-sprite';
+    frog.style.left = '6%';
+    frog.textContent = '🐸';
+
+    const optionsRow = document.getElementById('optionsRow');
+    optionsRow.innerHTML = '';
+    q.options.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = opt.value;
+      btn.dataset.value = opt.value;
+      btn.addEventListener('click', ()=>handleAnswer(btn, opt, q));
+      optionsRow.appendChild(btn);
+    });
+
+    document.getElementById('hintBox').classList.remove('show');
+    document.getElementById('feedbackBanner').textContent = '';
+    document.getElementById('feedbackBanner').className = 'feedback-banner';
+    document.getElementById('nextBtn').classList.remove('show');
+  }
+
+  function handleAnswer(btn, opt, q){
+    if(state.locked) return;
+    const isCorrect = opt.value === q.correct;
+
+    if(isCorrect){
+      state.locked = true;
+      btn.classList.add('correct');
+      disableOptions();
+      playHopAnimation(q);
+    } else {
+      btn.classList.add('wrong');
+      btn.disabled = true;
+      state.mistakes++;
+      showHint(q);
+      const frog = document.getElementById('frogSprite');
+      frog.classList.remove('wobble');
+      void frog.offsetWidth;
+      frog.classList.add('wobble');
+      setTimeout(()=>btn.classList.remove('wrong'), 450);
+
+      if(state.mistakes === 1){
+        assistantSay("Not quite! Think about the checkpoint pad. 🤔", 'mood-oops', 3400);
+      } else if(state.mistakes >= 2){
+        assistantSay("Here, I'll glow the answer for you!", 'mood-oops', 3400);
+        const allOpts = document.querySelectorAll('.opt');
+        allOpts.forEach(o=>{
+          if(parseInt(o.dataset.value) === q.correct) o.classList.add('reveal');
+        });
+      }
+    }
+  }
+
+  function disableOptions(){ document.querySelectorAll('.opt').forEach(o=> o.disabled = true); }
+
+  function showHint(q){
+    const box = document.getElementById('hintBox');
+    const txt = document.getElementById('hintText');
+    if(state.mistakes === 1){
+      txt.innerHTML = `Froggy hops to the checkpoint lily pad at <strong>${q.landmark}</strong> first — that's <strong>${q.firstJump}</strong> jump(s). Then hop <strong>${q.secondJump}</strong> more to reach <strong>${q.end}</strong>.`;
+    } else {
+      txt.innerHTML = `Almost there! <strong>${q.firstJump} + ${q.secondJump} = ${q.correct}</strong> total jumps. Tap the glowing choice to continue.`;
+    }
+    box.classList.add('show');
+  }
+
+  function spawnRipple(leftPercent){
+    const track = document.getElementById('pondTrack');
+    const ripple = document.createElement('div');
+    ripple.className = 'ripple play';
+    ripple.style.left = leftPercent;
+    track.appendChild(ripple);
+    setTimeout(()=> ripple.remove(), 750);
+  }
+
+  function playHopAnimation(q){
+    const frog = document.getElementById('frogSprite');
+    const mystery = document.getElementById('lilyMystery');
+    const banner = document.getElementById('feedbackBanner');
+
+    const starsEarned = state.mistakes === 0 ? 3 : state.mistakes === 1 ? 2 : 1;
+    if(state.mistakes === 0) state.firstTryCount++;
+
+    const cheer = starsEarned === 3
+      ? ["Perfect hop! 🎉", "Racing champion!", "First try — amazing!"]
+      : starsEarned === 2
+      ? ["Nice recovery!", "You got there!"]
+      : ["Made it anyway!", "On to the next pad!"];
+    assistantSay(cheer[Math.floor(Math.random()*cheer.length)], 'mood-happy', 3200);
+
+    // Hop 1: start -> checkpoint (landmark)
+    setTimeout(()=>{
+      frog.classList.add('hopping');
+      frog.style.left = '50%';
+      spawnRipple('6%');
+      banner.textContent = q.start + ' → ' + q.landmark + '  💧';
+      banner.classList.add('good');
+    }, 200);
+
+    setTimeout(()=>{
+      mystery.classList.add('revealed');
+      mystery.innerHTML = q.landmark;
+      spawnRipple('50%');
+      frog.classList.remove('hopping');
+    }, 1000);
+
+    // Hop 2: checkpoint -> end
+    setTimeout(()=>{
+      frog.classList.add('hopping');
+      frog.style.left = '94%';
+      banner.textContent = q.landmark + ' → ' + q.end + '  💧';
+    }, 1350);
+
+    setTimeout(()=>{
+      frog.classList.remove('hopping');
+      spawnRipple('94%');
+      state.flies += 1;
+      state.stars += starsEarned;
+      updateHud();
+      let starStr = '⭐'.repeat(starsEarned);
+      banner.innerHTML = q.firstJump + ' + ' + q.secondJump + ' = ' + q.correct + ' jumps! ' + starStr;
+      banner.className = 'feedback-banner good stars';
+      document.getElementById('nextBtn').classList.add('show');
+    }, 2150);
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    state.index++;
+    if(state.index >= ROUND_LENGTH){ finishRound(); }
+    else { loadQuestion(); }
+  });
+
+  function finishRound(){
+    markProgress();
+    const badge = BADGES[state.difficulty];
+    document.getElementById('badgeEmoji').textContent = badge.emoji;
+    document.getElementById('completeTitle').textContent = 'Race Complete!';
+    document.getElementById('completeSub').textContent = 'You earned the ' + badge.name;
+    document.getElementById('finalFlies').textContent = state.flies;
+    document.getElementById('finalStars').textContent = state.stars;
+    const accuracy = Math.round((state.firstTryCount / ROUND_LENGTH) * 100);
+    document.getElementById('finalAccuracy').textContent = accuracy + '%';
+    assistantSay("You earned the " + badge.name + "! Incredible! 🏆", 'mood-proud', 4200);
+    showScreen('screen-complete');
+  }
+
+  document.getElementById('playAgainBtn').addEventListener('click', startRound);
+  document.getElementById('newDiffBtn').addEventListener('click', ()=> showScreen('screen-title'));
+
+})();
+</script>
+</body>
+</html>

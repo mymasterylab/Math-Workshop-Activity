@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Rocket Fuel Challenge — MyMasteryLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --space-black:#05040F;
+    --space-deep:#0A0A2E;
+    --space-mid:#141440;
+    --space-3:#1B1B52;
+    --nebula-purple:#5B2A86;
+    --nebula-pink:#A83E8C;
+    --teal:#00A7B2;
+    --neon-cyan:#3FE0E8;
+    --gold:#FAA71C;
+    --gold-light:#FFD37A;
+    --burnt:#D77F28;
+    --paper:#F7F1E4;
+    --paper-dim:#EAE1CC;
+    --ink-text:#161233;
+    --shadow:0 18px 40px rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background:
+      radial-gradient(ellipse 700px 500px at 88% 8%, rgba(168,62,140,0.25), transparent 60%),
+      radial-gradient(ellipse 800px 600px at 6% 88%, rgba(0,167,178,0.18), transparent 60%),
+      radial-gradient(ellipse 500px 400px at 50% 40%, rgba(91,42,134,0.25), transparent 65%),
+      linear-gradient(180deg, var(--space-black) 0%, var(--space-deep) 55%, var(--space-mid) 100%);
+    min-height:100vh;color:var(--paper);overflow-x:hidden;position:relative;
+  }
+
+  /* ---------- Ambient starfield / planets / UFOs ---------- */
+  .sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .star{position:absolute;background:#fff;border-radius:50%;opacity:.6;animation:twinkle 3.5s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+  .planet{position:absolute;border-radius:50%;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.5));animation:drift 10s ease-in-out infinite;}
+  @keyframes drift{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-14px) rotate(6deg);}}
+  .planet.emoji{font-size:56px;display:flex;align-items:center;justify-content:center;}
+  .planet.ring{background:radial-gradient(circle at 35% 30%, #FFDD9E, var(--gold) 55%, var(--burnt) 100%);}
+  .planet.ring::after{content:"";position:absolute;left:-30%;top:44%;width:160%;height:16%;border:3px solid rgba(255,255,255,0.55);border-radius:50%;transform:rotate(-14deg);}
+  .ufo{position:absolute;font-size:24px;filter:drop-shadow(0 0 8px rgba(63,224,232,0.6));z-index:2;}
+
+  .app{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:28px 18px 60px;min-height:100vh;display:flex;flex-direction:column;}
+
+  .brandbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-family:'Nunito';font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--neon-cyan);opacity:.9;}
+  .brandbar span.dot{color:var(--gold);margin:0 6px;}
+
+  .screen{display:none;flex:1;flex-direction:column;}
+  .screen.active{display:flex;animation:fadeIn .5s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- Title screen ---------- */
+  .title-wrap{text-align:center;padding-top:6px;}
+  .rocket-badge{font-size:54px;filter:drop-shadow(0 8px 18px rgba(63,224,232,0.5));display:inline-block;animation:idleFloat 2.4s ease-in-out infinite;}
+  @keyframes idleFloat{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-14px) rotate(4deg);}}
+  h1.gametitle{font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(24px,6.4vw,38px);margin:10px 0 4px;color:var(--paper);text-shadow:0 0 18px rgba(63,224,232,0.5), 0 4px 0 rgba(0,0,0,0.35);letter-spacing:.02em;}
+  .gametitle .accent{color:var(--gold);}
+  .subtitle{font-weight:700;color:var(--neon-cyan);font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px;}
+  .storycard{background:linear-gradient(180deg, var(--paper), var(--paper-dim));color:var(--ink-text);border-radius:20px;padding:20px 22px;text-align:left;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .storycard::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--teal),var(--gold),var(--burnt));}
+  .storycard p{margin:0 0 10px;line-height:1.55;font-size:15px;}
+  .storycard p:last-child{margin-bottom:0;}
+  .storycard .ico{font-size:20px;margin-right:6px;}
+
+  .diff-title{margin-top:26px;font-family:'Orbitron';font-weight:700;font-size:14px;color:var(--paper);text-transform:uppercase;letter-spacing:.08em;text-align:center;}
+  .diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+  .diff-card{background:var(--space-3);border:2px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;transition:transform .15s ease, border-color .15s ease, background .15s ease;}
+  .diff-card:hover{transform:translateY(-3px);border-color:var(--neon-cyan);}
+  .diff-card.selected{border-color:var(--gold);background:#2a2a6e;box-shadow:0 0 0 3px rgba(250,167,28,0.3), 0 0 18px rgba(63,224,232,0.3);}
+  .diff-icon{font-size:26px;display:block;margin-bottom:6px;}
+  .diff-name{font-family:'Orbitron';font-weight:700;font-size:13px;color:var(--paper);}
+  .diff-sample{font-family:'Nunito';font-weight:700;font-size:12px;color:var(--neon-cyan);margin-top:4px;}
+
+  .btn-start{margin-top:26px;align-self:center;font-family:'Orbitron';font-weight:700;font-size:16px;color:var(--ink-text);background:linear-gradient(180deg, var(--gold-light), var(--gold));border:none;padding:14px 38px;border-radius:999px;cursor:pointer;box-shadow:0 10px 0 var(--burnt), 0 16px 24px rgba(0,0,0,0.4), 0 0 24px rgba(250,167,28,0.35);transition:transform .12s ease, box-shadow .12s ease;letter-spacing:.03em;}
+  .btn-start:active{transform:translateY(6px);box-shadow:0 4px 0 var(--burnt), 0 8px 14px rgba(0,0,0,0.35);}
+  .btn-start:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+
+  /* ---------- Game screen ---------- */
+  .hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .hud-left, .hud-right{display:flex;align-items:center;gap:8px;background:var(--space-3);padding:8px 14px;border-radius:999px;font-weight:800;font-family:'Orbitron';font-size:13px;box-shadow:inset 0 0 0 1px rgba(63,224,232,0.15);}
+
+  .progress-row{display:flex;justify-content:center;gap:10px;margin-bottom:16px;}
+  .progress-rocket{font-size:20px;transition:transform .35s ease, filter .35s ease;opacity:.5;}
+  .progress-rocket.done{opacity:1;filter:drop-shadow(0 0 6px rgba(63,224,232,0.7));transform:translateY(-2px);}
+  .progress-rocket.current{opacity:1;transform:scale(1.3);filter:drop-shadow(0 0 8px rgba(250,167,28,0.8));}
+
+  .space-panel{background:radial-gradient(ellipse at top, #1c1c5a, #0a0a2e 75%);border:1px solid rgba(63,224,232,0.15);border-radius:22px;padding:22px 18px 26px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .space-panel .glow{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:280px;height:200px;background:radial-gradient(circle, rgba(63,224,232,0.2), transparent 70%);pointer-events:none;}
+
+  .question-head{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;position:relative;z-index:2;}
+  .audio-btn{background:var(--paper);border:2px solid var(--teal);color:var(--ink-text);width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 0 10px rgba(63,224,232,0.4);transition:transform .12s ease;flex-shrink:0;}
+  .audio-btn:hover{transform:scale(1.08);}
+  .audio-btn:active{transform:translateY(2px);}
+  .audio-btn.speaking{animation:speakPulse .6s ease-in-out infinite;}
+  @keyframes speakPulse{0%,100%{box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(63,224,232,0.7);}50%{box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 0 0 10px rgba(63,224,232,0);}}
+
+  .equation{font-family:'Orbitron';font-weight:800;font-size:clamp(28px,7vw,38px);color:var(--paper);text-shadow:0 0 14px rgba(250,167,28,0.35);}
+  .equation .op{color:var(--neon-cyan);margin:0 8px;}
+
+  /* Fuel gauge */
+  .fuel-label{text-align:center;font-family:'Orbitron';font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;position:relative;z-index:1;}
+  .fuel-gauge{display:flex;justify-content:center;gap:6px;margin-bottom:18px;position:relative;z-index:1;}
+  .fuel-seg{width:34px;height:16px;border-radius:4px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(63,224,232,0.35);transition:all .35s ease;}
+  .fuel-seg.filled{background:linear-gradient(180deg, var(--gold-light), var(--gold));box-shadow:0 0 10px rgba(250,167,28,0.7);border-color:var(--gold);}
+
+  /* Space track: Earth -> Fuel Station -> Moon */
+  .space-track{position:relative;height:120px;margin:6px auto 8px;max-width:540px;}
+  .track-line{position:absolute;left:6%;right:6%;top:70px;height:3px;background:repeating-linear-gradient(90deg, rgba(63,224,232,0.4) 0 8px, transparent 8px 16px);border-radius:2px;}
+  .node{position:absolute;top:48px;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-family:'Orbitron';font-weight:800;font-size:14px;
+    box-shadow:0 6px 0 rgba(0,0,0,0.3);transition:all .4s ease;flex-direction:column;}
+  .node.earth{left:6%;background:radial-gradient(circle at 35% 30%, #7FD8FF, #1B8FD9 60%, #0A5A94 100%);border:3px solid #0A5A94;color:#fff;}
+  .node.station{left:50%;background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 70%);border:3px solid var(--burnt);color:var(--ink-text);}
+  .node.station.hidden-val .val{opacity:0;}
+  .node.station.revealed{animation:burstPulse .6s ease;}
+  @keyframes burstPulse{0%{box-shadow:0 6px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(250,167,28,0.7);}70%{box-shadow:0 6px 0 rgba(0,0,0,0.3), 0 0 0 22px rgba(250,167,28,0);}100%{box-shadow:0 6px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(250,167,28,0);}}
+  .node.moon{left:94%;background:radial-gradient(circle at 35% 30%, #E8E4F5, #B7B0D4 60%, #8983AE 100%);border:3px solid #8983AE;color:#2a2350;}
+  .node .icon{font-size:14px;margin-bottom:-2px;}
+
+  .rocket-sprite{position:absolute;top:48px;left:6%;transform:translate(-50%,-50%) rotate(90deg);font-size:32px;
+    transition:left .8s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 0 10px rgba(63,224,232,0.6));z-index:6;}
+  .rocket-sprite.flying{animation:rocketThrust .8s ease;}
+  @keyframes rocketThrust{
+    0%{transform:translate(-50%,-50%) rotate(90deg) translateY(0) scale(1);}
+    30%{transform:translate(-50%,-50%) rotate(90deg) translateY(-6px) scale(1.08);}
+    100%{transform:translate(-50%,-50%) rotate(90deg) translateY(0) scale(1);}
+  }
+  .rocket-sprite.wobble{animation:rocketWobble .5s ease;}
+  @keyframes rocketWobble{0%,100%{transform:translate(-50%,-50%) rotate(90deg);}25%{transform:translate(-50%,-50%) rotate(60deg);}75%{transform:translate(-50%,-50%) rotate(120deg);}}
+  .dizzy-overlay{position:absolute;top:20px;font-size:20px;transform:translate(-50%,-50%);opacity:0;pointer-events:none;z-index:7;}
+  .dizzy-overlay.play{animation:dizzyPop .8s ease;}
+  @keyframes dizzyPop{0%{opacity:0;transform:translate(-50%,-50%) translateY(6px);}30%{opacity:1;transform:translate(-50%,-50%) translateY(-6px);}100%{opacity:0;transform:translate(-50%,-50%) translateY(-14px);}}
+
+  .spark{position:absolute;top:70px;font-size:16px;transform:translate(-50%,-50%);opacity:0;pointer-events:none;}
+  .spark.play{animation:sparkPop .7s ease-out;}
+  @keyframes sparkPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.5);}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2) translateY(-14px);}}
+
+  .step-label{text-align:center;font-family:'Orbitron';font-weight:700;font-size:12px;color:var(--neon-cyan);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;min-height:16px;position:relative;z-index:1;}
+
+  .ask{text-align:center;margin-top:6px;position:relative;z-index:1;}
+  .ask-label{font-family:'Orbitron';font-weight:700;font-size:14px;color:var(--paper);margin-bottom:12px;}
+
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:400px;margin:0 auto;}
+  .opt{font-family:'Orbitron';font-weight:700;font-size:17px;color:var(--ink-text);background:linear-gradient(180deg,#fff,#EFE6CE);border:2px solid var(--teal);border-radius:14px;padding:16px 8px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, background .2s ease;box-shadow:0 5px 0 rgba(0,0,0,0.3);}
+  .opt:hover:not(:disabled){transform:translateY(-2px);}
+  .opt:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,0.3);}
+  .opt:disabled{cursor:default;}
+  .opt.correct{background:linear-gradient(180deg,#BFF0CE,#7ED89A);border-color:#2E6B4A;}
+  .opt.wrong{background:linear-gradient(180deg,#F6C4BA,#E4886F);border-color:#A6402A;animation:shake .4s ease;}
+  .opt.reveal{outline:3px solid var(--gold);animation:pulseGlow 1s ease infinite;}
+  @keyframes pulseGlow{0%,100%{box-shadow:0 5px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(250,167,28,0.7);}50%{box-shadow:0 5px 0 rgba(0,0,0,0.3), 0 0 0 10px rgba(250,167,28,0);}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .hint-box{max-width:440px;margin:16px auto 0;background:rgba(215,127,40,0.2);border:1.5px dashed var(--burnt);border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.5;text-align:left;display:none;position:relative;z-index:1;}
+  .hint-box.show{display:block;animation:fadeIn .3s ease;}
+  .hint-box .ico{font-size:16px;margin-right:4px;}
+
+  .feedback-banner{text-align:center;margin-top:14px;font-family:'Orbitron';font-weight:800;font-size:15px;min-height:24px;position:relative;z-index:1;}
+  .feedback-banner.good{color:var(--gold-light);}
+  .feedback-banner.stars{font-size:20px;letter-spacing:3px;}
+
+  .next-btn{display:none;margin:18px auto 0;font-family:'Orbitron';font-weight:700;font-size:14px;color:var(--ink-text);background:linear-gradient(180deg, var(--neon-cyan), var(--teal));border:none;padding:11px 28px;border-radius:999px;cursor:pointer;box-shadow:0 8px 0 #04747c;position:relative;z-index:1;}
+  .next-btn.show{display:block;}
+  .next-btn:active{transform:translateY(5px);box-shadow:0 3px 0 #04747c;}
+
+  .celebrate-particle{position:absolute;font-size:20px;pointer-events:none;z-index:8;opacity:0;}
+
+  /* ---------- Round complete screen ---------- */
+  .complete-wrap{text-align:center;margin:auto 0;padding:20px 0;}
+  .badge-earned{font-size:70px;margin-bottom:8px;animation:badgePop .7s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes badgePop{0%{transform:scale(0) rotate(-30deg);opacity:0}70%{transform:scale(1.15) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0);}}
+  .complete-title{font-family:'Orbitron';font-weight:800;font-size:24px;color:var(--paper);margin-bottom:6px;text-shadow:0 0 16px rgba(63,224,232,0.4);}
+  .complete-sub{color:var(--gold-light);font-weight:700;margin-bottom:20px;font-family:'Nunito';}
+  .stat-row{display:flex;justify-content:center;gap:14px;margin-bottom:26px;flex-wrap:wrap;}
+  .stat-pill{background:var(--space-3);border-radius:16px;padding:14px 22px;min-width:110px;box-shadow:inset 0 0 0 1px rgba(63,224,232,0.2);}
+  .stat-pill .num{font-family:'Orbitron';font-weight:800;font-size:24px;color:var(--gold);}
+  .stat-pill .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--neon-cyan);font-weight:700;margin-top:2px;}
+  .complete-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .btn-secondary{font-family:'Orbitron';font-weight:700;font-size:14px;color:var(--paper);background:transparent;border:2px solid var(--teal);padding:12px 24px;border-radius:999px;cursor:pointer;}
+
+  footer.credit{text-align:center;margin-top:30px;font-size:11px;color:rgba(247,241,228,0.4);letter-spacing:.05em;}
+
+  /* ---------- Robot assistant ---------- */
+  .assistant-bot{position:fixed;bottom:14px;left:6vw;z-index:50;display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:botWalk 18s ease-in-out infinite;}
+  @keyframes botWalk{0%{left:6vw;}22%{left:66vw;}28%{left:66vw;}50%{left:22vw;}56%{left:22vw;}78%{left:80vw;}84%{left:80vw;}100%{left:6vw;}}
+  .bot-char{font-size:32px;display:inline-block;cursor:pointer;pointer-events:auto;filter:drop-shadow(0 6px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 8px rgba(63,224,232,0.5));animation:botBob 1.7s ease-in-out infinite;transform-origin:bottom center;}
+  @keyframes botBob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-6px) rotate(2deg);}}
+  .bot-char.mood-happy{animation:botCheer .7s ease;}
+  @keyframes botCheer{0%{transform:translateY(0) rotate(0);}30%{transform:translateY(-22px) rotate(-16deg) scale(1.15);}60%{transform:translateY(-8px) rotate(12deg) scale(1.1);}100%{transform:translateY(0) rotate(0) scale(1);}}
+  .bot-char.mood-oops{animation:botShake .5s ease;}
+  @keyframes botShake{0%,100%{transform:translateX(0) rotate(0);}25%{transform:translateX(-6px) rotate(-8deg);}75%{transform:translateX(6px) rotate(8deg);}}
+  .bot-char.mood-proud{animation:botCheer .9s ease 2;}
+
+  .speech-bubble{position:relative;max-width:190px;margin-bottom:8px;background:var(--paper);color:var(--ink-text);font-family:'Nunito';font-weight:700;font-size:12.5px;line-height:1.35;padding:9px 13px;border-radius:14px;border:2px solid var(--teal);box-shadow:0 6px 14px rgba(0,0,0,0.4), 0 0 14px rgba(63,224,232,0.25);opacity:0;transform:translateY(6px) scale(.9);transition:opacity .25s ease, transform .25s ease;text-align:center;pointer-events:none;}
+  .speech-bubble::after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);border-width:8px 7px 0 7px;border-style:solid;border-color:var(--teal) transparent transparent transparent;}
+  .speech-bubble::before{content:"";position:absolute;left:50%;bottom:-5.5px;transform:translateX(-50%);border-width:6.5px 5.5px 0 5.5px;border-style:solid;border-color:var(--paper) transparent transparent transparent;z-index:1;}
+  .speech-bubble.show{opacity:1;transform:translateY(0) scale(1);}
+  .speech-bubble.mood-happy{border-color:var(--gold);}
+  .speech-bubble.mood-oops{border-color:var(--burnt);}
+  .speech-bubble.mood-proud{border-color:var(--teal);}
+
+  @media (max-width:520px){
+    .assistant-bot{bottom:10px;}
+    .bot-char{font-size:26px;}
+    .speech-bubble{max-width:150px;font-size:11.5px;}
+    .node{width:44px;height:44px;font-size:12px;}
+    .fuel-seg{width:24px;height:14px;}
+    @keyframes botWalk{0%{left:4vw;}22%{left:54vw;}28%{left:54vw;}50%{left:14vw;}56%{left:14vw;}78%{left:68vw;}84%{left:68vw;}100%{left:4vw;}}
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<div class="app">
+  <div class="brandbar">MyMasteryLab <span class="dot">•</span> Deep Space Mission Control</div>
+
+  <!-- TITLE SCREEN -->
+  <section class="screen active" id="screen-title">
+    <div class="title-wrap">
+      <div class="rocket-badge">🚀</div>
+      <h1 class="gametitle">Rocket Fuel <span class="accent">Challenge</span></h1>
+      <div class="subtitle">Near-Number Subtraction</div>
+    </div>
+
+    <div class="storycard">
+      <p><span class="ico">🤖</span><strong>Robo-Guide</strong> needs your help! The rocket needs subtraction fuel to reach the Moon — and numbers that are near each other make <strong>SUPER FUEL</strong>.</p>
+      <p>Pick the fastest fuel path through the checkpoint, then watch your rocket blast across the stars. Ready for launch?</p>
+    </div>
+
+    <div class="diff-title">Choose Your Launch Sector</div>
+    <div class="diff-grid" id="diffGrid">
+      <div class="diff-card" data-diff="easy">
+        <span class="diff-icon">🛰️</span>
+        <div class="diff-name">Sector A</div>
+        <div class="diff-sample">e.g. 12 − 9</div>
+      </div>
+      <div class="diff-card" data-diff="medium">
+        <span class="diff-icon">🛰️</span>
+        <div class="diff-name">Sector B</div>
+        <div class="diff-sample">e.g. 52 − 49</div>
+      </div>
+      <div class="diff-card" data-diff="hard">
+        <span class="diff-icon">🛰️</span>
+        <div class="diff-name">Sector C</div>
+        <div class="diff-sample">e.g. 604 − 596</div>
+      </div>
+    </div>
+
+    <button class="btn-start" id="startBtn" disabled>Launch Mission</button>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-left"><span id="hudBadgeIcon">🛰️</span><span id="hudDiff">Sector A</span></div>
+      <div class="hud-right">✨ <span id="hudStardust">0</span></div>
+    </div>
+
+    <div class="progress-row" id="progressRow"></div>
+
+    <div class="space-panel">
+      <div class="glow"></div>
+
+      <div class="question-head">
+        <button class="audio-btn" id="audioBtn" title="Read question aloud">🔊</button>
+        <div class="equation" id="equationText">52 <span class="op">−</span> 49</div>
+      </div>
+
+      <div class="fuel-label">Super Fuel</div>
+      <div class="fuel-gauge" id="fuelGauge"></div>
+
+      <div class="space-track" id="spaceTrack">
+        <div class="track-line"></div>
+        <div class="node earth" id="nodeEarth"><span class="icon">🌍</span><span class="val">49</span></div>
+        <div class="node station hidden-val" id="nodeStation"><span class="icon">⛽</span><span class="val">50</span></div>
+        <div class="node moon" id="nodeMoon"><span class="icon">🌙</span><span class="val">52</span></div>
+        <div class="dizzy-overlay" id="dizzyFx">😵</div>
+        <div class="rocket-sprite" id="rocketSprite">🚀</div>
+      </div>
+
+      <div class="step-label" id="stepLabel">Step 1 — Choose the fastest fuel path</div>
+
+      <div class="ask">
+        <div class="options" id="optionsRow"></div>
+      </div>
+
+      <div class="hint-box" id="hintBox">
+        <span class="ico">🤖</span><span id="hintText"></span>
+      </div>
+
+      <div class="feedback-banner" id="feedbackBanner"></div>
+      <button class="next-btn" id="nextBtn">Next Launch →</button>
+    </div>
+  </section>
+
+  <!-- ROUND COMPLETE SCREEN -->
+  <section class="screen" id="screen-complete">
+    <div class="complete-wrap">
+      <div class="badge-earned" id="badgeEmoji">🥉</div>
+      <div class="complete-title" id="completeTitle">Mission Complete!</div>
+      <div class="complete-sub" id="completeSub">You earned the Cadet Badge</div>
+      <div class="stat-row">
+        <div class="stat-pill"><div class="num" id="finalStardust">0</div><div class="lbl">Stardust</div></div>
+        <div class="stat-pill"><div class="num" id="finalStars">0</div><div class="lbl">Stars</div></div>
+        <div class="stat-pill"><div class="num" id="finalAccuracy">0%</div><div class="lbl">First-Try</div></div>
+      </div>
+      <div class="complete-actions">
+        <button class="btn-start" id="playAgainBtn" style="margin-top:0;">Play Again</button>
+        <button class="btn-secondary" id="newDiffBtn">Choose New Sector</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="credit">MyMasteryLab · Rocket Fuel Challenge · Near-Number Subtraction Strategy</footer>
+</div>
+
+<div class="assistant-bot" id="assistantBot">
+  <div class="speech-bubble" id="assistantBubble">Ready for launch? 🚀</div>
+  <div class="bot-char" id="assistantChar">🤖</div>
+</div>
+
+<script>
+(function(){
+  // ---------- Ambient starfield / planets ----------
+  const sky = document.getElementById('sky');
+  for(let i=0;i<60;i++){
+    const s = document.createElement('div');
+    s.className='star';
+    const size = Math.random()*2+1;
+    s.style.width = size+'px'; s.style.height = size+'px';
+    s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*3)+'s';
+    sky.appendChild(s);
+  }
+  const planetDefs = [
+    {cls:'emoji', emoji:'🪐', size:'58px', top:'8%', left:'85%', delay:'0s'},
+    {cls:'emoji', emoji:'🌕', size:'34px', top:'70%', left:'6%', delay:'1.2s'},
+    {cls:'ring',  size:'46px', top:'40%', left:'92%', delay:'.6s'},
+    {cls:'emoji', emoji:'🔴', size:'22px', top:'18%', left:'4%', delay:'2s'},
+    {cls:'emoji', emoji:'🌑', size:'26px', top:'85%', left:'80%', delay:'1.6s'},
+  ];
+  planetDefs.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'planet ' + (p.cls==='emoji' ? 'emoji' : 'ring');
+    el.style.width = p.size; el.style.height = p.size;
+    el.style.top = p.top; el.style.left = p.left;
+    el.style.animationDelay = p.delay;
+    if(p.cls==='emoji'){ el.style.fontSize = p.size; el.textContent = p.emoji; }
+    sky.appendChild(el);
+  });
+
+  // Random alien UFOs crossing from different directions
+  function spawnUFO(){
+    const ufo = document.createElement('div');
+    ufo.className = 'ufo';
+    ufo.textContent = '🛸';
+    document.body.appendChild(ufo);
+    const vh = window.innerHeight, vw = window.innerWidth;
+    const fromLeft = Math.random() < 0.5;
+    const startY = Math.random()*vh*0.7;
+    const endY = Math.random()*vh*0.7;
+    const startX = fromLeft ? -60 : vw+60;
+    const endX = fromLeft ? vw+60 : -60;
+    ufo.style.left = startX+'px';
+    ufo.style.top = startY+'px';
+    const duration = 6000 + Math.random()*4000;
+    const anim = ufo.animate([
+      { transform:'translate(0,0) rotate(0deg)', opacity:0 },
+      { transform:'translate(' + ((endX-startX)*0.1) + 'px,' + ((endY-startY)*0.1-20) + 'px) rotate(-6deg)', opacity:1, offset:0.15 },
+      { transform:'translate(' + (endX-startX) + 'px,' + (endY-startY) + 'px) rotate(6deg)', opacity:1, offset:0.9 },
+      { transform:'translate(' + (endX-startX) + 'px,' + (endY-startY) + 'px) rotate(6deg)', opacity:0 }
+    ], { duration: duration, easing:'ease-in-out' });
+    anim.onfinish = ()=> ufo.remove();
+  }
+  setInterval(spawnUFO, 6500);
+  setTimeout(spawnUFO, 1500);
+
+  // ---------- Robot assistant ----------
+  const assistantChar = document.getElementById('assistantChar');
+  const assistantBubble = document.getElementById('assistantBubble');
+  const idleTips = [
+    "Hop to the checkpoint fuel station first! ⛽",
+    "Near numbers make SUPER fuel — find the closest ten!",
+    "Add both legs of the trip to get your total.",
+    "Steady thrusters, pilot — accuracy wins the mission!",
+    "You're doing great, keep blasting off!",
+    "Every checkpoint brings you closer to the Moon."
+  ];
+  let idleTimer=null, hideTimer=null;
+  function clearMoods(){
+    assistantChar.classList.remove('mood-happy','mood-oops','mood-proud');
+    assistantBubble.classList.remove('mood-happy','mood-oops','mood-proud');
+  }
+  function assistantSay(msg, mood, duration){
+    clearTimeout(hideTimer);
+    clearMoods();
+    assistantBubble.textContent = msg;
+    assistantBubble.classList.add('show');
+    if(mood){ assistantChar.classList.add(mood); assistantBubble.classList.add(mood); }
+    hideTimer = setTimeout(()=> assistantBubble.classList.remove('show'), duration || 3200);
+  }
+  function startIdleChatter(){
+    clearInterval(idleTimer);
+    idleTimer = setInterval(()=>{
+      const tip = idleTips[Math.floor(Math.random()*idleTips.length)];
+      assistantSay(tip, null, 3600);
+    }, 11000);
+  }
+  document.getElementById('assistantBot').addEventListener('click', ()=>{
+    const tip = idleTips[Math.floor(Math.random()*idleTips.length)];
+    assistantSay(tip, null, 3200);
+  });
+  startIdleChatter();
+  setTimeout(()=> assistantSay("Pick a sector to launch! 🛰️", null, 4200), 600);
+
+  // ---------- Audio (Web Speech API) ----------
+  function speak(text, rate, pitch){
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = rate || 0.95;
+    utter.pitch = pitch || 1.0;
+    window.speechSynthesis.speak(utter);
+  }
+  document.getElementById('audioBtn').addEventListener('click', ()=>{
+    const q = state.questions[state.index];
+    if(!q) return;
+    if(!('speechSynthesis' in window)){
+      assistantSay("Audio isn't supported on this device.", 'mood-oops', 3000);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(`What is ${q.a} minus ${q.b}? Choose the fastest fuel path to launch your rocket.`);
+    utter.rate = 0.92;
+    const btn = document.getElementById('audioBtn');
+    btn.classList.add('speaking');
+    utter.onend = ()=> btn.classList.remove('speaking');
+    utter.onerror = ()=> btn.classList.remove('speaking');
+    window.speechSynthesis.speak(utter);
+  });
+
+  const wrongLines = [
+    "Oof! Wrong turn in space! Try hopping to the nearest ten first!",
+    "Yikes! That's not the super fuel path! Aim for the friendly checkpoint number!",
+    "Whoa there, pilot! Check the fuel station number first!"
+  ];
+  const correctLines = [
+    "Blast off! Fuel collected!",
+    "Super fuel secured! To the moon!",
+    "Engines roaring! Great subtraction, astronaut!"
+  ];
+
+  // ---------- Belt/reward config ----------
+  const BADGES = {
+    easy:   { name:'Cadet Badge', emoji:'🥉', icon:'🛰️' },
+    medium: { name:'Pilot Badge', emoji:'🥈', icon:'🛰️' },
+    hard:   { name:'Commander Badge', emoji:'🥇', icon:'🛰️' }
+  };
+  const ROUND_LENGTH = 5;
+
+  let state = {
+    difficulty:null, questions:[], index:0, stardust:0, stars:0, firstTryCount:0, mistakes:0, locked:false
+  };
+
+  // ---------- Problem generator ----------
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function shuffleArr(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function generateProblem(diff){
+    let landmarkStep = diff==='easy' ? 10 : diff==='medium' ? 10 : 100;
+    let landmarkMultMin = diff==='easy' ? 1 : diff==='medium' ? 2 : 2;
+    let landmarkMultMax = diff==='easy' ? 9 : diff==='medium' ? 9 : 9;
+    let hopRange = diff==='easy' ? [1,3] : diff==='medium' ? [2,5] : [3,9];
+
+    const landmark = randInt(landmarkMultMin, landmarkMultMax) * landmarkStep;
+    const firstHop = randInt(hopRange[0], hopRange[1]);
+    const secondHop = randInt(hopRange[0], hopRange[1]);
+    const b = landmark - firstHop;
+    const a = landmark + secondHop;
+    const total = a - b;
+
+    const options = shuffleArr([
+      { label: b + ' → ' + landmark, correct:true },
+      { label: b + ' → ' + a, correct:false }
+    ]);
+
+    return {a, b, landmark, firstHop, secondHop, total, options};
+  }
+
+  // ---------- Title screen: difficulty selection ----------
+  const diffGrid = document.getElementById('diffGrid');
+  const startBtn = document.getElementById('startBtn');
+  diffGrid.addEventListener('click', (e)=>{
+    const card = e.target.closest('.diff-card');
+    if(!card) return;
+    [...diffGrid.children].forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.difficulty = card.dataset.diff;
+    startBtn.disabled = false;
+  });
+  startBtn.addEventListener('click', startRound);
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function startRound(){
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    state.questions = Array.from({length:ROUND_LENGTH}, ()=>generateProblem(state.difficulty));
+    state.index = 0; state.stardust = 0; state.stars = 0; state.firstTryCount = 0;
+
+    document.getElementById('hudBadgeIcon').textContent = BADGES[state.difficulty].icon;
+    const diffLabel = state.difficulty==='easy'?'Sector A':state.difficulty==='medium'?'Sector B':'Sector C';
+    document.getElementById('hudDiff').textContent = diffLabel;
+    updateHud();
+    buildProgressRow();
+    showScreen('screen-game');
+    assistantSay("Ignition! Let's launch! 🚀", null, 3000);
+    loadQuestion();
+  }
+
+  function updateHud(){ document.getElementById('hudStardust').textContent = state.stardust; }
+
+  function buildProgressRow(){
+    const row = document.getElementById('progressRow');
+    row.innerHTML = '';
+    for(let i=0;i<ROUND_LENGTH;i++){
+      const el = document.createElement('div');
+      el.className = 'progress-rocket';
+      el.textContent = '🚀';
+      row.appendChild(el);
+    }
+    markProgress();
+  }
+  function markProgress(){
+    const row = document.getElementById('progressRow');
+    [...row.children].forEach((el,i)=>{
+      el.classList.toggle('done', i < state.index);
+      el.classList.toggle('current', i === state.index);
+    });
+  }
+
+  function buildFuelGauge(filled){
+    const gauge = document.getElementById('fuelGauge');
+    gauge.innerHTML = '';
+    for(let i=0;i<5;i++){
+      const seg = document.createElement('div');
+      seg.className = 'fuel-seg' + (i < filled ? ' filled' : '');
+      gauge.appendChild(seg);
+    }
+  }
+
+  // ---------- Question rendering ----------
+  function loadQuestion(){
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    state.mistakes = 0;
+    state.locked = false;
+    const q = state.questions[state.index];
+    markProgress();
+
+    document.getElementById('equationText').innerHTML = q.a + ' <span class="op">−</span> ' + q.b;
+
+    document.getElementById('nodeEarth').innerHTML = '<span class="icon">🌍</span><span class="val">' + q.b + '</span>';
+    document.getElementById('nodeMoon').innerHTML = '<span class="icon">🌙</span><span class="val">' + q.a + '</span>';
+    const station = document.getElementById('nodeStation');
+    station.className = 'node station hidden-val';
+    station.innerHTML = '<span class="icon">⛽</span><span class="val">' + q.landmark + '</span>';
+
+    const rocket = document.getElementById('rocketSprite');
+    rocket.className = 'rocket-sprite';
+    rocket.style.left = '6%';
+
+    buildFuelGauge(0);
+    document.getElementById('stepLabel').textContent = 'Step 1 — Choose the fastest fuel path';
+
+    const optionsRow = document.getElementById('optionsRow');
+    optionsRow.innerHTML = '';
+    q.options.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = opt.label;
+      btn.addEventListener('click', ()=>handleStep1(btn, opt, q));
+      optionsRow.appendChild(btn);
+    });
+
+    document.getElementById('hintBox').classList.remove('show');
+    document.getElementById('feedbackBanner').textContent = '';
+    document.getElementById('feedbackBanner').className = 'feedback-banner';
+    document.getElementById('nextBtn').classList.remove('show');
+  }
+
+  function handleStep1(btn, opt, q){
+    if(state.locked) return;
+
+    if(opt.correct){
+      state.locked = true;
+      btn.classList.add('correct');
+      disableOptions();
+      runFlightSequence(q);
+    } else {
+      btn.classList.add('wrong');
+      btn.disabled = true;
+      state.mistakes++;
+
+      const rocket = document.getElementById('rocketSprite');
+      const dizzy = document.getElementById('dizzyFx');
+      rocket.classList.remove('wobble'); void rocket.offsetWidth; rocket.classList.add('wobble');
+      dizzy.classList.remove('play'); void dizzy.offsetWidth; dizzy.classList.add('play');
+      setTimeout(()=>btn.classList.remove('wrong'), 450);
+
+      const line = wrongLines[Math.floor(Math.random()*wrongLines.length)];
+      speak(line, 1.02, 0.85);
+      assistantSay("Oops! Check the checkpoint fuel station. 🤔", 'mood-oops', 3400);
+      showHint(q);
+
+      document.querySelectorAll('.opt').forEach(o=>{
+        if(!o.disabled) o.classList.add('reveal');
+      });
+    }
+  }
+
+  function disableOptions(){ document.querySelectorAll('.opt').forEach(o=> o.disabled = true); }
+
+  function showHint(q){
+    const box = document.getElementById('hintBox');
+    const txt = document.getElementById('hintText');
+    txt.innerHTML = `The fuel station checkpoint is at <strong>${q.landmark}</strong> — the nearest friendly number to <strong>${q.b}</strong>. Hop there first (<strong>${q.firstHop}</strong> jump${q.firstHop>1?'s':''}), then to <strong>${q.a}</strong> (<strong>${q.secondHop}</strong> more). Tap the glowing path to continue.`;
+    box.classList.add('show');
+  }
+
+  function spawnSpark(leftPercent, emoji){
+    const track = document.getElementById('spaceTrack');
+    const spark = document.createElement('div');
+    spark.className = 'spark play';
+    spark.style.left = leftPercent;
+    spark.textContent = emoji || '✨';
+    track.appendChild(spark);
+    setTimeout(()=> spark.remove(), 750);
+  }
+
+  function spawnCelebration(){
+    const track = document.getElementById('spaceTrack');
+    const emojis = ['🎆','🎉','✨','⭐','🌟'];
+    for(let i=0;i<10;i++){
+      const p = document.createElement('div');
+      p.className = 'celebrate-particle';
+      p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      p.style.left = '94%';
+      p.style.top = '48px';
+      track.appendChild(p);
+      const dx = (Math.random()-0.5)*160;
+      const dy = -40 - Math.random()*80;
+      const anim = p.animate([
+        { transform:'translate(-50%,-50%) scale(.4)', opacity:1 },
+        { transform:'translate(' + (dx-50) + '%,' + dy + 'px) scale(1.1)', opacity:1, offset:.6 },
+        { transform:'translate(' + (dx-50) + '%,' + (dy+30) + 'px) scale(.8)', opacity:0 }
+      ], { duration: 1100 + Math.random()*400, easing:'ease-out' });
+      anim.onfinish = ()=> p.remove();
+    }
+  }
+
+  function runFlightSequence(q){
+    const rocket = document.getElementById('rocketSprite');
+    const station = document.getElementById('nodeStation');
+    const banner = document.getElementById('feedbackBanner');
+    const stepLabel = document.getElementById('stepLabel');
+
+    const starsEarned = state.mistakes === 0 ? 3 : 2;
+    if(state.mistakes === 0) state.firstTryCount++;
+
+    // Leg 1: Earth -> Fuel Station
+    setTimeout(()=>{
+      rocket.classList.add('flying');
+      rocket.style.left = '50%';
+      spawnSpark('6%','🔥');
+      buildFuelGauge(2);
+      banner.textContent = q.b + ' → ' + q.landmark + '  🔥';
+      banner.classList.add('good');
+    }, 200);
+
+    setTimeout(()=>{
+      station.classList.add('revealed');
+      station.classList.remove('hidden-val');
+      spawnSpark('50%','⛽');
+      rocket.classList.remove('flying');
+      stepLabel.textContent = 'Step 2 — ' + q.landmark + ' → ' + q.a;
+    }, 1000);
+
+    // Leg 2: Fuel Station -> Moon
+    setTimeout(()=>{
+      rocket.classList.add('flying');
+      rocket.style.left = '94%';
+      buildFuelGauge(5);
+      banner.textContent = q.landmark + ' → ' + q.a + '  🔥';
+    }, 1350);
+
+    setTimeout(()=>{
+      rocket.classList.remove('flying');
+      spawnSpark('94%','💥');
+      spawnCelebration();
+      state.stardust += 1;
+      state.stars += starsEarned;
+      updateHud();
+
+      const line = correctLines[Math.floor(Math.random()*correctLines.length)];
+      speak(line, 1.0, 1.05);
+      assistantSay(starsEarned===3 ? "Perfect launch! 🎉" : "Nice recovery, pilot!", 'mood-happy', 3200);
+
+      let starStr = '⭐'.repeat(starsEarned);
+      banner.innerHTML = q.firstHop + ' + ' + q.secondHop + ' = ' + q.total + ' fuel! ' + starStr;
+      banner.className = 'feedback-banner good stars';
+      document.getElementById('nextBtn').classList.add('show');
+    }, 2150);
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    state.index++;
+    if(state.index >= ROUND_LENGTH){ finishRound(); }
+    else { loadQuestion(); }
+  });
+
+  function finishRound(){
+    markProgress();
+    const badge = BADGES[state.difficulty];
+    document.getElementById('badgeEmoji').textContent = badge.emoji;
+    document.getElementById('completeTitle').textContent = 'Mission Complete!';
+    document.getElementById('completeSub').textContent = 'You earned the ' + badge.name;
+    document.getElementById('finalStardust').textContent = state.stardust;
+    document.getElementById('finalStars').textContent = state.stars;
+    const accuracy = Math.round((state.firstTryCount / ROUND_LENGTH) * 100);
+    document.getElementById('finalAccuracy').textContent = accuracy + '%';
+    assistantSay("You earned the " + badge.name + "! Incredible! 🏆", 'mood-proud', 4200);
+    showScreen('screen-complete');
+  }
+
+  document.getElementById('playAgainBtn').addEventListener('click', startRound);
+  document.getElementById('newDiffBtn').addEventListener('click', ()=> showScreen('screen-title'));
+
+})();
+</script>
+</body>
+</html>
