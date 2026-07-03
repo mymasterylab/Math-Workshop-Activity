@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyMasteryLab – Number Sense Activities</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cyan: #0891b2;
+    --cyan-light: #cffafe;
+    --cyan-dark: #0e7490;
+    --teal: #0f766e;
+    --teal-light: #ccfbf1;
+    --orange: #ea580c;
+    --orange-light: #fed7aa;
+    --orange-dark: #c2410c;
+    --burnt: #9a3412;
+    --bg: #f0fdfa;
+    --card: #ffffff;
+    --text: #134e4a;
+    --muted: #5eead4;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(8,145,178,0.13);
+  }
+
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .screen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+  .screen.active { display: flex; }
+
+  /* ─── WELCOME ─── */
+  .welcome-card {
+    background: var(--card);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: 40px 36px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+  }
+  .brand { font-size: 13px; font-weight: 700; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .welcome-card h1 { font-size: 26px; font-weight: 900; color: var(--teal); margin-bottom: 6px; }
+  .welcome-card p { color: #5f6b7a; font-size: 15px; margin-bottom: 24px; }
+  .input-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .input-field {
+    border: 2px solid #d1fae5;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-family: 'Nunito', sans-serif;
+    outline: none;
+    color: var(--text);
+    background: #f0fdfa;
+    transition: border-color 0.2s;
+  }
+  .input-field:focus { border-color: var(--cyan); }
+  .btn-start {
+    background: linear-gradient(135deg, var(--cyan), var(--teal));
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 32px;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(8,145,178,0.3);
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(8,145,178,0.4); }
+
+  /* ─── CHARACTER ─── */
+  .character-wrap { position: relative; display: inline-block; }
+  .character { font-size: 72px; transition: all 0.4s ease; display: block; }
+  .char-bubble {
+    position: absolute;
+    top: -10px;
+    right: -130px;
+    background: var(--orange);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 12px;
+    white-space: normal;
+    max-width: 130px;
+    line-height: 1.3;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+  }
+  .char-bubble.show { opacity: 1; }
+  .char-bubble::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: var(--orange);
+  }
+
+  /* ─── QUIZ LAYOUT ─── */
+  .quiz-outer {
+    display: flex;
+    gap: 20px;
+    max-width: 860px;
+    width: 100%;
+    align-items: flex-start;
+  }
+  .quiz-sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-width: 110px;
+  }
+  .quiz-main { flex: 1; }
+
+  /* ─── PROGRESS / TIMER ─── */
+  .progress-bar-wrap { background: #d1fae5; border-radius: 8px; height: 8px; width: 100%; margin-bottom: 8px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--cyan); border-radius: 8px; transition: width 0.3s; }
+  .progress-label { font-size: 12px; color: var(--teal); font-weight: 600; text-align: center; margin-bottom: 16px; }
+
+  .timer-ring { position: relative; width: 80px; height: 80px; }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring circle { fill: none; stroke-width: 7; }
+  .timer-bg { stroke: #d1fae5; }
+  .timer-fill { stroke: var(--cyan); stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.5s; }
+  .timer-num {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--teal);
+    transition: color 0.4s;
+  }
+
+  /* ─── QUESTION CARD ─── */
+  .q-card {
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 28px 28px 24px;
+    margin-bottom: 16px;
+  }
+  .q-type-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--cyan-light);
+    color: var(--cyan-dark);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .q-text { font-size: 19px; font-weight: 800; color: var(--teal); margin-bottom: 20px; line-height: 1.4; }
+
+  /* ─── MCQ — HIGHLIGHTED SELECTION ─── */
+  .mcq-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mcq-btn {
+    background: #f0fdfa;
+    border: 2.5px solid #d1fae5;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Nunito', sans-serif;
+    text-align: center;
+    position: relative;
+  }
+  /* Hover — not yet selected */
+  .mcq-btn:hover:not(:disabled):not(.selected):not(.correct):not(.wrong) {
+    background: #e0f7fa;
+    border-color: var(--cyan);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(8,145,178,0.15);
+  }
+  /* Student selection highlight — orange/burnt orange */
+  .mcq-btn.selected {
+    background: linear-gradient(135deg, #fff7ed, #fed7aa);
+    border-color: var(--orange);
+    color: var(--burnt);
+    box-shadow: 0 0 0 3px rgba(234,88,12,0.18), 0 3px 12px rgba(234,88,12,0.2);
+    transform: scale(1.03);
+  }
+  .mcq-btn.selected::after {
+    content: '✎ Your pick';
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: var(--orange);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  /* Correct answer reveal */
+  .mcq-btn.correct {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    border-color: #16a34a;
+    color: #14532d;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.2);
+    transform: scale(1.03);
+    cursor: default;
+  }
+  .mcq-btn.correct::after {
+    content: '✓ Correct!';
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: #16a34a;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  /* Wrong selection */
+  .mcq-btn.wrong {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border-color: #dc2626;
+    color: #7f1d1d;
+    box-shadow: 0 0 0 3px rgba(220,38,38,0.18);
+    cursor: default;
+  }
+  .mcq-btn.wrong::after {
+    content: '✗ Your pick';
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: #dc2626;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .mcq-btn:disabled { cursor: default; transform: none !important; }
+
+  /* ─── FIB ─── */
+  .fib-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 20px; font-weight: 700; color: var(--teal); }
+  .fib-input {
+    border: 3px solid var(--cyan);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 20px;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    color: var(--teal);
+    background: #f0fdfa;
+    width: 120px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .fib-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(234,88,12,0.15); }
+  /* Typed-in highlight */
+  .fib-input.has-value { border-color: var(--orange); background: #fff7ed; color: var(--burnt); box-shadow: 0 0 0 3px rgba(234,88,12,0.15); }
+  .fib-input.correct { border-color: #16a34a; background: linear-gradient(135deg,#dcfce7,#bbf7d0); color: #14532d; box-shadow: 0 0 0 3px rgba(22,163,74,0.2); }
+  .fib-input.wrong { border-color: #dc2626; background: linear-gradient(135deg,#fee2e2,#fecaca); color: #7f1d1d; box-shadow: 0 0 0 3px rgba(220,38,38,0.15); }
+
+  /* ─── MATCH ─── */
+  .match-wrap { display: flex; gap: 16px; }
+  .match-col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .match-col-label { font-size: 12px; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .match-item {
+    background: #f0fdfa;
+    border: 2.5px solid #d1fae5;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    color: var(--text);
+    text-align: center;
+  }
+  .match-item:hover:not(.matched-ok):not(.matched-err) { background: #e0f7fa; border-color: var(--cyan); }
+  .match-item.active {
+    border-color: var(--orange);
+    background: linear-gradient(135deg, #fff7ed, #fed7aa);
+    color: var(--burnt);
+    box-shadow: 0 0 0 3px rgba(234,88,12,0.18);
+    transform: scale(1.04);
+  }
+  .match-item.matched-ok { border-color: #16a34a; background: linear-gradient(135deg,#dcfce7,#bbf7d0); color: #14532d; cursor: default; }
+  .match-item.matched-err { border-color: #dc2626; background: linear-gradient(135deg,#fee2e2,#fecaca); color: #7f1d1d; }
+  .match-pair-line { font-size: 20px; color: var(--muted); display: flex; align-items: center; padding-top: 28px; }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: 'Nunito', sans-serif;
+    box-shadow: 0 4px 14px rgba(234,88,12,0.3);
+  }
+  .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(234,88,12,0.4); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .feedback-bar {
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 12px;
+    display: none;
+  }
+  .feedback-bar.show { display: block; }
+  .feedback-bar.ok { background: #dcfce7; color: #14532d; }
+  .feedback-bar.bad { background: #fee2e2; color: #7f1d1d; }
+
+  /* ─── ACTIVITY 2 ─── */
+  .digit-bank { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; min-height: 60px; align-items: center; }
+  .drop-slots { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+  .drop-slot {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    border: 3px dashed #d1fae5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--teal);
+    background: #f0fdfa;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .drop-slot.over { border-color: var(--cyan); background: var(--cyan-light); }
+  .drop-slot.filled { border-style: solid; border-color: var(--orange); background: #fff7ed; color: var(--burnt); }
+  .digit-tile {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--cyan), var(--teal));
+    color: white;
+    font-size: 24px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.15s, box-shadow 0.15s, outline 0.15s;
+    box-shadow: 0 2px 8px rgba(8,145,178,0.3);
+  }
+  .digit-tile:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(8,145,178,0.4); }
+  .digit-tile:active { cursor: grabbing; }
+  .digit-tile.selected-tile { outline: 3px solid var(--orange); box-shadow: 0 0 0 5px rgba(234,88,12,0.2); transform: scale(1.12); }
+
+  .ask-box {
+    background: linear-gradient(135deg, var(--orange-light), #fff7ed);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--burnt);
+    display: none;
+    white-space: pre-line;
+  }
+  .ask-box.show { display: block; }
+
+  .check-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .result-label { font-size: 14px; font-weight: 700; }
+  .result-label.ok { color: #16a34a; }
+  .result-label.bad { color: #dc2626; }
+  .step-indicator { font-size: 13px; color: #5f6b7a; margin-bottom: 16px; font-weight: 600; }
+
+  /* ─── ACTIVITY 3 ─── */
+  .race-display {
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 28px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .race-numbers { font-size: 42px; font-weight: 900; color: var(--teal); letter-spacing: 4px; margin-bottom: 20px; }
+  .race-blank { color: var(--orange); font-size: 48px; border-bottom: 4px solid var(--orange); padding: 0 8px; min-width: 48px; display: inline-block; }
+  .symbol-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .symbol-btn {
+    background: var(--card);
+    border: 3px solid #d1fae5;
+    border-radius: 14px;
+    padding: 16px 28px;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--teal);
+    cursor: pointer;
+    transition: all 0.18s;
+    min-width: 80px;
+    font-family: 'Nunito', sans-serif;
+    position: relative;
+  }
+  .symbol-btn:hover:not(:disabled):not(.chosen):not(.correct):not(.wrong) {
+    background: var(--cyan-light);
+    border-color: var(--cyan);
+    transform: scale(1.08);
+  }
+  /* Student pick highlight — orange glow */
+  .symbol-btn.chosen {
+    background: linear-gradient(135deg, #fff7ed, #fed7aa);
+    border-color: var(--orange);
+    color: var(--burnt);
+    box-shadow: 0 0 0 4px rgba(234,88,12,0.2), 0 4px 16px rgba(234,88,12,0.25);
+    transform: scale(1.1);
+  }
+  .symbol-btn.chosen::after {
+    content: '✎';
+    position: absolute;
+    top: -10px;
+    right: -6px;
+    background: var(--orange);
+    color: white;
+    font-size: 12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .symbol-btn.correct {
+    background: linear-gradient(135deg,#dcfce7,#bbf7d0);
+    border-color: #16a34a;
+    color: #14532d;
+    box-shadow: 0 0 0 4px rgba(22,163,74,0.2);
+    transform: scale(1.1);
+    cursor: default;
+  }
+  .symbol-btn.wrong {
+    background: linear-gradient(135deg,#fee2e2,#fecaca);
+    border-color: #dc2626;
+    color: #7f1d1d;
+    box-shadow: 0 0 0 4px rgba(220,38,38,0.18);
+    cursor: default;
+  }
+  .symbol-btn:disabled { cursor: default; }
+
+  /* ─── NAV TABS ─── */
+  .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid #d1fae5;
+    background: white;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--teal);
+    font-family: 'Nunito', sans-serif;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { border-color: var(--cyan); background: var(--cyan-light); }
+  .tab-btn.active { background: var(--cyan); color: white; border-color: var(--cyan-dark); }
+
+  .act-section { display: none; }
+  .act-section.show { display: block; }
+
+  .act-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .act-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--cyan), var(--teal));
+    color: white; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .act-title { font-size: 18px; font-weight: 900; color: var(--teal); }
+  .act-sub { font-size: 13px; color: #5f6b7a; }
+
+  /* ─── RESULTS ─── */
+  .results-card {
+    background: var(--card);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: 32px;
+    max-width: 680px;
+    width: 100%;
+  }
+  .score-circle {
+    width: 110px; height: 110px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--teal));
+    color: white; font-size: 32px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    box-shadow: 0 6px 24px rgba(8,145,178,0.35);
+  }
+  .summary-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #e0f2fe;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: start;
+  }
+  .your-ans { font-size: 14px; font-weight: 700; color: var(--teal); }
+  .your-ans.wrong { color: #dc2626; }
+  .correct-ans { font-size: 14px; font-weight: 700; color: #16a34a; }
+  .time-chip { background: var(--cyan-light); color: var(--cyan-dark); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  @keyframes popIn { 0%{transform:scale(0.85);opacity:0} 60%{transform:scale(1.06)} 100%{transform:scale(1);opacity:1} }
+  .bounce { animation: bounce 0.5s ease; }
+  .pop-in { animation: popIn 0.35s ease forwards; }
+
+  /* ─── CONFETTI ─── */
+  .confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 100; overflow: hidden; }
+  .confetti-piece { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: fall linear forwards; }
+  @keyframes fall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+
+  @media (max-width: 640px) {
+    .quiz-outer { flex-direction: column; align-items: center; }
+    .quiz-sidebar { flex-direction: row; min-width: auto; }
+    .mcq-options { grid-template-columns: 1fr; }
+    .match-wrap { flex-direction: column; }
+    .symbol-btns { gap: 8px; }
+    .symbol-btn { padding: 12px 18px; font-size: 26px; min-width: 64px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ WELCOME ══════════ -->
+<div class="screen active" id="screen-welcome">
+  <div class="welcome-card">
+    <div class="brand">MyMasteryLab</div>
+    <div style="font-size:72px;margin:16px 0">🧮</div>
+    <h1>Number Sense Activities</h1>
+    <p>Three fun activities: Number Quiz, Build the Biggest Number, and Number Race!</p>
+    <div class="input-row">
+      <input class="input-field" id="student-name" placeholder="Your name…" type="text">
+      <select class="input-field" id="student-grade">
+        <option value="">Your grade…</option>
+        <option>Grade 2</option><option>Grade 3</option><option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
+      </select>
+    </div>
+    <button class="btn-start" onclick="startActivity()">Let's Go! 🚀</button>
+  </div>
+</div>
+
+<!-- ══════════ QUIZ (Activity 1) ══════════ -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-outer">
+    <div class="quiz-sidebar">
+      <div class="character-wrap">
+        <span class="character" id="char">🤩</span>
+        <div class="char-bubble" id="char-bubble">You got this!</div>
+      </div>
+      <div class="timer-ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle class="timer-bg" cx="40" cy="40" r="33"/>
+          <circle class="timer-fill" id="timer-circle" cx="40" cy="40" r="33" stroke-dasharray="207" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="timer-num">15</div>
+      </div>
+    </div>
+    <div class="quiz-main">
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+      <div class="progress-label" id="progress-label">Question 1 of 12</div>
+      <div class="q-card" id="q-card">
+        <div class="q-type-badge" id="q-type">MCQ</div>
+        <div class="q-text" id="q-text">Loading…</div>
+        <div id="q-body"></div>
+      </div>
+      <div class="feedback-bar" id="feedback-bar"></div>
+      <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end;">
+        <button class="btn-submit" id="btn-submit" onclick="submitAnswer()">Check ✓</button>
+        <button class="btn-submit" id="btn-next" style="display:none;background:linear-gradient(135deg,var(--teal),var(--cyan))" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ACTIVITIES 2 & 3 ══════════ -->
+<div class="screen" id="screen-activities">
+  <div style="max-width:720px;width:100%;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div class="brand">MyMasteryLab</div>
+      <div style="font-size:15px;font-weight:700;color:var(--teal)" id="student-greeting"></div>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="showAct(0)">🏗️ Build the Number</button>
+      <button class="tab-btn" onclick="showAct(1)">🏁 Number Race</button>
+      <button class="tab-btn" onclick="showAct(2)">📊 My Results</button>
+    </div>
+
+    <!-- Activity 2 -->
+    <div class="act-section show" id="act2">
+      <div class="q-card">
+        <div class="act-header">
+          <div class="act-icon">🏗️</div>
+          <div>
+            <div class="act-title">Build the Biggest Number</div>
+            <div class="act-sub">Click a digit then click a slot — or drag and drop!</div>
+          </div>
+        </div>
+        <div class="step-indicator" id="build-step-label">Step 1 of 4</div>
+        <div id="build-task-desc" style="font-size:15px;font-weight:700;color:var(--teal);margin-bottom:16px;"></div>
+        <div class="digit-bank" id="digit-bank"></div>
+        <div style="font-size:13px;color:#5f6b7a;margin-bottom:8px;font-weight:600;">Drop digits here:</div>
+        <div class="drop-slots" id="drop-slots"></div>
+        <div style="text-align:center;font-size:36px;font-weight:900;color:var(--teal);letter-spacing:4px;min-height:48px;margin-bottom:16px;" id="built-number"></div>
+        <div class="ask-box" id="ask-box"></div>
+        <div class="check-row">
+          <button class="btn-submit" onclick="checkBuild()" id="build-check-btn">Check! ✓</button>
+          <button class="btn-submit" id="build-next-btn" style="display:none;background:linear-gradient(135deg,var(--teal),var(--cyan))" onclick="nextBuildStep()">Next Step →</button>
+          <div id="build-result-label" class="result-label"></div>
+        </div>
+        <div style="margin-top:12px;font-size:13px;color:#5f6b7a;font-weight:600;" id="build-explain"></div>
+      </div>
+    </div>
+
+    <!-- Activity 3 -->
+    <div class="act-section" id="act3">
+      <div class="q-card">
+        <div class="act-header">
+          <div class="act-icon">🏁</div>
+          <div>
+            <div class="act-title">Number Race ⚡</div>
+            <div class="act-sub">Tap >, &lt;, or = — your pick lights up orange!</div>
+          </div>
+        </div>
+        <div class="step-indicator" id="race-step-label">Question 1 of 6</div>
+        <div class="race-display">
+          <div class="race-numbers" id="race-nums"></div>
+        </div>
+        <div class="symbol-btns" id="symbol-btns">
+          <button class="symbol-btn" onclick="pickSymbol('>')">&gt;</button>
+          <button class="symbol-btn" onclick="pickSymbol('<')">&lt;</button>
+          <button class="symbol-btn" onclick="pickSymbol('=')">=</button>
+        </div>
+        <div class="feedback-bar" id="race-feedback" style="margin-top:12px;"></div>
+        <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+          <button class="btn-submit" id="race-next-btn" style="display:none;background:linear-gradient(135deg,var(--teal),var(--cyan))" onclick="nextRaceQ()">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="act-section" id="act-results">
+      <div class="results-card">
+        <div style="text-align:center;margin-bottom:24px;padding-bottom:24px;border-bottom:2px solid var(--cyan-light);">
+          <div class="score-circle" id="score-circle">–</div>
+          <div style="font-size:22px;font-weight:900;color:var(--teal)" id="score-title">Your Score</div>
+          <div style="font-size:14px;color:#5f6b7a;margin-top:4px" id="score-sub"></div>
+        </div>
+        <div style="font-size:16px;font-weight:900;color:var(--teal);margin-bottom:12px;">📋 Question Breakdown</div>
+        <div id="results-list"></div>
+        <button class="btn-start" style="margin-top:20px;" onclick="restartAll()">Play Again 🔄</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="confetti-wrap" id="confetti-wrap"></div>
+
+<script>
+const CHARS = { excited:'🤩', happy:'😊', thinking:'🤔', worried:'😟', panic:'😰', cool:'😎' };
+const CHAR_MSGS = {
+  excited:'Fantastic! Keep it up!',
+  happy:'Great job so far!',
+  thinking:'Hmm, think carefully…',
+  worried:'Uh oh, hurry up!',
+  panic:'Time is running out!!',
+  cool:'Take your time!'
+};
+
+const questions = [
+  { type:'mcq', text:'What is the place value of 7 in 3,749?', options:['Ones','Tens','Hundreds','Thousands'], answer:'Hundreds', time:15 },
+  { type:'fib', text:'Write the number: Eight hundred and forty-five = ___', answer:'845', prefix:'', suffix:'', time:15 },
+  { type:'mcq', text:'Which number has 4 in the tens place?', options:['143','341','413','431'], answer:'341', time:15 },
+  { type:'fib', text:'What is 5,000 + 300 + 20 + 8 = ___', answer:'5328', prefix:'', suffix:'', time:20 },
+  { type:'mcq', text:'Which is the greatest number?', options:['4,521','4,251','4,512','4,215'], answer:'4,521', time:15 },
+  { type:'mcq', text:'Round 647 to the nearest hundred.', options:['500','600','650','700'], answer:'600', time:15 },
+  { type:'fib', text:'The number 2,036 in words: Two thousand and ___ six', answer:'thirty', prefix:'Two thousand and ', suffix:' six', time:20 },
+  { type:'match', text:'Match the number with its expanded form.', pairs:[['302','300+2'],['570','500+70'],['408','400+8']], time:25 },
+  { type:'mcq', text:'What comes just before 10,000?', options:['9,998','9,999','10,001','9,009'], answer:'9,999', time:15 },
+  { type:'fib', text:'If you have 6 hundreds, 0 tens, 3 ones, the number is ___', answer:'603', prefix:'', suffix:'', time:15 },
+  { type:'mcq', text:'Which number is between 1,200 and 1,300?', options:['1,199','1,305','1,245','1,350'], answer:'1,245', time:15 },
+  { type:'mcq', text:'What is 8,000 − 1,000?', options:['7,000','9,000','6,000','7,100'], answer:'7,000', time:15 },
+];
+
+const buildSteps = [
+  { digits:[4,8,2], task:'Build the Biggest Number', goal:'greatest', answer:'842', ask:'Can anyone make a bigger one?', askAnswer:'No! 842 is the greatest.', explain:'' },
+  { digits:[9,1,7,3], task:'Race — Build the Biggest Number!', goal:'greatest', answer:'9731', ask:'', askAnswer:'', explain:'9731 — digits placed from largest to smallest.' },
+  { digits:[8,0,5,2], task:'Smallest Number', goal:'smallest', answer:'2058', ask:'Why can\'t it start with 0?', askAnswer:'Because 0852 would actually be 852 — a 3-digit number!', explain:'0 cannot be the leading digit.' },
+  { digits:[6,4,9,1], task:'Challenge: Build Greatest AND Smallest!', goal:'both', answerGreatest:'9641', answerSmallest:'1469', ask:'', askAnswer:'', explain:'Greatest: 9641 | Smallest: 1469' },
+];
+
+const raceQuestions = [
+  { a:785, b:758, ans:'>' },
+  { a:607, b:670, ans:'<' },
+  { a:999, b:999, ans:'=' },
+  { a:456, b:465, ans:'<' },
+  { a:1204, b:1240, ans:'<' },
+  { a:845, b:845, ans:'=' },
+];
+
+let studentName='', studentGrade='';
+let currentQ=0, timerVal=0, timerInt=null, selectedAnswer=null, answered=false;
+let qResults=[], qStartTime=0;
+let buildStep=0;
+let raceIdx=0, raceScore=0, raceResults=[];
+
+// ── Startup ──
+function startActivity() {
+  studentName = document.getElementById('student-name').value.trim() || 'Student';
+  studentGrade = document.getElementById('student-grade').value || 'Grade';
+  if(!studentName){ document.getElementById('student-name').focus(); return; }
+  document.getElementById('student-greeting').textContent = `👋 Hi ${studentName} (${studentGrade})!`;
+  showScreen('screen-quiz');
+  loadQuestion(0);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Character ──
+function setChar(mood) {
+  const el = document.getElementById('char');
+  const bubble = document.getElementById('char-bubble');
+  el.textContent = CHARS[mood];
+  bubble.textContent = CHAR_MSGS[mood];
+  bubble.classList.add('show');
+  clearTimeout(setChar._t);
+  setChar._t = setTimeout(() => bubble.classList.remove('show'), 2600);
+  el.classList.remove('bounce');
+  void el.offsetWidth;
+  el.classList.add('bounce');
+  setTimeout(() => el.classList.remove('bounce'), 600);
+}
+
+// ── Quiz ──
+function loadQuestion(idx) {
+  if(idx >= questions.length){ endQuiz(); return; }
+  currentQ = idx;
+  answered = false;
+  selectedAnswer = null;
+  const q = questions[idx];
+  document.getElementById('progress-bar').style.width = (idx/questions.length*100)+'%';
+  document.getElementById('progress-label').textContent = `Question ${idx+1} of ${questions.length}`;
+  document.getElementById('q-type').textContent = q.type==='mcq'?'🔘 Multiple Choice':q.type==='fib'?'✏️ Fill in the Blank':'🔗 Match the Answer';
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('feedback-bar').className = 'feedback-bar';
+  document.getElementById('btn-submit').style.display = '';
+  document.getElementById('btn-next').style.display = 'none';
+  renderQBody(q);
+  startTimer(q.time);
+  setChar('cool');
+  qStartTime = Date.now();
+}
+
+function renderQBody(q) {
+  const body = document.getElementById('q-body');
+  if(q.type === 'mcq') {
+    body.innerHTML = '<div class="mcq-options">' +
+      q.options.map(o =>
+        `<button class="mcq-btn" onclick="selectMCQ(this,'${o.replace(/'/g,"\\'")}')">${o}</button>`
+      ).join('') + '</div>';
+  } else if(q.type === 'fib') {
+    body.innerHTML = `<div class="fib-wrap">${q.prefix||''}<input class="fib-input" id="fib-ans" type="text" placeholder="?" autocomplete="off" oninput="handleFibInput(this)">${q.suffix||''}</div>`;
+    setTimeout(()=>document.getElementById('fib-ans')?.focus(), 80);
+  } else if(q.type === 'match') {
+    window._matchState = { selected:null, leftIdx:null, matched:{} };
+    const pairs = q.pairs;
+    const shuffled = [...pairs.map(([,r],i)=>({r,i}))].sort(()=>Math.random()-0.5);
+    window._matchShuffled = shuffled;
+    let html = '<div class="match-wrap">';
+    html += '<div class="match-col"><div class="match-col-label">Number</div>';
+    pairs.forEach(([l],i) => html += `<div class="match-item" id="ml${i}" onclick="matchClick('left',${i},'${l}')">${l}</div>`);
+    html += '</div><div class="match-pair-line">↔</div><div class="match-col"><div class="match-col-label">Expanded</div>';
+    shuffled.forEach((item,si) => html += `<div class="match-item" id="mr${si}" onclick="matchClick('right',${si},'${item.r}',${item.i})">${item.r}</div>`);
+    html += '</div></div>';
+    body.innerHTML = html;
+  }
+}
+
+function selectMCQ(btn, val) {
+  if(answered) return;
+  // Remove selection from all, add to clicked
+  document.querySelectorAll('.mcq-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  btn.classList.add('pop-in');
+  setTimeout(() => btn.classList.remove('pop-in'), 350);
+  selectedAnswer = val;
+}
+
+function handleFibInput(el) {
+  selectedAnswer = el.value.trim();
+  if(selectedAnswer) {
+    el.classList.add('has-value');
+  } else {
+    el.classList.remove('has-value');
+  }
+}
+
+function matchClick(side, idx, val, pairIdx) {
+  if(answered) return;
+  const state = window._matchState;
+  if(side === 'left') {
+    if(state.matched[`l${idx}`]) return;
+    document.querySelectorAll('[id^="ml"]').forEach(e => e.classList.remove('active'));
+    state.selected = idx;
+    state.leftIdx = idx;
+    document.getElementById(`ml${idx}`).classList.add('active');
+  } else {
+    if(state.selected === null || state.matched[`r${idx}`]) return;
+    const isCorrect = window._matchShuffled[idx].i === state.leftIdx;
+    const li = document.getElementById(`ml${state.leftIdx}`);
+    const ri = document.getElementById(`mr${idx}`);
+    if(isCorrect) {
+      li.classList.remove('active'); li.classList.add('matched-ok');
+      ri.classList.add('matched-ok');
+      state.matched[`l${state.leftIdx}`] = true;
+      state.matched[`r${idx}`] = true;
+      state.selected = null; state.leftIdx = null;
+      if(Object.keys(state.matched).length >= questions[currentQ].pairs.length * 2) {
+        selectedAnswer = '__match_all__';
+      }
+    } else {
+      li.classList.remove('active'); li.classList.add('matched-err');
+      ri.classList.add('matched-err');
+      state.selected = null; state.leftIdx = null;
+      setTimeout(() => { li.classList.remove('matched-err'); ri.classList.remove('matched-err'); }, 700);
+    }
+  }
+}
+
+function submitAnswer() {
+  if(answered) return;
+  const q = questions[currentQ];
+  const taken = Math.round((Date.now()-qStartTime)/1000);
+  clearInterval(timerInt);
+  answered = true;
+
+  let correct = false;
+  if(q.type==='mcq') correct = selectedAnswer === q.answer;
+  else if(q.type==='fib') correct = (selectedAnswer||'').toLowerCase().trim() === q.answer.toLowerCase().trim();
+  else if(q.type==='match') correct = selectedAnswer === '__match_all__';
+
+  qResults.push({ q:q.text, type:q.type, selected:selectedAnswer||'(no answer)', correct:q.answer, isCorrect:correct, time:taken });
+
+  const fb = document.getElementById('feedback-bar');
+  if(correct) {
+    fb.textContent = '✅ Correct! Great job!';
+    fb.className = 'feedback-bar show ok';
+    setChar('excited');
+    confetti();
+    if(q.type==='mcq') {
+      document.querySelectorAll('.mcq-btn').forEach(b => {
+        b.disabled = true;
+        if(b.textContent === q.answer) { b.classList.remove('selected'); b.classList.add('correct'); }
+      });
+    } else if(q.type==='fib') {
+      const fi = document.getElementById('fib-ans');
+      if(fi){ fi.classList.remove('has-value','wrong'); fi.classList.add('correct'); fi.disabled=true; }
+    }
+  } else {
+    fb.textContent = `❌ The answer was: ${q.answer}`;
+    fb.className = 'feedback-bar show bad';
+    setChar('worried');
+    if(q.type==='mcq') {
+      document.querySelectorAll('.mcq-btn').forEach(b => {
+        b.disabled = true;
+        if(b.textContent === q.answer) b.classList.add('correct');
+        else if(b.classList.contains('selected')) { b.classList.remove('selected'); b.classList.add('wrong'); }
+      });
+    } else if(q.type==='fib') {
+      const fi = document.getElementById('fib-ans');
+      if(fi){ fi.classList.remove('has-value'); fi.classList.add('wrong'); fi.disabled=true; }
+    }
+  }
+
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-next').style.display = '';
+}
+
+function nextQuestion() { loadQuestion(currentQ+1); }
+
+function startTimer(secs) {
+  clearInterval(timerInt);
+  timerVal = secs;
+  const circ = document.getElementById('timer-circle');
+  const num = document.getElementById('timer-num');
+  const FULL = 2*Math.PI*33;
+  circ.style.strokeDasharray = FULL;
+  const update = () => {
+    const pct = timerVal/secs;
+    circ.style.strokeDashoffset = FULL*(1-pct);
+    num.textContent = timerVal;
+    if(pct>0.6){ circ.style.stroke='#0891b2'; num.style.color='var(--teal)'; }
+    else if(pct>0.35){ circ.style.stroke='#f59e0b'; num.style.color='#92400e'; setChar('thinking'); }
+    else if(pct>0.15){ circ.style.stroke='#ea580c'; num.style.color='#9a3412'; setChar('worried'); }
+    else{ circ.style.stroke='#dc2626'; num.style.color='#7f1d1d'; setChar('panic'); }
+  };
+  update();
+  timerInt = setInterval(()=>{ timerVal--; update(); if(timerVal<=0){ clearInterval(timerInt); if(!answered) submitAnswer(); } }, 1000);
+}
+
+function endQuiz() {
+  showScreen('screen-activities');
+  showAct(0);
+}
+
+// ── Activity 2: Build ──
+function initBuild() { buildStep=0; renderBuildStep(); }
+
+function renderBuildStep() {
+  const step = buildSteps[buildStep];
+  document.getElementById('build-step-label').textContent = `Step ${buildStep+1} of ${buildSteps.length}`;
+  document.getElementById('build-task-desc').textContent = `🎯 ${step.task} using digits: ${step.digits.join(', ')}`;
+  document.getElementById('ask-box').classList.remove('show');
+  document.getElementById('build-result-label').textContent='';
+  document.getElementById('build-explain').textContent='';
+  document.getElementById('build-check-btn').style.display='';
+  document.getElementById('build-next-btn').style.display='none';
+  document.getElementById('built-number').textContent='';
+  window._dragVal=null; window._dragEl=null;
+
+  const bank = document.getElementById('digit-bank');
+  bank.innerHTML='';
+  const slots = document.getElementById('drop-slots');
+  slots.innerHTML='';
+
+  if(step.goal==='both') {
+    bank.innerHTML='';
+    // Greatest row — its own bank + slots
+    const gWrap = document.createElement('div');
+    gWrap.style.cssText='margin-bottom:18px;';
+    gWrap.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:8px;">🔼 Greatest number — drag digits below:</div>
+      <div class="digit-bank" id="bank-greatest" style="margin-bottom:8px;"></div>
+      <div style="font-size:12px;color:#5f6b7a;font-weight:600;margin-bottom:6px;">Drop here:</div>
+      <div style="display:flex;gap:8px;">${step.digits.map((_,i)=>`<div class="drop-slot" id="sg${i}" ondragover="slotOver(event,'greatest')" ondrop="slotDrop(event,'greatest',${i})" onclick="slotClick('greatest',${i})"></div>`).join('')}</div>`;
+    slots.appendChild(gWrap);
+
+    // Smallest row — its own bank + slots
+    const sWrap = document.createElement('div');
+    sWrap.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:8px;">🔽 Smallest number — drag digits below:</div>
+      <div class="digit-bank" id="bank-smallest" style="margin-bottom:8px;"></div>
+      <div style="font-size:12px;color:#5f6b7a;font-weight:600;margin-bottom:6px;">Drop here:</div>
+      <div style="display:flex;gap:8px;">${step.digits.map((_,i)=>`<div class="drop-slot" id="ss${i}" ondragover="slotOver(event,'smallest')" ondrop="slotDrop(event,'smallest',${i})" onclick="slotClick('smallest',${i})"></div>`).join('')}</div>`;
+    slots.appendChild(sWrap);
+
+    // Populate each bank independently
+    step.digits.forEach(d => document.getElementById('bank-greatest').appendChild(makeTile(d,'greatest')));
+    step.digits.forEach(d => document.getElementById('bank-smallest').appendChild(makeTile(d,'smallest')));
+
+    window._slotG=Array(step.digits.length).fill(null);
+    window._slotS=Array(step.digits.length).fill(null);
+    window._bankG=[...step.digits];
+    window._bankS=[...step.digits];
+  } else {
+    step.digits.forEach(d=>bank.appendChild(makeTile(d)));
+    step.digits.forEach((_,i)=>{
+      const s=document.createElement('div');
+      s.className='drop-slot'; s.id=`sl${i}`;
+      s.ondragover=slotOver; s.ondrop=(e)=>slotDrop(e,'single',i); s.onclick=()=>slotClick('single',i);
+      slots.appendChild(s);
+    });
+    window._slotSingle=Array(step.digits.length).fill(null);
+  }
+}
+
+function makeTile(d) {
+  const el=document.createElement('div');
+  el.className='digit-tile'; el.textContent=d; el.draggable=true; el.dataset.digit=d;
+  el.ondragstart=(e)=>{ window._dragVal=parseInt(el.dataset.digit); window._dragEl=el; el.style.opacity='0.5'; };
+  el.ondragend=()=>{ el.style.opacity='1'; };
+  el.onclick=()=>{
+    if(window._dragVal===parseInt(el.dataset.digit) && window._dragEl===el){
+      window._dragVal=null; window._dragEl=null;
+      el.classList.remove('selected-tile');
+    } else {
+      document.querySelectorAll('.digit-tile').forEach(t=>t.classList.remove('selected-tile'));
+      window._dragVal=parseInt(el.dataset.digit); window._dragEl=el;
+      el.classList.add('selected-tile');
+    }
+  };
+  return el;
+}
+
+function slotOver(e){ e.preventDefault(); e.currentTarget.classList.add('over'); }
+function slotDrop(e,which,idx){ e.preventDefault(); e.currentTarget.classList.remove('over'); placeDigit(which,idx); }
+function slotClick(which,idx){ if(window._dragVal!==null) placeDigit(which,idx); }
+
+function placeDigit(which,idx){
+  if(window._dragVal===null) return;
+  const v=window._dragVal;
+  if(which==='single'){
+    const prev=window._slotSingle[idx];
+    if(prev!==null) returnToBank(prev);
+    window._slotSingle[idx]=v; renderSlot(`sl${idx}`,v);
+  } else if(which==='greatest'){
+    const prev=window._slotG[idx];
+    if(prev!==null) returnToBank(prev);
+    window._slotG[idx]=v; renderSlot(`sg${idx}`,v);
+  } else {
+    const prev=window._slotS[idx];
+    if(prev!==null) returnToBank(prev);
+    window._slotS[idx]=v; renderSlot(`ss${idx}`,v);
+  }
+  removeFromBank(v);
+  if(window._dragEl) window._dragEl.classList.remove('selected-tile');
+  window._dragVal=null; window._dragEl=null;
+  updateBuiltNumber();
+}
+
+function renderSlot(id,v){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=v; el.classList.add('filled');
+}
+
+function removeFromBank(v){
+  for(const t of document.getElementById('digit-bank').querySelectorAll('.digit-tile')){
+    if(parseInt(t.dataset.digit)===v && !t.dataset.removed){ t.dataset.removed='1'; t.style.visibility='hidden'; break; }
+  }
+}
+function returnToBank(v){
+  for(const t of document.getElementById('digit-bank').querySelectorAll('.digit-tile')){
+    if(parseInt(t.dataset.digit)===v && t.dataset.removed==='1'){ delete t.dataset.removed; t.style.visibility='visible'; break; }
+  }
+}
+
+function updateBuiltNumber(){
+  const step=buildSteps[buildStep];
+  if(step.goal==='both'){
+    const g=(window._slotG||[]).map(v=>v===null?'_':v).join('');
+    const s=(window._slotS||[]).map(v=>v===null?'_':v).join('');
+    document.getElementById('built-number').textContent=`Greatest: ${g}   Smallest: ${s}`;
+  } else {
+    document.getElementById('built-number').textContent=(window._slotSingle||[]).map(v=>v===null?'_':v).join('');
+  }
+}
+
+function checkBuild(){
+  const step=buildSteps[buildStep];
+  const rl=document.getElementById('build-result-label');
+  let correct=false;
+  if(step.goal==='both'){
+    const g=(window._slotG||[]).join(''), s=(window._slotS||[]).join('');
+    correct=g===step.answerGreatest && s===step.answerSmallest;
+    rl.textContent=correct?`✅ Correct! Greatest: ${step.answerGreatest}, Smallest: ${step.answerSmallest}`:`❌ Greatest: ${step.answerGreatest} | Smallest: ${step.answerSmallest}`;
+  } else {
+    const n=(window._slotSingle||[]).join('');
+    correct=n===step.answer;
+    rl.textContent=correct?`✅ Correct! Answer: ${step.answer}`:`❌ Answer is: ${step.answer}`;
+  }
+  rl.className='result-label '+(correct?'ok':'bad');
+  if(step.ask) { document.getElementById('ask-box').textContent=`💬 ${step.ask}\n→ ${step.askAnswer}`; document.getElementById('ask-box').classList.add('show'); }
+  if(step.explain) document.getElementById('build-explain').textContent='💡 '+step.explain;
+  document.getElementById('build-check-btn').style.display='none';
+  document.getElementById('build-next-btn').style.display=buildStep<buildSteps.length-1?'':'none';
+  if(correct) confetti();
+}
+
+function nextBuildStep(){ buildStep++; if(buildStep<buildSteps.length) renderBuildStep(); }
+
+// ── Activity 3: Race ──
+function initRace(){ raceIdx=0; raceScore=0; raceResults=[]; renderRaceQ(); }
+
+function renderRaceQ(){
+  if(raceIdx>=raceQuestions.length){ showRaceResults(); return; }
+  const q=raceQuestions[raceIdx];
+  document.getElementById('race-step-label').textContent=`Question ${raceIdx+1} of ${raceQuestions.length}`;
+  document.getElementById('race-nums').innerHTML=`${q.a} <span class="race-blank" id="race-blank">?</span> ${q.b}`;
+  document.getElementById('race-feedback').className='feedback-bar';
+  document.getElementById('race-next-btn').style.display='none';
+  document.querySelectorAll('.symbol-btn').forEach(b=>{ b.className='symbol-btn'; b.disabled=false; });
+}
+
+function pickSymbol(sym){
+  if(document.getElementById('race-next-btn').style.display!=='none') return;
+  const q=raceQuestions[raceIdx];
+  const correct=sym===q.ans;
+
+  // Highlight selected button orange immediately
+  document.querySelectorAll('.symbol-btn').forEach(b=>{
+    const bs=b.textContent.trim();
+    if(bs===sym || (sym==='='&&bs==='=') || (sym==='>'&&bs==='>') || (sym==='<'&&bs==='<')){
+      b.classList.add('chosen');
+    }
+  });
+
+  setTimeout(()=>{
+    document.getElementById('race-blank').textContent=sym;
+    document.querySelectorAll('.symbol-btn').forEach(b=>{
+      b.disabled=true;
+      const bs=b.textContent.trim();
+      const isChosen=(bs===sym || (sym==='='&&bs==='=') || (sym==='>'&&bs==='>') || (sym==='<'&&bs==='<'));
+      const isCorrectSym=(bs===q.ans || (q.ans==='='&&bs==='=') || (q.ans==='>'&&bs==='>') || (q.ans==='<'&&bs==='<'));
+      if(isCorrectSym){ b.classList.remove('chosen'); b.classList.add('correct'); }
+      else if(isChosen && !isCorrectSym){ b.classList.remove('chosen'); b.classList.add('wrong'); }
+    });
+    const fb=document.getElementById('race-feedback');
+    if(correct){ fb.textContent=`✅ Correct! ${q.a} ${q.ans} ${q.b}`; fb.className='feedback-bar show ok'; raceScore++; confetti(); }
+    else { fb.textContent=`❌ Answer: ${q.a} ${q.ans} ${q.b}`; fb.className='feedback-bar show bad'; }
+    raceResults.push({q:`${q.a} ___ ${q.b}`,selected:sym,correct:q.ans,isCorrect:correct});
+    document.getElementById('race-next-btn').style.display='';
+  }, 300);
+}
+
+function nextRaceQ(){ raceIdx++; renderRaceQ(); }
+function showRaceResults(){ showAct(2); buildFinalResults(); }
+
+// ── Results ──
+function buildFinalResults(){
+  const total=qResults.length+raceResults.length;
+  const correct=qResults.filter(r=>r.isCorrect).length+raceResults.filter(r=>r.isCorrect).length;
+  const pct=total?Math.round((correct/total)*100):0;
+  document.getElementById('score-circle').textContent=`${correct}/${total}`;
+  document.getElementById('score-title').textContent=pct>=80?'🌟 Amazing work!':pct>=60?'👍 Good effort!':'💪 Keep practicing!';
+  document.getElementById('score-sub').textContent=`${studentName} scored ${pct}% — ${studentGrade}`;
+  let html='';
+  if(qResults.length){
+    html+=`<div style="font-size:14px;font-weight:900;color:var(--cyan);margin:10px 0 6px;">Activity 1: Number Sense Quiz</div>`;
+    qResults.forEach((r,i)=>{
+      html+=`<div class="summary-row">
+        <div>
+          <div style="font-size:13px;color:#5f6b7a;margin-bottom:2px;">Q${i+1}: ${r.q.substring(0,55)}${r.q.length>55?'…':''}</div>
+          <div class="your-ans ${r.isCorrect?'':'wrong'}">Your answer: ${r.selected}</div>
+          ${!r.isCorrect?`<div class="correct-ans">✓ Correct: ${r.correct}</div>`:''}
+        </div>
+        <div class="time-chip">⏱ ${r.time}s</div>
+      </div>`;
+    });
+  }
+  if(raceResults.length){
+    html+=`<div style="font-size:14px;font-weight:900;color:var(--orange);margin:14px 0 6px;">Activity 3: Number Race</div>`;
+    raceResults.forEach((r,i)=>{
+      html+=`<div class="summary-row">
+        <div>
+          <div style="font-size:13px;color:#5f6b7a;margin-bottom:2px;">${r.q}</div>
+          <div class="your-ans ${r.isCorrect?'':'wrong'}">Your answer: ${r.selected}</div>
+          ${!r.isCorrect?`<div class="correct-ans">✓ Correct: ${r.correct}</div>`:''}
+        </div>
+        <div class="time-chip">${r.isCorrect?'✅':'❌'}</div>
+      </div>`;
+    });
+  }
+  document.getElementById('results-list').innerHTML=html;
+  if(pct===100) confetti();
+}
+
+// ── Tabs ──
+function showAct(idx){
+  document.querySelectorAll('.act-section').forEach(s=>s.classList.remove('show'));
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  ['act2','act3','act-results'][idx] && document.getElementById(['act2','act3','act-results'][idx]).classList.add('show');
+  if(idx===0 && buildStep===0) initBuild();
+  if(idx===1 && raceIdx===0) initRace();
+  if(idx===2) buildFinalResults();
+}
+
+// ── Confetti ──
+function confetti(){
+  const wrap=document.getElementById('confetti-wrap');
+  const colors=['#0891b2','#ea580c','#0f766e','#f59e0b','#16a34a','#e879f9','#06b6d4','#f97316'];
+  for(let i=0;i<32;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};width:${8+Math.random()*8}px;height:${8+Math.random()*8}px;animation-duration:${1.5+Math.random()*1.5}s;animation-delay:${Math.random()*0.4}s;`;
+    wrap.appendChild(el);
+    setTimeout(()=>el.remove(),3500);
+  }
+}
+
+function restartAll(){
+  currentQ=0; qResults=[]; buildStep=0; raceIdx=0; raceScore=0; raceResults=[];
+  showScreen('screen-welcome');
+}
+</script>
+</body>
+</html>
