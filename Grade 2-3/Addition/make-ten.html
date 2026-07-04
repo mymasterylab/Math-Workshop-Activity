@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MYMasteryLab - Make 10 Strategy Addition</title>
+  <!-- Tailwind CSS for modern layout -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Kid-friendly soft bubble Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(135deg, #FFF5F5 0%, #E8F0FE 100%);
+    }
+    
+    /* Soft Pastel Customizations */
+    .btn-easy { background-color: #E2F0D9; border: 3px solid #A9D18E; color: #385723; }
+    .btn-easy:hover { background-color: #D3E8C7; }
+    
+    .btn-medium { background-color: #FFF2CC; border: 3px solid #FFD966; color: #7F6000; }
+    .btn-medium:hover { background-color: #FFECAE; }
+    
+    .btn-hard { background-color: #FCE4D6; border: 3px solid #F8CBAD; color: #C65911; }
+    .btn-hard:hover { background-color: #F8D7C0; }
+
+    /* Step Lock Transitions */
+    .step-locked {
+      opacity: 0.4;
+      filter: grayscale(80%);
+      pointer-events: none;
+      transition: all 0.4s ease;
+    }
+    .step-active {
+      opacity: 1;
+      filter: none;
+      pointer-events: auto;
+      border-color: #C084FC;
+      box-shadow: 0 10px 15px -3px rgba(192, 132, 252, 0.15);
+      transition: all 0.4s ease;
+    }
+    
+    /* Pip Character Animations */
+    @keyframes float {
+      0% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-8px) scale(1.02); }
+      100% { transform: translateY(0px) scale(1); }
+    }
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+    @keyframes bounce-cheer {
+      0%, 100% { transform: translateY(0) scale(1); }
+      30% { transform: translateY(-15px) scale(1.1); }
+      50% { transform: translateY(0) scale(0.9); }
+      70% { transform: translateY(-5px) scale(1.02); }
+    }
+    
+    .pip-float { animation: float 3s ease-in-out infinite; }
+    .eye-blink { animation: blink 4s infinite; transform-origin: center; }
+    .pip-cheer { animation: bounce-cheer 0.8s ease-in-out; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <!-- Main Game Card -->
+  <div class="w-full max-w-5xl bg-white rounded-3xl border-4 border-[#F0E6FF] shadow-xl overflow-hidden">
+    
+    <!-- Header/Navigation Bar -->
+    <div class="bg-gradient-to-r from-[#FDF2F8] to-[#EEF2FF] border-b-2 border-purple-100 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <span class="text-2xl">⚡</span>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-wide">
+          <span class="text-indigo-500">MY</span>MasteryLab
+        </h1>
+      </div>
+      <!-- Mode & Progress trackers (visible during play) -->
+      <div id="game-stats" class="hidden flex items-center space-x-4">
+        <span id="level-badge" class="px-4 py-1.5 rounded-full text-sm font-bold shadow-sm uppercase"></span>
+        <span id="progress-text" class="text-sm font-semibold text-slate-500 bg-white border px-3 py-1 rounded-full">Question 1 of 5</span>
+        <span id="score-text" class="text-sm font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">Score: 0</span>
+      </div>
+    </div>
+
+    <!-- MAIN BODY SECTION -->
+    <div class="p-6 md:p-8">
+      
+      <!-- SCREEN 1: DIFFICULTY SELECTION -->
+      <div id="screen-setup" class="space-y-8 py-4">
+        <div class="text-center max-w-lg mx-auto space-y-3">
+          <h2 class="text-3xl font-extrabold text-indigo-950">Make 10 Addition Strategy!</h2>
+          <p class="text-slate-500 text-sm md:text-base leading-relaxed">
+            Welcome, Math Explorers! Let's learn how to break apart numbers to make friendly multiples of 10. Choose your learning adventure!
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <!-- Easy Box -->
+          <button onclick="startGame('easy')" class="btn-easy p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-3 shadow-md hover:shadow-lg hover:-translate-y-1 transition transform duration-200">
+            <span class="text-4xl">🌱</span>
+            <span class="text-xl font-bold">Easy Mode</span>
+            <span class="text-xs font-semibold opacity-85">Adding to 8s & 9s<br>(Make 10)</span>
+          </button>
+
+          <!-- Medium Box -->
+          <button onclick="startGame('medium')" class="btn-medium p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-3 shadow-md hover:shadow-lg hover:-translate-y-1 transition transform duration-200">
+            <span class="text-4xl">🌤️</span>
+            <span class="text-xl font-bold">Medium Mode</span>
+            <span class="text-xs font-semibold opacity-85">Adding to 7s & 8s<br>(Larger combinations)</span>
+          </button>
+
+          <!-- Hard Box -->
+          <button onclick="startGame('hard')" class="btn-hard p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-3 shadow-md hover:shadow-lg hover:-translate-y-1 transition transform duration-200">
+            <span class="text-4xl">🌋</span>
+            <span class="text-xl font-bold">Hard Mode</span>
+            <span class="text-xs font-semibold opacity-85">Double Digits<br>(Make 20, 30, 40 etc.)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: ACTIVE GAMEPLAY SCREEN (Initially Hidden) -->
+      <div id="screen-game" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        <!-- Workspace Area (Left 3 columns) -->
+        <div class="lg:col-span-3 space-y-6">
+          
+          <!-- Equation Display Area -->
+          <div class="flex flex-wrap items-center justify-between bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 gap-4">
+            <div class="flex items-center space-x-3 text-2xl font-bold text-slate-800">
+              <span>Solve:</span>
+              <div class="text-3xl font-extrabold tracking-wider">
+                <span id="display-num1" class="text-indigo-600">8</span>
+                <span class="text-slate-400">+</span>
+                <span id="display-num2" class="text-emerald-500 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">5</span>
+                <span class="text-slate-400">=</span>
+                <span class="text-purple-600">?</span>
+              </div>
+            </div>
+            
+            <!-- Voice Text to Speech Button -->
+            <button onclick="speakQuestion()" class="flex items-center space-x-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-sm rounded-full shadow-sm hover:shadow transition transform duration-150 active:scale-95">
+              <span>🔊 Read Question</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Visual Split Diagram -->
+          <div class="bg-emerald-50/30 border border-emerald-100 p-6 rounded-2xl max-w-md mx-auto flex flex-col items-center shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-4">Decompose Second Number</h3>
+            
+            <!-- Target number circle -->
+            <div id="diagram-top-box" class="w-14 h-14 bg-emerald-100 border-2 border-emerald-300 rounded-full flex items-center justify-center font-extrabold text-2xl text-emerald-800 shadow-inner">
+              5
+            </div>
+            
+            <!-- Splitting Branch Lines (SVG) -->
+            <svg class="my-1" width="120" height="40" viewBox="0 0 120 40">
+              <path d="M 60,0 L 25,35" stroke="#10B981" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+              <path d="M 60,0 L 95,35" stroke="#10B981" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            </svg>
+            
+            <!-- Bottom branches inputs -->
+            <div class="flex justify-between w-full max-w-xs gap-8">
+              <div class="flex flex-col items-center w-1/2">
+                <input type="number" id="split1-field" class="w-16 h-14 text-center text-xl font-bold bg-white border-3 border-dashed border-sky-300 rounded-xl focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 transition shadow-inner" placeholder="?">
+                <span class="text-[10px] font-bold text-sky-500 mt-1 uppercase">To Make 10</span>
+              </div>
+              
+              <div class="flex flex-col items-center w-1/2">
+                <input type="number" id="split2-field" class="w-16 h-14 text-center text-xl font-bold bg-white border-3 border-dashed border-pink-300 rounded-xl focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-100 transition shadow-inner" placeholder="?">
+                <span class="text-[10px] font-bold text-pink-500 mt-1 uppercase">Leftover</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP-BY-STEP SEQUENCE CONTAINER -->
+          <div class="space-y-4">
+            
+            <!-- Step 1 Actions -->
+            <div id="step1-controls" class="flex justify-center">
+              <button id="btn-check-split" onclick="checkStep1()" class="px-6 py-3.5 bg-emerald-400 hover:bg-emerald-500 text-white font-bold rounded-full shadow-md hover:shadow-lg transform active:scale-95 transition flex items-center space-x-2">
+                <span>Verify Splits!</span>
+              </button>
+            </div>
+
+            <!-- Step 2 Block -->
+            <div id="step2-card" class="step-locked p-5 rounded-2xl bg-sky-50/50 border-2 border-transparent">
+              <div class="flex items-center space-x-2 mb-3">
+                <span class="bg-sky-400 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">2</span>
+                <span class="font-bold text-sky-800 text-sm">Form Friendly Multiples of 10</span>
+              </div>
+              <div class="flex flex-wrap items-center justify-center gap-3 text-xl font-bold text-sky-900 bg-white/70 p-3 rounded-xl border border-sky-100 max-w-md mx-auto">
+                <span id="step2-num1-val">8</span>
+                <span>+</span>
+                <span id="step2-split1-val" class="text-sky-600 bg-sky-100 px-3 py-1 rounded-lg border border-sky-200">?</span>
+                <span>=</span>
+                <input type="number" id="step2-target-field" class="w-20 h-10 text-center font-extrabold text-lg bg-white border-2 border-sky-300 rounded-lg focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="?">
+              </div>
+              <div class="flex justify-center mt-3">
+                <button id="btn-check-step2" onclick="checkStep2()" class="px-5 py-2 bg-sky-400 hover:bg-sky-500 text-white font-bold text-sm rounded-full shadow-sm hover:shadow active:scale-95 transition">
+                  Confirm Addition
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3 Block -->
+            <div id="step3-card" class="step-locked p-5 rounded-2xl bg-pink-50/50 border-2 border-transparent">
+              <div class="flex items-center space-x-2 mb-3">
+                <span class="bg-pink-400 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">3</span>
+                <span class="font-bold text-pink-800 text-sm">Add Leftovers</span>
+              </div>
+              <div class="flex flex-wrap items-center justify-center gap-3 text-xl font-bold text-pink-900 bg-white/70 p-3 rounded-xl border border-pink-100 max-w-md mx-auto">
+                <span id="step3-target-val" class="text-sky-700 bg-sky-100 px-3 py-1 rounded-lg border border-sky-200">10</span>
+                <span>+</span>
+                <span id="step3-split2-val" class="text-pink-600 bg-pink-100 px-3 py-1 rounded-lg border border-pink-200">?</span>
+                <span>=</span>
+                <input type="number" id="step3-final-field" class="w-20 h-10 text-center font-extrabold text-lg bg-white border-2 border-pink-300 rounded-lg focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-100" placeholder="?">
+              </div>
+              <div class="flex justify-center mt-3">
+                <button id="btn-check-step3" onclick="checkStep3()" class="px-5 py-2 bg-pink-400 hover:bg-pink-500 text-white font-bold text-sm rounded-full shadow-sm hover:shadow active:scale-95 transition">
+                  Verify Final Answer
+                </button>
+              </div>
+            </div>
+
+            <!-- Navigation Controls (Next Question / Show Results) -->
+            <div id="navigation-area" class="hidden flex justify-center py-4">
+              <button id="btn-next" onclick="nextQuestion()" class="px-8 py-3.5 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-full shadow-md hover:shadow-lg transform active:scale-95 transition flex items-center space-x-2">
+                <span id="next-btn-text">Next Question</span>
+                <span>🌟</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- PIP THE SIDEKICK PANEL (Right column) -->
+        <div class="lg:col-span-1 flex flex-col items-center justify-start py-4 space-y-4">
+          <div class="relative bg-white border-2 border-purple-200 text-slate-700 px-5 py-4 rounded-2xl w-full shadow-sm">
+            <p id="pip-speech" class="text-xs md:text-sm font-semibold leading-relaxed">
+              Hey there! I am Pip! Let's work together to complete this step! Click on 'Read Question' to hear the task aloud.
+            </p>
+            <!-- Speach bubble arrow point pointing right/down -->
+            <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-white"></div>
+            <div class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-purple-200 -z-10"></div>
+          </div>
+          
+          <!-- Animated Pip Character -->
+          <div class="pip-container flex flex-col items-center">
+            <div id="pip-sprite" class="pip-float w-24 h-24 bg-amber-200 rounded-full border-4 border-amber-300 shadow-md relative flex items-center justify-center">
+              
+              <!-- Sparkly Antenna -->
+              <div class="absolute -top-3 w-4 h-4 bg-pink-300 rounded-full border-2 border-pink-400 flex items-center justify-center">
+                <span class="text-[8px] text-white">⭐</span>
+              </div>
+              
+              <!-- Blinking Eyes -->
+              <svg class="absolute top-7 left-4 w-4 h-4" viewBox="0 0 16 16">
+                <ellipse class="eye-blink" cx="8" cy="8" rx="4" ry="4" fill="#2D3748" />
+              </svg>
+              <svg class="absolute top-7 right-4 w-4 h-4" viewBox="0 0 16 16">
+                <ellipse class="eye-blink" cx="8" cy="8" rx="4" ry="4" fill="#2D3748" />
+              </svg>
+
+              <!-- Blushing cheeks -->
+              <div class="absolute top-9 left-2.5 w-3 h-2 bg-pink-400 opacity-60 rounded-full"></div>
+              <div class="absolute top-9 right-2.5 w-3 h-2 bg-pink-400 opacity-60 rounded-full"></div>
+
+              <!-- Smiling Mouth -->
+              <div class="absolute bottom-6 w-6 h-3 border-b-4 border-neutral-700 rounded-b-full"></div>
+              
+              <!-- Cute feet -->
+              <div class="absolute -bottom-1.5 left-5 w-4 h-2 bg-amber-300 rounded-full border border-amber-400"></div>
+              <div class="absolute -bottom-1.5 right-5 w-4 h-2 bg-amber-300 rounded-full border border-amber-400"></div>
+            </div>
+            <span class="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-3 py-0.5 mt-2 uppercase tracking-wide">Your Buddy Pip</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SCREEN 3: RESULTS SUMMARY SCREEN (Initially Hidden) -->
+      <div id="screen-end" class="hidden text-center max-w-md mx-auto space-y-6 py-6">
+        <div class="text-6xl animate-bounce">🏆</div>
+        <h2 class="text-3xl font-extrabold text-indigo-950">Awesome Math Adventure!</h2>
+        <p class="text-slate-600 leading-relaxed text-sm">
+          You worked with Pip to complete all activities using the Make 10 strategy. Keep up the brilliant thinking!
+        </p>
+        
+        <div class="p-6 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col items-center">
+          <span class="text-xs uppercase font-bold tracking-wider text-slate-400 mb-1">Final Score</span>
+          <span id="final-score-display" class="text-5xl font-black text-indigo-600">5 / 5</span>
+        </div>
+
+        <button onclick="showSetupScreen()" class="px-8 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition transform active:scale-95">
+          Start New Game 🔄
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // QUESTION BANK POOLS (10 per Category)
+    const questionsPool = {
+      easy: [
+        { num1: 9, num2: 4, split1: 1, split2: 3, target: 10, final: 13 },
+        { num1: 9, num2: 5, split1: 1, split2: 4, target: 10, final: 14 },
+        { num1: 8, num2: 3, split1: 2, split2: 1, target: 10, final: 11 },
+        { num1: 9, num2: 6, split1: 1, split2: 5, target: 10, final: 15 },
+        { num1: 8, num2: 5, split1: 2, split2: 3, target: 10, final: 13 },
+        { num1: 9, num2: 3, split1: 1, split2: 2, target: 10, final: 12 },
+        { num1: 8, num2: 4, split1: 2, split2: 2, target: 10, final: 12 },
+        { num1: 9, num2: 7, split1: 1, split2: 6, target: 10, final: 16 },
+        { num1: 8, num2: 6, split1: 2, split2: 4, target: 10, final: 14 },
+        { num1: 9, num2: 2, split1: 1, split2: 1, target: 10, final: 11 }
+      ],
+      medium: [
+        { num1: 7, num2: 5, split1: 3, split2: 2, target: 10, final: 12 },
+        { num1: 7, num2: 4, split1: 3, split2: 1, target: 10, final: 11 },
+        { num1: 8, num2: 7, split1: 2, split2: 5, target: 10, final: 15 },
+        { num1: 7, num2: 6, split1: 3, split2: 3, target: 10, final: 13 },
+        { num1: 8, num2: 8, split1: 2, split2: 6, target: 10, final: 16 },
+        { num1: 7, num2: 8, split1: 3, split2: 5, target: 10, final: 15 },
+        { num1: 7, num2: 7, split1: 3, split2: 4, target: 10, final: 14 },
+        { num1: 8, num2: 9, split1: 2, split2: 7, target: 10, final: 17 },
+        { num1: 7, num2: 9, split1: 3, split2: 6, target: 10, final: 16 },
+        { num1: 8, num2: 5, split1: 2, split2: 3, target: 10, final: 13 }
+      ],
+      hard: [
+        { num1: 18, num2: 5, split1: 2, split2: 3, target: 20, final: 23 },
+        { num1: 19, num2: 6, split1: 1, split2: 5, target: 20, final: 25 },
+        { num1: 17, num2: 5, split1: 3, split2: 2, target: 20, final: 22 },
+        { num1: 28, num2: 4, split1: 2, split2: 2, target: 30, final: 32 },
+        { num1: 29, num2: 5, split1: 1, split2: 4, target: 30, final: 34 },
+        { num1: 38, num2: 6, split1: 2, split2: 4, target: 40, final: 44 },
+        { num1: 17, num2: 6, split1: 3, split2: 3, target: 20, final: 23 },
+        { num1: 29, num2: 3, split1: 1, split2: 2, target: 30, final: 32 },
+        { num1: 48, num2: 5, split1: 2, split2: 3, target: 50, final: 53 },
+        { num1: 19, num2: 7, split1: 1, split2: 6, target: 20, final: 26 }
+      ]
+    };
+
+    // GAME VARIABLES
+    let currentDifficulty = 'easy';
+    let activeQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    
+    // Voices List Preloading
+    let femaleVoice = null;
+    function loadVoices() {
+      if ('speechSynthesis' in window) {
+        const voices = window.speechSynthesis.getVoices();
+        femaleVoice = voices.find(voice => 
+          voice.name.toLowerCase().includes('female') || 
+          voice.name.toLowerCase().includes('zira') || 
+          voice.name.toLowerCase().includes('samantha') || 
+          voice.name.toLowerCase().includes('google us english') ||
+          voice.name.toLowerCase().includes('hazel')
+        );
+      }
+    }
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    // GAME SCREEN MANAGEMENT
+    function startGame(difficulty) {
+      currentDifficulty = difficulty;
+      score = 0;
+      currentIndex = 0;
+      
+      // Shuffle array helper and pick random 5
+      const pool = [...questionsPool[difficulty]];
+      activeQuestions = pool.sort(() => 0.5 - Math.random()).slice(0, 5);
+      
+      // Update Level Badge color styles
+      const badge = document.getElementById('level-badge');
+      badge.textContent = `${difficulty} Mode`;
+      badge.className = "px-4 py-1.5 rounded-full text-xs font-bold shadow-sm uppercase " + 
+        (difficulty === 'easy' ? 'bg-[#E2F0D9] text-[#385723]' : 
+         difficulty === 'medium' ? 'bg-[#FFF2CC] text-[#7F6000]' : 'bg-[#FCE4D6] text-[#C65911]');
+
+      document.getElementById('screen-setup').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      document.getElementById('game-stats').classList.remove('hidden');
+      
+      loadQuestion();
+    }
+
+    function showSetupScreen() {
+      document.getElementById('screen-end').classList.add('hidden');
+      document.getElementById('game-stats').classList.add('hidden');
+      document.getElementById('screen-setup').classList.remove('hidden');
+    }
+
+    // LOAD CURRENT QUESTION DATA INTO WORKSPACE
+    function loadQuestion() {
+      const q = activeQuestions[currentIndex];
+      
+      // Update top HUD tracking parameters
+      document.getElementById('progress-text').textContent = `Question ${currentIndex + 1} of 5`;
+      document.getElementById('score-text').textContent = `Score: ${score}`;
+      
+      // Top display formulas values
+      document.getElementById('display-num1').textContent = q.num1;
+      document.getElementById('display-num2').textContent = q.num2;
+      document.getElementById('diagram-top-box').textContent = q.num2;
+
+      // Clean inputs structures
+      document.getElementById('split1-field').value = '';
+      document.getElementById('split2-field').value = '';
+      document.getElementById('step2-target-field').value = '';
+      document.getElementById('step3-final-field').value = '';
+
+      document.getElementById('split1-field').disabled = false;
+      document.getElementById('split2-field').disabled = false;
+      
+      // Clean inputs visual states
+      resetFieldStyle('split1-field');
+      resetFieldStyle('split2-field');
+      resetFieldStyle('step2-target-field');
+      resetFieldStyle('step3-final-field');
+
+      // Setup initial visual lock configurations
+      document.getElementById('step1-controls').classList.remove('hidden');
+      lockStepCard('step2-card');
+      lockStepCard('step3-card');
+      document.getElementById('navigation-area').classList.add('hidden');
+
+      // Sidekick welcome dialog config
+      setPipExpression('normal');
+      updatePipSpeech(`Hey there! Let's solve ${q.num1} + ${q.num2}. First, how do we split ${q.num2} to help ${q.num1} make a round ${q.target}?`);
+    }
+
+    // STEP 1 VALIDATION
+    function checkStep1() {
+      const q = activeQuestions[currentIndex];
+      const val1 = parseInt(document.getElementById('split1-field').value);
+      const val2 = parseInt(document.getElementById('split2-field').value);
+
+      if (isNaN(val1) || isNaN(val2)) {
+        updatePipSpeech("Make sure you write a number in both of the dashed boxes!");
+        setPipExpression('hint');
+        return;
+      }
+
+      if (val1 === q.split1 && val2 === q.split2) {
+        // Appreciations logic
+        playSfx('correct');
+        setPipExpression('cheer');
+        updatePipSpeech(`Excellent split! 🌲 ${q.num2} is broken into ${val1} and ${val2}. Now we can make ${q.target}! Let's go to Step 2.`);
+        
+        applySuccessStyle('split1-field');
+        applySuccessStyle('split2-field');
+        document.getElementById('split1-field').disabled = true;
+        document.getElementById('split2-field').disabled = true;
+
+        document.getElementById('step1-controls').classList.add('hidden');
+
+        // Reveal and activate Step 2 Card
+        unlockStepCard('step2-card');
+        document.getElementById('step2-num1-val').textContent = q.num1;
+        document.getElementById('step2-split1-val').textContent = q.split1;
+        document.getElementById('step2-target-field').focus();
+      } else {
+        playSfx('wrong');
+        setPipExpression('hint');
+        
+        // Provide targeted dynamic educational hint
+        if (val1 !== q.split1) {
+          applyErrorStyle('split1-field');
+          updatePipSpeech(`Let's think. We want to add a number to ${q.num1} to reach exactly ${q.target}. What does ${q.num1} need? Try counting up!`);
+        } else {
+          applyErrorStyle('split2-field');
+          updatePipSpeech(`You got the first part right! Since you broke ${q.num2} into ${q.split1} and something else, what is left over? What is ${q.num2} - ${q.split1}?`);
+        }
+      }
+    }
+
+    // STEP 2 VALIDATION
+    function checkStep2() {
+      const q = activeQuestions[currentIndex];
+      const val = parseInt(document.getElementById('step2-target-field').value);
+
+      if (isNaN(val)) {
+        updatePipSpeech("Type the answer in the blue box to check your step!");
+        return;
+      }
+
+      if (val === q.target) {
+        playSfx('correct');
+        setPipExpression('cheer');
+        updatePipSpeech(`Great adding! Now we have reached our friendly helper number ${q.target}! Let's finish with Step 3.`);
+        
+        applySuccessStyle('step2-target-field');
+        document.getElementById('step2-target-field').disabled = true;
+        document.getElementById('btn-check-step2').disabled = true;
+
+        // Reveal and activate Step 3 Card
+        unlockStepCard('step3-card');
+        document.getElementById('step3-target-val').textContent = q.target;
+        document.getElementById('step3-split2-val').textContent = q.split2;
+        document.getElementById('step3-final-field').focus();
+      } else {
+        playSfx('wrong');
+        setPipExpression('hint');
+        applyErrorStyle('step2-target-field');
+        updatePipSpeech(`Let's try again. What is ${q.num1} plus ${q.split1}? It should make our nice round number: ${q.target}.`);
+      }
+    }
+
+    // STEP 3 VALIDATION
+    function checkStep3() {
+      const q = activeQuestions[currentIndex];
+      const val = parseInt(document.getElementById('step3-final-field').value);
+
+      if (isNaN(val)) {
+        updatePipSpeech("Put the final total in the pink box to check!");
+        return;
+      }
+
+      if (val === q.final) {
+        playSfx('victory');
+        setPipExpression('cheer');
+        triggerConfetti();
+        
+        // Increment global score on success
+        score++;
+        document.getElementById('score-text').textContent = `Score: ${score}`;
+        
+        updatePipSpeech(`Woohoo! Brilliant! 🎉 So, ${q.num1} + ${q.num2} is indeed ${q.final}! You crushed this puzzle!`);
+        
+        applySuccessStyle('step3-final-field');
+        document.getElementById('step3-final-field').disabled = true;
+        document.getElementById('btn-check-step3').disabled = true;
+
+        // Display next action button
+        const navArea = document.getElementById('navigation-area');
+        const nextText = document.getElementById('next-btn-text');
+        navArea.classList.remove('hidden');
+        if (currentIndex === 4) {
+          nextText.textContent = "Finish Adventure";
+        } else {
+          nextText.textContent = "Next Question";
+        }
+      } else {
+        playSfx('wrong');
+        setPipExpression('hint');
+        applyErrorStyle('step3-final-field');
+        updatePipSpeech(`Almost there! Add our nice round number ${q.target} to the leftover split part: ${q.split2}. What is ${q.target} + ${q.split2}?`);
+      }
+    }
+
+    // NAVIGATIONAL SEQUENCING
+    function nextQuestion() {
+      if (currentIndex < 4) {
+        currentIndex++;
+        loadQuestion();
+      } else {
+        // Show results screen
+        document.getElementById('screen-game').classList.add('hidden');
+        document.getElementById('screen-end').classList.remove('hidden');
+        document.getElementById('final-score-display').textContent = `${score} / 5`;
+      }
+    }
+
+    // VOICE READING ENGINE (TEXT TO SPEECH)
+    function speakQuestion() {
+      if (!('speechSynthesis' in window)) return;
+      
+      const q = activeQuestions[currentIndex];
+      const phraseText = `What is ${q.num1} plus ${q.num2}? Let's split ${q.num2} to make ${q.target} with ${q.num1}.`;
+      
+      // Stop current voice if any
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(phraseText);
+      if (femaleVoice) {
+        utterance.voice = femaleVoice;
+      } else {
+        // Workaround adjustments to simulate friendly high pitched voice if female identifier isn't loaded
+        utterance.pitch = 1.25; 
+      }
+      utterance.rate = 0.85; // Slower delivery rate for young math learners
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // SIDEKICK PIP DYNAMIC INTERFACES
+    function updatePipSpeech(message) {
+      document.getElementById('pip-speech').innerHTML = message;
+    }
+
+    function setPipExpression(expression) {
+      const pip = document.getElementById('pip-sprite');
+      
+      // Clear bounce animation triggers
+      pip.classList.remove('pip-cheer');
+      void pip.offsetWidth; // Force CSS repaint trigger to restart animations
+      
+      if (expression === 'cheer') {
+        pip.classList.add('pip-cheer');
+      }
+    }
+
+    // WORKSPACE HELPER FUNCTIONS (Locks and Styles adjustments)
+    function unlockStepCard(id) {
+      const el = document.getElementById(id);
+      el.className = "step-active p-5 rounded-2xl bg-white border-2 border-indigo-200 shadow-sm transition-all duration-300";
+      // Find and activate inputs and buttons in this unlocked container
+      const btn = el.querySelector('button');
+      if (btn) btn.disabled = false;
+      const input = el.querySelector('input');
+      if (input) {
+        input.disabled = false;
+        input.value = '';
+      }
+    }
+
+    function lockStepCard(id) {
+      const el = document.getElementById(id);
+      el.className = "step-locked p-5 rounded-2xl bg-slate-50 border-2 border-transparent transition-all duration-300";
+      const btn = el.querySelector('button');
+      if (btn) btn.disabled = true;
+      const input = el.querySelector('input');
+      if (input) {
+        input.disabled = true;
+        input.value = '';
+      }
+    }
+
+    function applySuccessStyle(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('border-red-400', 'border-sky-300', 'border-pink-300', 'border-dashed');
+      el.classList.add('bg-emerald-100', 'border-emerald-400', 'text-emerald-700');
+    }
+
+    function applyErrorStyle(id) {
+      const el = document.getElementById(id);
+      el.classList.add('bg-red-50', 'border-red-400', 'text-red-700');
+      // Gentle temporary focus shake effect logic
+      el.classList.add('translate-x-1');
+      setTimeout(() => el.classList.remove('translate-x-1'), 100);
+    }
+
+    function resetFieldStyle(id) {
+      const el = document.getElementById(id);
+      el.className = id.includes('split') 
+        ? "w-16 h-14 text-center text-xl font-bold bg-white border-3 border-dashed border-sky-300 rounded-xl focus:border-sky-500 focus:outline-none"
+        : (id.includes('target') 
+           ? "w-20 h-10 text-center font-extrabold text-lg bg-white border-2 border-sky-300 rounded-lg focus:border-sky-500 focus:outline-none"
+           : "w-20 h-10 text-center font-extrabold text-lg bg-white border-2 border-pink-300 rounded-lg focus:border-pink-500 focus:outline-none");
+    }
+
+    // AUDIO CONTEXT GENERATED SFX
+    function playSfx(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        if (type === 'correct') {
+          // Double chime sound
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+          
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+          gain2.gain.setValueAtTime(0.08, ctx.currentTime + 0.1);
+          osc2.start(ctx.currentTime + 0.1);
+          osc2.stop(ctx.currentTime + 0.3);
+        } else if (type === 'wrong') {
+          // soft warning buzzer sound
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(140, ctx.currentTime);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          osc.start();
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+          osc.stop(ctx.currentTime + 0.25);
+        } else if (type === 'victory') {
+          // Happy C Major arpeggio notes
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, idx) => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.1));
+            g.gain.setValueAtTime(0.08, ctx.currentTime + (idx * 0.1));
+            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (idx * 0.1) + 0.3);
+            o.start(ctx.currentTime + (idx * 0.1));
+            o.stop(ctx.currentTime + (idx * 0.1) + 0.3);
+          });
+        }
+      } catch (e) {
+        // Fail-safe if audio context blocked on browser environments
+      }
+    }
+
+    // NATIVE PERFORMANCE CONFETTI SPARK GENERATOR
+    function triggerConfetti() {
+      const colors = ['#FFC0CB', '#B0E0E6', '#98FB98', '#DDA0DD', '#FFE4B5', '#A1EEBD', '#FFD0EC'];
+      for (let i = 0; i < 40; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'absolute pointer-events-none rounded-full';
+        confetti.style.width = Math.random() * 8 + 6 + 'px';
+        confetti.style.height = Math.random() * 8 + 6 + 'px';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = '-10px';
+        confetti.style.zIndex = '999';
+        
+        document.body.appendChild(confetti);
+        
+        const animation = confetti.animate([
+          { transform: 'translate3d(0, 0, 0) rotate(0deg)', opacity: 1 },
+          { transform: `translate3d(${(Math.random() - 0.5) * 200}px, ${window.innerHeight}px, 0) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+        ], {
+          duration: Math.random() * 1200 + 800,
+          easing: 'cubic-bezier(0, .9, .57, 1)'
+        });
+        
+        animation.onfinish = () => confetti.remove();
+      }
+    }
+  </script>
+</body>
+</html>
