@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Shape Detectives — Chest 2 & 3 — MyMasteryLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky1:#8FD3F4; --sky2:#5FB8E8;
+    --grass:#6FBE7C; --grass-dark:#4E9A5C;
+    --castle:#8B6FB0; --castle-dark:#6B4FA0;
+    --teal:#00A7B2; --teal-glow:#3FD6DF;
+    --gold:#FAA71C; --gold-light:#FFD37A; --burnt:#D77F28;
+    --paper:#FFFCF4; --paper-dim:#F3E9D2; --ink-text:#2B2140;
+    --shadow:0 18px 40px rgba(20,10,40,0.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background:linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 45%, var(--grass) 46%, var(--grass-dark) 100%);
+    min-height:100vh;color:var(--ink-text);overflow-x:hidden;position:relative;
+  }
+
+  .sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .cloud{position:absolute;font-size:46px;opacity:.85;animation:driftCloud 50s linear infinite;}
+  @keyframes driftCloud{0%{transform:translateX(-15vw);}100%{transform:translateX(115vw);}}
+  .castle-deco{position:absolute;bottom:14%;font-size:70px;opacity:.9;filter:drop-shadow(0 8px 10px rgba(0,0,0,0.2));}
+
+  .app{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:22px 18px 60px;min-height:100vh;display:flex;flex-direction:column;}
+  .brandbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-family:'Nunito';font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#fff;opacity:.9;text-shadow:0 1px 2px rgba(0,0,0,0.25);}
+  .brandbar span.dot{color:var(--gold);margin:0 6px;}
+
+  .screen{display:none;flex:1;flex-direction:column;}
+  .screen.active{display:flex;animation:fadeIn .5s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .btn-start{font-family:'Baloo 2';font-weight:700;font-size:17px;color:var(--ink-text);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:none;padding:14px 38px;border-radius:999px;cursor:pointer;box-shadow:0 9px 0 var(--burnt);transition:transform .1s ease;}
+  .btn-start:active{transform:translateY(5px);box-shadow:0 4px 0 var(--burnt);}
+  .btn-start:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn-secondary{font-family:'Baloo 2';font-weight:700;font-size:15px;color:#fff;background:transparent;border:2px solid #fff;padding:11px 22px;border-radius:999px;cursor:pointer;}
+
+  /* ---------- INTAKE SCREEN ---------- */
+  #screen-intake{align-items:center;justify-content:center;text-align:center;}
+  .intake-card{background:linear-gradient(180deg, var(--paper), var(--paper-dim));border-radius:26px;padding:32px 26px;box-shadow:var(--shadow);border:5px solid var(--castle-dark);max-width:440px;width:100%;position:relative;}
+  .intake-card::before{content:"🔍";position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:40px;background:var(--paper);border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;border:5px solid var(--castle-dark);box-shadow:0 6px 0 rgba(0,0,0,0.15);}
+  .intake-title{font-family:'Baloo 2';font-weight:800;font-size:22px;color:var(--castle-dark);margin-top:14px;}
+  .intake-sub{font-size:13.5px;color:#6a5a80;font-weight:700;margin-bottom:20px;}
+  .field-label{font-family:'Baloo 2';font-weight:700;font-size:13px;color:var(--ink-text);text-align:left;margin-bottom:6px;margin-top:14px;}
+  .name-input{width:100%;font-family:'Baloo 2';font-weight:700;font-size:16px;color:var(--ink-text);background:#fff;border:3px solid var(--castle-dark);border-radius:12px;padding:11px 14px;}
+  .grade-row{display:flex;gap:10px;justify-content:center;margin-top:6px;}
+  .grade-btn{flex:1;font-family:'Baloo 2';font-weight:800;font-size:16px;color:var(--ink-text);background:#fff;border:3px solid var(--castle-dark);border-radius:12px;padding:12px;cursor:pointer;}
+  .grade-btn.selected{background:linear-gradient(180deg,var(--gold-light),var(--gold));border-color:var(--burnt);}
+
+  /* ---------- CHEST MAP ---------- */
+  .map-title-wrap{text-align:center;margin-bottom:16px;}
+  .map-title{font-family:'Baloo 2';font-weight:800;font-size:clamp(20px,5.4vw,28px);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,0.25);}
+  .map-sub{font-weight:700;color:#fff;opacity:.9;font-size:13px;text-shadow:0 1px 2px rgba(0,0,0,0.2);}
+  .chest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px;max-width:480px;margin:0 auto;position:relative;z-index:1;}
+  .chest-card{background:linear-gradient(180deg,var(--paper),var(--paper-dim));border:4px solid var(--castle-dark);border-radius:18px;padding:20px 12px 16px;text-align:center;box-shadow:0 8px 0 rgba(0,0,0,0.2);position:relative;transition:transform .15s ease;}
+  .chest-card.unlocked{cursor:pointer;}
+  .chest-card.unlocked:hover{transform:translateY(-4px);}
+  .chest-card.unlocked:active{transform:translateY(2px);}
+  .chest-card.locked{opacity:.65;}
+  .chest-card.done{border-color:var(--gold);background:linear-gradient(180deg,#FFF3D6,#FFE2A0);}
+  .chest-emoji{font-size:50px;display:block;margin-bottom:8px;}
+  .chest-num{font-family:'Baloo 2';font-weight:800;font-size:15px;color:var(--ink-text);}
+  .chest-name{font-family:'Nunito';font-weight:700;font-size:12px;color:#6a5a80;margin-top:2px;min-height:16px;}
+  .lock-badge{position:absolute;top:-8px;right:-8px;background:var(--castle-dark);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 3px 0 rgba(0,0,0,0.2);}
+
+  /* Professor Crooked */
+  .crooked{position:fixed;z-index:60;display:flex;flex-direction:column;align-items:center;transition:top 1s ease, left 1s ease;pointer-events:none;}
+  .crooked-char{font-size:44px;display:inline-block;filter:drop-shadow(0 6px 8px rgba(0,0,0,0.4));animation:crookedBob 1.7s ease-in-out infinite;transform-origin:bottom center;}
+  @keyframes crookedBob{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-6px) rotate(3deg);}}
+  .crooked-char.mood-wrong{animation:crookedGloat .7s ease;}
+  @keyframes crookedGloat{0%{transform:scale(1) rotate(0);}30%{transform:scale(1.3) rotate(-12deg);}60%{transform:scale(1.15) rotate(10deg);}100%{transform:scale(1) rotate(0);}}
+  .crooked-char.mood-right{animation:crookedShock .7s ease;}
+  @keyframes crookedShock{0%{transform:scale(1);}30%{transform:scale(1.2) translateY(-10px);}60%{transform:scale(0.9) translateY(4px);}100%{transform:scale(1);}}
+  .crooked-bubble{position:relative;max-width:170px;margin-bottom:6px;background:#2B2140;color:#fff;font-family:'Baloo 2';font-weight:700;font-size:11.5px;line-height:1.3;padding:8px 12px;border-radius:12px;border:2px solid var(--burnt);opacity:0;transform:translateY(6px) scale(.9);transition:opacity .25s ease, transform .25s ease;text-align:center;}
+  .crooked-bubble::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border-width:7px 6px 0 6px;border-style:solid;border-color:var(--burnt) transparent transparent transparent;}
+  .crooked-bubble.show{opacity:1;transform:translateY(0) scale(1);}
+
+  /* ---------- ACTIVITY PANEL (shared) ---------- */
+  .activity-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+  .activity-tag{background:rgba(255,255,255,0.9);padding:7px 14px;border-radius:999px;font-family:'Baloo 2';font-weight:800;font-size:12.5px;color:var(--ink-text);}
+  .step-dots{display:flex;gap:6px;}
+  .step-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.5);}
+  .step-dot.done{background:var(--gold);}
+  .step-dot.current{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,0.4);}
+
+  .activity-panel{background:linear-gradient(180deg, var(--paper), var(--paper-dim));border:5px solid var(--castle-dark);border-radius:24px;padding:22px 18px 26px;box-shadow:var(--shadow);position:relative;}
+
+  .question-head{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 10px;}
+  .audio-btn{background:#fff;border:2px solid var(--castle-dark);color:var(--ink-text);width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(0,0,0,0.2);flex-shrink:0;}
+  .audio-btn:active{transform:translateY(2px);}
+  .audio-btn.speaking{animation:speakPulse .6s ease-in-out infinite;}
+  @keyframes speakPulse{0%,100%{box-shadow:0 3px 0 rgba(0,0,0,0.2), 0 0 0 0 rgba(250,167,28,0.7);}50%{box-shadow:0 3px 0 rgba(0,0,0,0.2), 0 0 0 9px rgba(250,167,28,0);}}
+
+  .clue-box{max-width:420px;margin:0 auto 14px;text-align:center;}
+  .clue-line{font-family:'Baloo 2';font-weight:700;font-size:16px;color:var(--castle-dark);background:#fff;border:2px solid var(--paper-dim);border-radius:14px;padding:9px 14px;margin-bottom:6px;box-shadow:0 3px 0 rgba(0,0,0,0.06);}
+
+  /* Shape swatches (reused everywhere) */
+  .shape-swatch{width:100%;height:100%;}
+  .shape-swatch.circle{border-radius:50%;}
+  .shape-swatch.triangle{clip-path:polygon(50% 0%,0% 100%,100% 100%);}
+  .shape-swatch.square{border-radius:6px;}
+  .shape-swatch.rectangle{border-radius:6px;}
+  .shape-swatch.rhombus{clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);}
+  .shape-swatch.pentagon{clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);}
+  .shape-swatch.trapezoid{clip-path:polygon(25% 0%,75% 0%,100% 100%,0% 100%);}
+  .shape-swatch.hexagon{clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);}
+  .shape-swatch.octagon{clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);}
+
+  /* Shape token bank (tap/drag to answer) */
+  .shape-bank-label{text-align:center;font-family:'Baloo 2';font-weight:700;font-size:13px;color:var(--ink-text);margin:12px 0 8px;}
+  .shape-bank{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:480px;margin:0 auto;}
+  .shape-token{width:60px;text-align:center;cursor:grab;background:#fff;border:2px solid var(--paper-dim);border-radius:12px;padding:8px 6px 6px;box-shadow:0 4px 0 rgba(0,0,0,0.1);transition:transform .12s ease;}
+  .shape-token:hover{transform:translateY(-3px);}
+  .shape-token:active{cursor:grabbing;}
+  .shape-token-shape{width:36px;height:36px;margin:0 auto 4px;}
+  .shape-token-label{font-family:'Nunito';font-weight:700;font-size:9.5px;color:#6a5a80;}
+  .shape-token.disabled{opacity:.35;pointer-events:none;}
+
+  .drop-zone{max-width:220px;min-height:110px;margin:14px auto;border:3px dashed var(--castle-dark);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,0.5);transition:background .2s ease, border-color .2s ease;}
+  .drop-zone.dragover{background:rgba(250,167,28,0.2);border-color:var(--gold);}
+  .drop-zone-placeholder{font-size:12.5px;color:#8a7a9a;font-weight:700;font-family:'Nunito';text-align:center;padding:0 10px;}
+  .drop-zone-shape{width:56px;height:56px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes popIn{0%{transform:scale(0);opacity:0;}70%{transform:scale(1.15);opacity:1;}100%{transform:scale(1);}}
+
+  /* Draw canvas */
+  .draw-wrap{max-width:340px;margin:16px auto 0;text-align:center;}
+  .draw-label{font-family:'Baloo 2';font-weight:700;font-size:13px;color:var(--ink-text);margin-bottom:8px;}
+  .draw-canvas{background:#fff;border:3px solid var(--castle-dark);border-radius:14px;touch-action:none;cursor:crosshair;width:100%;height:180px;}
+  .pen-row{display:flex;justify-content:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .pen-dot{width:26px;height:26px;border-radius:50%;border:3px solid transparent;cursor:pointer;}
+  .pen-dot.selected{border-color:var(--ink-text);transform:scale(1.15);}
+  .draw-clear-btn{margin-top:8px;font-family:'Nunito';font-weight:700;font-size:11.5px;color:var(--ink-text);background:#fff;border:2px solid var(--castle-dark);padding:6px 14px;border-radius:999px;cursor:pointer;}
+
+  .feedback-banner{text-align:center;margin-top:14px;font-family:'Baloo 2';font-weight:800;font-size:16px;min-height:24px;}
+  .feedback-banner.good{color:var(--teal);}
+  .feedback-banner.bad{color:var(--burnt);}
+  .feedback-banner.stars{font-size:20px;letter-spacing:3px;}
+
+  .explain-box{max-width:440px;margin:12px auto 0;background:rgba(0,167,178,0.1);border:1.5px dashed var(--teal);border-radius:14px;padding:11px 16px;font-size:13.5px;line-height:1.5;text-align:center;display:none;}
+  .explain-box.show{display:block;animation:fadeIn .3s ease;}
+
+  .next-btn{display:none;margin:18px auto 0;font-family:'Baloo 2';font-weight:700;font-size:15px;color:var(--ink-text);background:linear-gradient(180deg, var(--teal-glow), var(--teal));border:none;padding:12px 30px;border-radius:999px;cursor:pointer;box-shadow:0 7px 0 #04747c;}
+  .next-btn.show{display:block;}
+  .next-btn:active{transform:translateY(5px);box-shadow:0 3px 0 #04747c;}
+
+  /* Guess-my-shape SVG stage */
+  .reveal-stage{display:flex;justify-content:center;margin:6px auto 4px;}
+  .reveal-svg{width:220px;height:160px;}
+  .reveal-svg line{stroke:var(--castle-dark);stroke-width:7;stroke-linecap:round;opacity:0;transition:opacity .5s ease;}
+  .reveal-svg line.revealed{opacity:1;}
+
+  .chip-row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:420px;margin:14px auto 0;}
+  .chip-btn{font-family:'Baloo 2';font-weight:700;font-size:13.5px;color:var(--ink-text);background:#fff;border:2px solid var(--castle-dark);border-radius:12px;padding:9px 16px;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 0 rgba(0,0,0,0.12);transition:transform .12s ease;}
+  .chip-btn:hover:not(:disabled){transform:translateY(-2px);}
+  .chip-btn:disabled{cursor:default;}
+  .chip-btn.correct{background:linear-gradient(180deg,#BFF0CE,#7ED89A);border-color:#2E6B4A;}
+  .chip-btn.wrong{background:linear-gradient(180deg,#F6C4BA,#E4886F);border-color:#A6402A;animation:shake .4s ease;}
+  .chip-shape{width:18px;height:18px;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* Family / Odd-one-out display cards */
+  .display-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px auto 4px;max-width:460px;}
+  .display-card{width:88px;text-align:center;background:#fff;border:3px solid var(--paper-dim);border-radius:16px;padding:12px 8px 8px;cursor:default;box-shadow:0 5px 0 rgba(0,0,0,0.1);transition:transform .12s ease;}
+  .display-card.selectable{cursor:pointer;}
+  .display-card.selectable:hover{transform:translateY(-3px);}
+  .display-card-shape{width:54px;height:54px;margin:0 auto 6px;}
+  .display-card-label{font-family:'Nunito';font-weight:700;font-size:11px;color:#6a5a80;}
+  .display-card.correct{border-color:#2E6B4A;background:linear-gradient(180deg,#e9fbee,#d6f5df);}
+  .display-card.wrong{border-color:#A6402A;background:linear-gradient(180deg,#fdece8,#f8d3ca);animation:shake .4s ease;}
+
+  .yn-row{display:flex;justify-content:center;gap:14px;margin-top:16px;}
+  .yn-btn{font-family:'Baloo 2';font-weight:800;font-size:16px;color:var(--ink-text);background:linear-gradient(180deg,#fff,var(--paper-dim));border:2px solid var(--castle-dark);border-radius:14px;padding:12px 30px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,0.2);}
+  .yn-btn:disabled{cursor:default;}
+  .yn-btn.correct{background:linear-gradient(180deg,#BFF0CE,#7ED89A);border-color:#2E6B4A;}
+  .yn-btn.wrong{background:linear-gradient(180deg,#F6C4BA,#E4886F);border-color:#A6402A;animation:shake .4s ease;}
+
+  .celebrate-particle{position:fixed;font-size:22px;pointer-events:none;z-index:80;opacity:0;}
+
+  /* ---------- FINAL SCREEN ---------- */
+  .complete-wrap{text-align:center;margin:auto 0;padding:20px 0;}
+  .gem-earned{font-size:76px;margin-bottom:8px;animation:gemPop .7s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes gemPop{0%{transform:scale(0) rotate(-30deg);opacity:0}70%{transform:scale(1.15) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0);}}
+  .complete-title{font-family:'Baloo 2';font-weight:800;font-size:26px;color:#fff;margin-bottom:6px;text-shadow:0 3px 0 rgba(0,0,0,0.25);}
+  .complete-sub{color:var(--gold-light);font-weight:700;margin-bottom:24px;font-family:'Nunito';text-shadow:0 1px 2px rgba(0,0,0,0.2);}
+
+  footer.credit{text-align:center;margin-top:26px;font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:.05em;}
+
+  @media(max-width:480px){
+    .activity-panel{padding:18px 12px 22px;}
+    .yn-btn{padding:11px 20px;font-size:14px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<div class="app">
+  <div class="brandbar">MyMasteryLab <span class="dot">•</span> Geometry Kingdom</div>
+
+  <!-- SCREEN 0: NAME + GRADE INTAKE -->
+  <section class="screen active" id="screen-intake">
+    <div class="intake-card">
+      <div class="intake-title">Detective Sign-In</div>
+      <div class="intake-sub">Chests 2 &amp; 3 await your investigation!</div>
+
+      <div class="field-label">What's your name, Detective?</div>
+      <input type="text" class="name-input" id="nameInput" placeholder="Type your name..." maxlength="30">
+
+      <div class="field-label">What grade are you in?</div>
+      <div class="grade-row" id="gradeRow">
+        <button class="grade-btn" data-grade="2">Grade 2</button>
+        <button class="grade-btn" data-grade="3">Grade 3</button>
+      </div>
+
+      <button class="btn-start" id="beginBtn" style="margin-top:24px;" disabled>Begin Investigation 🔍</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 1: CHEST MAP -->
+  <section class="screen" id="screen-map">
+    <div class="map-title-wrap">
+      <div class="map-title" id="mapGreeting">🗺️ Welcome, Detective!</div>
+      <div class="map-sub">Solve each chest's investigation to find the gem!</div>
+    </div>
+    <div class="chest-grid" id="chestGrid"></div>
+  </section>
+
+  <!-- SCREEN 2: ACTIVITY 1 — Build the Secret Shape -->
+  <section class="screen" id="screen-a1">
+    <div class="activity-header">
+      <div class="activity-tag">🔎 Chest 2 — Build the Secret Shape</div>
+      <div class="step-dots" id="a1Dots"></div>
+    </div>
+    <div class="activity-panel">
+      <div class="question-head">
+        <button class="audio-btn" id="a1AudioBtn" title="Read clues aloud">🔊</button>
+        <div style="font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--castle-dark);">Listen to the clues...</div>
+      </div>
+      <div class="clue-box" id="a1ClueBox"></div>
+
+      <div class="shape-bank-label">Tap (or drag) the shape you think it is:</div>
+      <div class="shape-bank" id="a1Bank"></div>
+      <div class="drop-zone" id="a1DropZone"><div class="drop-zone-placeholder">Your answer goes here</div></div>
+
+      <div class="draw-wrap">
+        <div class="draw-label">✏️ Or draw it here for fun!</div>
+        <canvas class="draw-canvas" id="a1Canvas" width="320" height="180"></canvas>
+        <div class="pen-row" id="a1PenRow"></div>
+        <button class="draw-clear-btn" id="a1ClearBtn">Clear Drawing</button>
+      </div>
+
+      <div class="feedback-banner" id="a1Feedback"></div>
+      <div class="explain-box" id="a1Explain"></div>
+      <button class="next-btn" id="a1NextBtn">Next Clue →</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: ACTIVITY 2 — Guess My Shape -->
+  <section class="screen" id="screen-a2">
+    <div class="activity-header">
+      <div class="activity-tag">🔎 Chest 3 · Part 1 — Guess My Shape</div>
+      <div class="step-dots" id="a2Dots"></div>
+    </div>
+    <div class="activity-panel">
+      <div class="question-head">
+        <button class="audio-btn" id="a2AudioBtn" title="Read aloud">🔊</button>
+        <div style="font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--castle-dark);" id="a2Prompt">Guess?</div>
+      </div>
+      <div class="reveal-stage">
+        <svg class="reveal-svg" id="a2Svg" viewBox="0 0 200 150">
+          <line id="line1" x1="30" y1="20" x2="30" y2="130"></line>
+          <line id="line2" x1="30" y1="130" x2="170" y2="130"></line>
+          <line id="line3" x1="170" y1="130" x2="170" y2="20"></line>
+          <line id="line4" x1="170" y1="20" x2="30" y2="20"></line>
+        </svg>
+      </div>
+      <div class="chip-row" id="a2Chips"></div>
+      <div class="feedback-banner" id="a2Feedback"></div>
+      <div class="explain-box" id="a2Explain"></div>
+      <button class="next-btn" id="a2NextBtn">Continue →</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: ACTIVITY 3 — Shape Family Challenge -->
+  <section class="screen" id="screen-a3">
+    <div class="activity-header">
+      <div class="activity-tag">🔎 Chest 3 · Part 2 — Shape Family Challenge</div>
+    </div>
+    <div class="activity-panel">
+      <div class="question-head">
+        <button class="audio-btn" id="a3AudioBtn" title="Read aloud">🔊</button>
+        <div style="font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--castle-dark);">Do these shapes belong to the same family?</div>
+      </div>
+      <div class="display-row" id="a3Row"></div>
+      <div class="yn-row" id="a3YnRow">
+        <button class="yn-btn" data-val="Yes">Yes</button>
+        <button class="yn-btn" data-val="No">No</button>
+      </div>
+      <div class="feedback-banner" id="a3Feedback"></div>
+      <div class="explain-box" id="a3Explain"></div>
+      <button class="next-btn" id="a3NextBtn">Continue →</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 5: ACTIVITY 4 — Odd One Out -->
+  <section class="screen" id="screen-a4">
+    <div class="activity-header">
+      <div class="activity-tag">🔎 Chest 3 · Part 3 — Odd One Out</div>
+      <div class="step-dots" id="a4Dots"></div>
+    </div>
+    <div class="activity-panel">
+      <div class="question-head">
+        <button class="audio-btn" id="a4AudioBtn" title="Read aloud">🔊</button>
+        <div style="font-family:'Baloo 2';font-weight:700;font-size:14px;color:var(--castle-dark);">Tap the shape that doesn't belong!</div>
+      </div>
+      <div class="display-row" id="a4Row"></div>
+      <div class="feedback-banner" id="a4Feedback"></div>
+      <div class="explain-box" id="a4Explain"></div>
+      <button class="next-btn" id="a4NextBtn">Continue →</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 6: FINAL -->
+  <section class="screen" id="screen-final">
+    <div class="complete-wrap">
+      <div class="gem-earned">💎💎</div>
+      <div class="complete-title" id="finalTitle">Both Gems Found!</div>
+      <div class="complete-sub" id="finalSub">You cracked Chest 2 and Chest 3, Detective!</div>
+      <button class="btn-start" id="backToMapBtn">Back to the Map</button>
+    </div>
+  </section>
+
+  <footer class="credit">MyMasteryLab · Shape Detectives · Chests 2 &amp; 3</footer>
+</div>
+
+<div class="crooked" id="crooked">
+  <div class="crooked-bubble" id="crookedBubble">You'll never solve my puzzles!</div>
+  <div class="crooked-char" id="crookedChar">👽</div>
+</div>
+
+<script>
+(function(){
+  // ---------- Ambient scene ----------
+  const sky = document.getElementById('sky');
+  const cloudSpots=[{top:'6%',delay:'0s',size:'50px'},{top:'13%',delay:'14s',size:'36px'},{top:'20%',delay:'28s',size:'44px'}];
+  cloudSpots.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='cloud'; el.textContent='☁️';
+    el.style.top=c.top; el.style.fontSize=c.size; el.style.animationDelay=c.delay;
+    sky.appendChild(el);
+  });
+  const castleSpots = [{left:'4%',emo:'🏰'},{left:'88%',emo:'🏯'}];
+  castleSpots.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='castle-deco'; el.textContent=c.emo; el.style.left=c.left;
+    sky.appendChild(el);
+  });
+
+  // ---------- Audio: smooth female voice ----------
+  let cachedFemaleVoice = null;
+  let voicesReady = false;
+  const FEMALE_VOICE_HINTS = [
+    'female','samantha','victoria','karen','moira','tessa','fiona','zira',
+    'susan','allison','ava','serena','kate','emma','joanna','salli',
+    'google us english','google uk english female','microsoft zira'
+  ];
+  function pickFemaleVoice(){
+    if(!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if(!voices || !voices.length) return null;
+    let match = voices.find(v => /female/i.test(v.name));
+    if(!match) match = voices.find(v => FEMALE_VOICE_HINTS.some(h => v.name.toLowerCase().includes(h)));
+    if(!match){ const en = voices.filter(v=>/^en/i.test(v.lang)); match = en[0] || voices[0]; }
+    return match || null;
+  }
+  function refreshVoices(){ cachedFemaleVoice = pickFemaleVoice(); voicesReady = true; }
+  if('speechSynthesis' in window){
+    refreshVoices();
+    window.speechSynthesis.onvoiceschanged = refreshVoices;
+  }
+  function speak(text, onEnd){
+    if(!('speechSynthesis' in window)){ if(onEnd) onEnd(); return; }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.94; utter.pitch = 1.12; utter.volume = 1;
+    if(!voicesReady || !cachedFemaleVoice) refreshVoices();
+    if(cachedFemaleVoice) utter.voice = cachedFemaleVoice;
+    if(onEnd) utter.onend = onEnd;
+    window.speechSynthesis.speak(utter);
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  // ---------- Shape definitions ----------
+  const SHAPES = {
+    circle:    { label:'Circle',    c1:'#6FD3F0', c2:'#2BA8D6' },
+    square:    { label:'Square',    c1:'#F49BC1', c2:'#D8578F' },
+    triangle:  { label:'Triangle',  c1:'#FFC978', c2:'#F08A3C' },
+    rectangle: { label:'Rectangle', c1:'#9BD68A', c2:'#4E9A5C' },
+    rhombus:   { label:'Rhombus',   c1:'#B39DDB', c2:'#7E57C2' },
+    pentagon:  { label:'Pentagon',  c1:'#C6A9F0', c2:'#8B5FD6' },
+    trapezoid: { label:'Trapezoid', c1:'#80DEEA', c2:'#26A69A' },
+    hexagon:   { label:'Hexagon',   c1:'#FFE07A', c2:'#F0B23C' },
+    octagon:   { label:'Octagon',   c1:'#FF9A9A', c2:'#E0524F' }
+  };
+  function shapeEl(key, sizePx){
+    const s = SHAPES[key];
+    const div = document.createElement('div');
+    div.className = 'shape-swatch ' + key;
+    div.style.width = sizePx + 'px';
+    div.style.height = sizePx + 'px';
+    div.style.background = 'linear-gradient(160deg,' + s.c1 + ',' + s.c2 + ')';
+    return div;
+  }
+
+  // ---------- Professor Crooked ----------
+  const crooked = document.getElementById('crooked');
+  const crookedChar = document.getElementById('crookedChar');
+  const crookedBubble = document.getElementById('crookedBubble');
+  let crookedIdleTimer = null;
+
+  function randomCrookedSpot(){
+    crooked.style.top = (8 + Math.random()*70) + '%';
+    crooked.style.left = (6 + Math.random()*78) + '%';
+  }
+  randomCrookedSpot();
+
+  function crookedSay(msg, duration){
+    crookedBubble.textContent = msg;
+    crookedBubble.classList.add('show');
+    setTimeout(()=> crookedBubble.classList.remove('show'), duration || 3000);
+  }
+  const crookedIdleLines = [
+    "You'll never crack my chests!",
+    "Heh heh... shapes stay mixed up forever!",
+    "Bet you can't spot the odd one out!",
+    "I'm too crooked to catch!"
+  ];
+  function startCrookedRoam(){
+    clearInterval(crookedIdleTimer);
+    crookedIdleTimer = setInterval(()=>{
+      randomCrookedSpot();
+      crookedChar.textContent = '👽';
+      if(Math.random() < 0.6) crookedSay(crookedIdleLines[Math.floor(Math.random()*crookedIdleLines.length)], 2800);
+    }, 6500);
+  }
+  startCrookedRoam();
+
+  function crookedReact(isCorrect){
+    randomCrookedSpot();
+    crookedChar.classList.remove('mood-wrong','mood-right');
+    void crookedChar.offsetWidth;
+    if(isCorrect){
+      crookedChar.textContent = '😱';
+      crookedChar.classList.add('mood-right');
+      const lines = ["Noo! You solved it!","Argh! Too clever!","Curses! Foiled again!","My tricks never work on you!"];
+      crookedSay(lines[Math.floor(Math.random()*lines.length)], 3200);
+    } else {
+      crookedChar.textContent = '😈';
+      crookedChar.classList.add('mood-wrong');
+      const lines = ["Ha! Try again, detective!","Not quite! Shapes stay confused!","Muahaha, guess again!"];
+      crookedSay(lines[Math.floor(Math.random()*lines.length)], 3200);
+    }
+    setTimeout(()=>{ crookedChar.textContent = '👽'; }, 1600);
+  }
+  function crookedFlee(){
+    clearInterval(crookedIdleTimer);
+    crooked.style.top = '-20%'; crooked.style.left = '104%';
+    crookedSay("Argh! I'll be back!!", 3000);
+    setTimeout(()=>{ randomCrookedSpot(); startCrookedRoam(); }, 2600);
+  }
+
+  // ---------- Celebration confetti ----------
+  const funnyWrongLines = [
+    "Oops! Not this time!",
+    "Whoopsie! Give it another go!",
+    "Uh oh! That shape got away!",
+    "Nice try — but that's not it!"
+  ];
+  const cheerLines = ["Amazing detective work!","You cracked it!","Fantastic!","Shape solved!"];
+
+  function spawnCelebration(originEl){
+    const rect = originEl ? originEl.getBoundingClientRect() : {left:window.innerWidth/2, top:window.innerHeight/2, width:0, height:0};
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    const emojis = ['🎉','✨','⭐','💎','🌟'];
+    for(let i=0;i<12;i++){
+      const p = document.createElement('div');
+      p.className = 'celebrate-particle';
+      p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      p.style.left = cx + 'px'; p.style.top = cy + 'px';
+      document.body.appendChild(p);
+      const dx = (Math.random()-0.5)*260;
+      const dy = -60 - Math.random()*120;
+      const anim = p.animate([
+        { transform:'translate(-50%,-50%) scale(.4)', opacity:1 },
+        { transform:'translate(' + dx + 'px,' + dy + 'px) scale(1.1)', opacity:1, offset:.6 },
+        { transform:'translate(' + dx + 'px,' + (dy+40) + 'px) scale(.8)', opacity:0 }
+      ], { duration: 1000 + Math.random()*500, easing:'ease-out' });
+      anim.onfinish = ()=> p.remove();
+    }
+  }
+
+  // ================= STATE =================
+  let state = { name:'', grade:null };
+
+  // ================= SCREEN 0: INTAKE =================
+  const nameInput = document.getElementById('nameInput');
+  const gradeRow = document.getElementById('gradeRow');
+  const beginBtn = document.getElementById('beginBtn');
+
+  function checkIntakeReady(){
+    beginBtn.disabled = !(nameInput.value.trim().length > 0 && state.grade);
+  }
+  nameInput.addEventListener('input', checkIntakeReady);
+  gradeRow.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.grade-btn');
+    if(!btn) return;
+    [...gradeRow.children].forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.grade = btn.dataset.grade;
+    checkIntakeReady();
+  });
+  beginBtn.addEventListener('click', ()=>{
+    state.name = nameInput.value.trim();
+    document.getElementById('mapGreeting').textContent = '🗺️ Welcome, Detective ' + state.name + '!';
+    renderChestMap();
+    showScreen('screen-map');
+    speak("Welcome, Detective " + state.name + "! Chest 2 is ready for your investigation.");
+  });
+
+  // ================= SCREEN 1: CHEST MAP =================
+  let chestState = { 2:{unlocked:true, solved:false}, 3:{unlocked:false, solved:false} };
+
+  function renderChestMap(){
+    const grid = document.getElementById('chestGrid');
+    grid.innerHTML = '';
+    [2,3].forEach(num=>{
+      const cs = chestState[num];
+      const card = document.createElement('div');
+      let cls = 'chest-card';
+      if(cs.solved) cls += ' done';
+      else if(cs.unlocked) cls += ' unlocked';
+      else cls += ' locked';
+      card.className = cls;
+      card.innerHTML = `
+        ${!cs.unlocked && !cs.solved ? '<div class="lock-badge">🔒</div>' : ''}
+        <span class="chest-emoji">${cs.solved ? '💎' : (cs.unlocked ? '📦' : '🔒')}</span>
+        <div class="chest-num">Chest ${num}</div>
+        <div class="chest-name">${cs.solved ? 'Gem Found!' : (cs.unlocked ? 'Tap to Start' : 'Locked')}</div>
+      `;
+      if(cs.unlocked && !cs.solved){
+        card.addEventListener('click', ()=> num === 2 ? startActivity1() : startActivity2());
+      } else if(!cs.unlocked){
+        card.addEventListener('click', ()=> crookedSay("Solve Chest 2 first, detective!", 2400));
+      }
+      grid.appendChild(card);
+    });
+  }
+  document.getElementById('backToMapBtn').addEventListener('click', ()=>{
+    renderChestMap();
+    showScreen('screen-map');
+  });
+
+  // ================= ACTIVITY 1: BUILD THE SECRET SHAPE =================
+  const ACT1_CLUES = [
+    { lines:["I have 4 sides.","All sides are equal.","I have 4 right angles."], answer:'square' },
+    { lines:["I have 3 sides.","I have 3 corners."], answer:'triangle' },
+    { lines:["I have 5 sides."], answer:'pentagon' }
+  ];
+  const BANK_KEYS = ['circle','square','triangle','rectangle','rhombus','pentagon','trapezoid'];
+  let a1Index = 0;
+  let a1Locked = false;
+
+  function startActivity1(){
+    a1Index = 0;
+    buildA1Dots();
+    showScreen('screen-a1');
+    loadA1Clue(0);
+  }
+  function buildA1Dots(){
+    const row = document.getElementById('a1Dots');
+    row.innerHTML = '';
+    ACT1_CLUES.forEach(()=>{
+      const d = document.createElement('div'); d.className='step-dot'; row.appendChild(d);
+    });
+    markA1Dots();
+  }
+  function markA1Dots(){
+    const row = document.getElementById('a1Dots');
+    [...row.children].forEach((el,i)=>{
+      el.classList.toggle('done', i < a1Index);
+      el.classList.toggle('current', i === a1Index);
+    });
+  }
+
+  function loadA1Clue(i){
+    a1Locked = false;
+    const clue = ACT1_CLUES[i];
+    markA1Dots();
+    document.getElementById('a1ClueBox').innerHTML = clue.lines.map(l=>`<div class="clue-line">"${l}"</div>`).join('');
+    document.getElementById('a1Feedback').textContent='';
+    document.getElementById('a1Feedback').className='feedback-banner';
+    document.getElementById('a1Explain').classList.remove('show');
+    document.getElementById('a1NextBtn').classList.remove('show');
+
+    const dz = document.getElementById('a1DropZone');
+    dz.innerHTML = '<div class="drop-zone-placeholder">Your answer goes here</div>';
+    dz.classList.remove('dragover');
+
+    const bank = document.getElementById('a1Bank');
+    bank.innerHTML = '';
+    BANK_KEYS.forEach(key=>{
+      const tok = document.createElement('div');
+      tok.className = 'shape-token';
+      tok.draggable = true;
+      tok.dataset.key = key;
+      const shapeDiv = document.createElement('div');
+      shapeDiv.className = 'shape-token-shape';
+      shapeDiv.appendChild(shapeEl(key, 36));
+      tok.appendChild(shapeDiv);
+      const lbl = document.createElement('div');
+      lbl.className = 'shape-token-label';
+      lbl.textContent = SHAPES[key].label;
+      tok.appendChild(lbl);
+
+      tok.addEventListener('click', ()=> submitA1Answer(key));
+      tok.addEventListener('dragstart', (e)=> e.dataTransfer.setData('text/plain', key));
+      bank.appendChild(tok);
+    });
+
+    setupDrawCanvas('a1Canvas', 'a1PenRow', 'a1ClearBtn');
+  }
+
+  // Drop-zone drag listeners attached once (element persists across clues,
+  // so attaching inside loadA1Clue would stack duplicate handlers each time).
+  (function setupA1DropZoneOnce(){
+    const dz = document.getElementById('a1DropZone');
+    dz.addEventListener('dragover', (e)=>{ e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', ()=> dz.classList.remove('dragover'));
+    dz.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      dz.classList.remove('dragover');
+      const key = e.dataTransfer.getData('text/plain');
+      if(key) submitA1Answer(key);
+    });
+  })();
+
+  function submitA1Answer(key){
+    if(a1Locked) return;
+    const clue = ACT1_CLUES[a1Index];
+    const dz = document.getElementById('a1DropZone');
+    dz.innerHTML = '';
+    const shapeWrap = document.createElement('div');
+    shapeWrap.className = 'drop-zone-shape';
+    shapeWrap.appendChild(shapeEl(key, 56));
+    dz.appendChild(shapeWrap);
+
+    const isCorrect = key === clue.answer;
+    const banner = document.getElementById('a1Feedback');
+    const explain = document.getElementById('a1Explain');
+
+    if(isCorrect){
+      a1Locked = true;
+      document.querySelectorAll('#a1Bank .shape-token').forEach(t=>t.classList.add('disabled'));
+      crookedReact(true);
+      spawnCelebration(dz);
+      banner.textContent = 'You cracked the clue! ' + cheerLines[Math.floor(Math.random()*cheerLines.length)];
+      banner.className = 'feedback-banner good stars';
+      explain.textContent = 'Yes! A ' + SHAPES[clue.answer].label + ' matches every clue.';
+      explain.classList.add('show');
+      speak("Correct! It's a " + SHAPES[clue.answer].label + "!");
+      document.getElementById('a1NextBtn').classList.add('show');
+    } else {
+      crookedReact(false);
+      banner.textContent = 'Not quite — take another look at the clues!';
+      banner.className = 'feedback-banner bad';
+      speak(funnyWrongLines[Math.floor(Math.random()*funnyWrongLines.length)]);
+    }
+  }
+
+  document.getElementById('a1AudioBtn').addEventListener('click', ()=>{
+    const clue = ACT1_CLUES[a1Index];
+    const btn = document.getElementById('a1AudioBtn');
+    btn.classList.add('speaking');
+    speak(clue.lines.join(' '), ()=> btn.classList.remove('speaking'));
+  });
+
+  document.getElementById('a1NextBtn').addEventListener('click', ()=>{
+    a1Index++;
+    if(a1Index >= ACT1_CLUES.length){
+      chestState[2].solved = true;
+      chestState[3].unlocked = true;
+      crookedSay("Argh! Chest 2 is open! But Chest 3 is trickier!", 3400);
+      renderChestMap();
+      showScreen('screen-map');
+    } else {
+      loadA1Clue(a1Index);
+    }
+  });
+
+  // ---------- Draw canvas helper ----------
+  const PEN_COLORS = ['#2B2140','#D8578F','#2BA8D6','#4E9A5C','#F08A3C','#8B5FD6'];
+  function setupDrawCanvas(canvasId, penRowId, clearBtnId){
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    let currentColor = PEN_COLORS[0];
+    ctx.strokeStyle = currentColor;
+
+    const penRow = document.getElementById(penRowId);
+    penRow.innerHTML = '';
+    PEN_COLORS.forEach((color,i)=>{
+      const dot = document.createElement('div');
+      dot.className = 'pen-dot' + (i===0 ? ' selected' : '');
+      dot.style.background = color;
+      dot.addEventListener('click', ()=>{
+        currentColor = color;
+        ctx.strokeStyle = color;
+        [...penRow.children].forEach(d=>d.classList.remove('selected'));
+        dot.classList.add('selected');
+      });
+      penRow.appendChild(dot);
+    });
+
+    document.getElementById(clearBtnId).onclick = ()=> ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    let drawing = false;
+    function getPos(e){
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
+    }
+    function start(e){ drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); }
+    function move(e){ if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault(); }
+    function end(){ drawing = false; }
+
+    canvas.onmousedown = start; canvas.onmousemove = move; canvas.onmouseup = end; canvas.onmouseleave = end;
+    canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = end;
+  }
+
+  // ================= ACTIVITY 2: GUESS MY SHAPE =================
+  const A2_STAGES = [
+    { lines:['line1'], prompt:'Just one line... what could this become?' },
+    { lines:['line1','line2'], prompt:"Now it's an L! Any guesses?" },
+    { lines:['line1','line2','line3'], prompt:'Three sides now! Getting closer...' },
+    { lines:['line1','line2','line3','line4'], prompt:"It's complete! What shape is this?" }
+  ];
+  const A2_CHIP_OPTIONS = ['square','rectangle','triangle','circle'];
+  let a2StageIndex = 0;
+
+  function startActivity2(){
+    a2StageIndex = 0;
+    buildA2Dots();
+    showScreen('screen-a2');
+    loadA2Stage(0);
+  }
+  function buildA2Dots(){
+    const row = document.getElementById('a2Dots');
+    row.innerHTML = '';
+    A2_STAGES.forEach(()=>{ const d=document.createElement('div'); d.className='step-dot'; row.appendChild(d); });
+    markA2Dots();
+  }
+  function markA2Dots(){
+    const row = document.getElementById('a2Dots');
+    [...row.children].forEach((el,i)=>{
+      el.classList.toggle('done', i < a2StageIndex);
+      el.classList.toggle('current', i === a2StageIndex);
+    });
+  }
+
+  function loadA2Stage(i){
+    markA2Dots();
+    const stage = A2_STAGES[i];
+    document.querySelectorAll('#a2Svg line').forEach(l=>l.classList.remove('revealed'));
+    stage.lines.forEach(id=> document.getElementById(id).classList.add('revealed'));
+    document.getElementById('a2Prompt').textContent = stage.prompt;
+    document.getElementById('a2Feedback').textContent='';
+    document.getElementById('a2Feedback').className='feedback-banner';
+    document.getElementById('a2Explain').classList.remove('show');
+    document.getElementById('a2NextBtn').classList.remove('show');
+
+    const chipRow = document.getElementById('a2Chips');
+    chipRow.innerHTML = '';
+    const isFinal = (i === A2_STAGES.length - 1);
+    A2_CHIP_OPTIONS.forEach(key=>{
+      const chip = document.createElement('button');
+      chip.className = 'chip-btn';
+      const shapeSpan = document.createElement('div');
+      shapeSpan.className = 'chip-shape';
+      shapeSpan.appendChild(shapeEl(key, 18));
+      chip.appendChild(shapeSpan);
+      const txt = document.createElement('span');
+      txt.textContent = SHAPES[key].label;
+      chip.appendChild(txt);
+      chip.addEventListener('click', ()=> handleA2Chip(chip, key, isFinal));
+      chipRow.appendChild(chip);
+    });
+  }
+
+  function handleA2Chip(chip, key, isFinal){
+    const allChips = document.querySelectorAll('#a2Chips .chip-btn');
+    if([...allChips].some(c=>c.disabled)) return;
+
+    if(!isFinal){
+      allChips.forEach(c=> c.disabled = true);
+      chip.style.transform = 'scale(1.08)';
+      document.getElementById('a2Feedback').textContent = "Interesting guess! Let's see more...";
+      document.getElementById('a2Feedback').className = 'feedback-banner good';
+      speak("Interesting guess! Let's see what happens next.");
+      document.getElementById('a2NextBtn').classList.add('show');
+      document.getElementById('a2NextBtn').textContent = 'Reveal Next Line →';
+      return;
+    }
+
+    allChips.forEach(c=> c.disabled = true);
+    const isCorrect = key === 'rectangle';
+    const banner = document.getElementById('a2Feedback');
+    const explain = document.getElementById('a2Explain');
+
+    if(isCorrect){
+      chip.classList.add('correct');
+      crookedReact(true);
+      spawnCelebration(chip);
+      banner.textContent = cheerLines[Math.floor(Math.random()*cheerLines.length)];
+      banner.className = 'feedback-banner good stars';
+      explain.textContent = "It's a Rectangle — 4 sides and 4 right angles!";
+      explain.classList.add('show');
+      speak("Yes! It's a Rectangle!");
+    } else {
+      chip.classList.add('wrong');
+      allChips.forEach(c=>{ if(c.textContent.includes('Rectangle')) c.classList.add('correct'); });
+      crookedReact(false);
+      banner.textContent = funnyWrongLines[Math.floor(Math.random()*funnyWrongLines.length)];
+      banner.className = 'feedback-banner bad';
+      explain.textContent = "It's actually a Rectangle — 4 sides and 4 right angles!";
+      explain.classList.add('show');
+      speak("It's actually a Rectangle!");
+    }
+    document.getElementById('a2NextBtn').classList.add('show');
+    document.getElementById('a2NextBtn').textContent = 'Continue →';
+  }
+
+  document.getElementById('a2AudioBtn').addEventListener('click', ()=>{
+    const btn = document.getElementById('a2AudioBtn');
+    btn.classList.add('speaking');
+    speak(document.getElementById('a2Prompt').textContent, ()=> btn.classList.remove('speaking'));
+  });
+
+  document.getElementById('a2NextBtn').addEventListener('click', ()=>{
+    a2StageIndex++;
+    if(a2StageIndex >= A2_STAGES.length){
+      showScreen('screen-a3');
+      loadActivity3();
+    } else {
+      loadA2Stage(a2StageIndex);
+    }
+  });
+
+  // ================= ACTIVITY 3: SHAPE FAMILY CHALLENGE =================
+  const A3_SHAPES = ['square','rectangle','rhombus','trapezoid'];
+  let a3Locked = false;
+
+  function loadActivity3(){
+    a3Locked = false;
+    const row = document.getElementById('a3Row');
+    row.innerHTML = '';
+    A3_SHAPES.forEach(key=>{
+      const card = document.createElement('div');
+      card.className = 'display-card';
+      const shapeWrap = document.createElement('div');
+      shapeWrap.className = 'display-card-shape';
+      shapeWrap.appendChild(shapeEl(key, 54));
+      card.appendChild(shapeWrap);
+      const lbl = document.createElement('div');
+      lbl.className = 'display-card-label';
+      lbl.textContent = SHAPES[key].label;
+      card.appendChild(lbl);
+      row.appendChild(card);
+    });
+    document.querySelectorAll('#a3YnRow .yn-btn').forEach(b=>{ b.disabled=false; b.classList.remove('correct','wrong'); });
+    document.getElementById('a3Feedback').textContent='';
+    document.getElementById('a3Feedback').className='feedback-banner';
+    document.getElementById('a3Explain').classList.remove('show');
+    document.getElementById('a3NextBtn').classList.remove('show');
+  }
+
+  document.getElementById('a3YnRow').addEventListener('click', (e)=>{
+    const btn = e.target.closest('.yn-btn');
+    if(!btn || a3Locked) return;
+    const val = btn.dataset.val;
+    document.querySelectorAll('#a3YnRow .yn-btn').forEach(b=> b.disabled = true);
+
+    const banner = document.getElementById('a3Feedback');
+    const explain = document.getElementById('a3Explain');
+    if(val === 'Yes'){
+      a3Locked = true;
+      btn.classList.add('correct');
+      crookedReact(true);
+      spawnCelebration(btn);
+      banner.textContent = cheerLines[Math.floor(Math.random()*cheerLines.length)];
+      banner.className = 'feedback-banner good stars';
+      explain.textContent = "They're all Quadrilaterals — shapes with exactly 4 sides!";
+      explain.classList.add('show');
+      speak('Yes! They are all Quadrilaterals, shapes with exactly four sides!');
+    } else {
+      a3Locked = true;
+      btn.classList.add('wrong');
+      document.querySelector('#a3YnRow [data-val="Yes"]').classList.add('correct');
+      crookedReact(false);
+      banner.textContent = funnyWrongLines[Math.floor(Math.random()*funnyWrongLines.length)];
+      banner.className = 'feedback-banner bad';
+      explain.textContent = "Actually, yes! They're all Quadrilaterals — shapes with exactly 4 sides!";
+      explain.classList.add('show');
+      speak('Actually, yes! They are all Quadrilaterals!');
+    }
+    document.getElementById('a3NextBtn').classList.add('show');
+  });
+
+  document.getElementById('a3AudioBtn').addEventListener('click', ()=>{
+    const btn = document.getElementById('a3AudioBtn');
+    btn.classList.add('speaking');
+    speak('Square, Rectangle, Rhombus, Trapezoid. Do these shapes belong to the same family?', ()=> btn.classList.remove('speaking'));
+  });
+
+  document.getElementById('a3NextBtn').addEventListener('click', ()=>{
+    a4RoundIndex = 0;
+    buildA4Dots();
+    showScreen('screen-a4');
+    loadA4Round(0);
+  });
+
+  // ================= ACTIVITY 4: ODD ONE OUT =================
+  const A4_ROUNDS = [
+    { shapes:['triangle','rectangle','circle','square'], odd:'circle', reason:'A Circle has no straight sides — just one curved line!' },
+    { shapes:['pentagon','hexagon','triangle','octagon'], odd:'triangle', reason:'A Triangle only has 3 sides — the others have more!' }
+  ];
+  let a4RoundIndex = 0;
+  let a4Locked = false;
+
+  function buildA4Dots(){
+    const row = document.getElementById('a4Dots');
+    row.innerHTML = '';
+    A4_ROUNDS.forEach(()=>{ const d=document.createElement('div'); d.className='step-dot'; row.appendChild(d); });
+    markA4Dots();
+  }
+  function markA4Dots(){
+    const row = document.getElementById('a4Dots');
+    [...row.children].forEach((el,i)=>{
+      el.classList.toggle('done', i < a4RoundIndex);
+      el.classList.toggle('current', i === a4RoundIndex);
+    });
+  }
+
+  function loadA4Round(i){
+    a4Locked = false;
+    markA4Dots();
+    const round = A4_ROUNDS[i];
+    const row = document.getElementById('a4Row');
+    row.innerHTML = '';
+    round.shapes.forEach(key=>{
+      const card = document.createElement('div');
+      card.className = 'display-card selectable';
+      const shapeWrap = document.createElement('div');
+      shapeWrap.className = 'display-card-shape';
+      shapeWrap.appendChild(shapeEl(key, 54));
+      card.appendChild(shapeWrap);
+      const lbl = document.createElement('div');
+      lbl.className = 'display-card-label';
+      lbl.textContent = SHAPES[key].label;
+      card.appendChild(lbl);
+      card.addEventListener('click', ()=> handleA4Answer(card, key, round));
+      row.appendChild(card);
+    });
+    document.getElementById('a4Feedback').textContent='';
+    document.getElementById('a4Feedback').className='feedback-banner';
+    document.getElementById('a4Explain').classList.remove('show');
+    document.getElementById('a4NextBtn').classList.remove('show');
+  }
+
+  function handleA4Answer(card, key, round){
+    if(a4Locked) return;
+    a4Locked = true;
+    document.querySelectorAll('#a4Row .display-card').forEach(c=> c.classList.remove('selectable'));
+
+    const banner = document.getElementById('a4Feedback');
+    const explain = document.getElementById('a4Explain');
+    const isCorrect = key === round.odd;
+
+    if(isCorrect){
+      card.classList.add('correct');
+      crookedReact(true);
+      spawnCelebration(card);
+      banner.textContent = cheerLines[Math.floor(Math.random()*cheerLines.length)];
+      banner.className = 'feedback-banner good stars';
+      explain.textContent = round.reason;
+      explain.classList.add('show');
+      speak('Correct! ' + round.reason);
+    } else {
+      card.classList.add('wrong');
+      document.querySelectorAll('#a4Row .display-card').forEach(c=>{
+        if(c.querySelector('.display-card-label').textContent === SHAPES[round.odd].label) c.classList.add('correct');
+      });
+      crookedReact(false);
+      banner.textContent = funnyWrongLines[Math.floor(Math.random()*funnyWrongLines.length)];
+      banner.className = 'feedback-banner bad';
+      explain.textContent = round.reason;
+      explain.classList.add('show');
+      speak("Not quite! " + round.reason);
+    }
+    document.getElementById('a4NextBtn').classList.add('show');
+  }
+
+  document.getElementById('a4AudioBtn').addEventListener('click', ()=>{
+    const round = A4_ROUNDS[a4RoundIndex];
+    const names = round.shapes.map(k=>SHAPES[k].label).join(', ');
+    const btn = document.getElementById('a4AudioBtn');
+    btn.classList.add('speaking');
+    speak(names + '. Tap the shape that does not belong!', ()=> btn.classList.remove('speaking'));
+  });
+
+  document.getElementById('a4NextBtn').addEventListener('click', ()=>{
+    a4RoundIndex++;
+    if(a4RoundIndex >= A4_ROUNDS.length){
+      chestState[3].solved = true;
+      crookedFlee();
+      document.getElementById('finalTitle').textContent = 'Both Gems Found, ' + state.name + '!';
+      document.getElementById('finalSub').textContent = 'You cracked Chest 2 and Chest 3 like a true Shape Detective!';
+      speak('Congratulations, ' + state.name + '! You found both gems!');
+      showScreen('screen-final');
+    } else {
+      loadA4Round(a4RoundIndex);
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
