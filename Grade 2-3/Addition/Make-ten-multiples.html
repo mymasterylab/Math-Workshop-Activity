@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyMasteryLab - Make a Multiple of 10</title>
+  <!-- Tailwind CSS for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Kid-friendly soft bubble Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(135deg, #E0F4FF 0%, #EAF2EE 50%, #D5EADF 100%);
+    }
+
+    /* Pastel Jungle/Mountain Button Stylings */
+    .btn-easy { background-color: #E2F0D9; border: 3px solid #A9D18E; color: #385723; }
+    .btn-easy:hover { background-color: #D3E8C7; }
+
+    .btn-medium { background-color: #FFF2CC; border: 3px solid #FFD966; color: #7F6000; }
+    .btn-medium:hover { background-color: #FFECAE; }
+
+    .btn-hard { background-color: #FCE4D6; border: 3px solid #F8CBAD; color: #C65911; }
+    .btn-hard:hover { background-color: #F8D7C0; }
+
+    /* Step Unlock Transitions */
+    .step-locked {
+      opacity: 0.4;
+      filter: grayscale(80%);
+      pointer-events: none;
+      transition: all 0.4s ease;
+    }
+    .step-active {
+      opacity: 1;
+      filter: none;
+      pointer-events: auto;
+      border-color: #86EFAC;
+      box-shadow: 0 10px 15px -3px rgba(74, 222, 128, 0.15);
+      transition: all 0.4s ease;
+    }
+
+    /* Dragon Animations */
+    @keyframes flap {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-15deg); }
+    }
+    .wing-left { transform-origin: 35px 55px; animation: flap 0.5s ease-in-out infinite alternate; }
+    .wing-right { transform-origin: 85px 55px; animation: flap 0.5s ease-in-out infinite; }
+
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+    .eye-blink { animation: blink 4s infinite; transform-origin: center; }
+
+    @keyframes dragon-flip {
+      0% { transform: rotateY(0deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.2); }
+      100% { transform: rotateY(360deg) scale(1); }
+    }
+    .dragon-flip-anim { animation: dragon-flip 0.8s ease-out; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden">
+
+  <!-- BACKGROUND LANDSCAPE: Pastel Mountains & Jungle Vibe -->
+  <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end">
+    <!-- Back Mountain Silhouette -->
+    <svg class="w-full h-40 text-[#B2D3C2] opacity-40 transform translate-y-8" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="currentColor" d="M0,160L120,176C240,192,480,224,720,224C960,224,1200,192,1320,176L1440,160L1440,320L1320,320C1200,320,960,320,720,320C480,320,240,320,120,320L0,320Z"></path>
+    </svg>
+    <!-- Front Mountain Silhouette -->
+    <svg class="w-full h-56 text-[#99C5B0] opacity-30 transform translate-y-16" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="currentColor" d="M0,96L80,117.3C160,139,320,181,480,192C640,203,800,181,960,165.3C1120,149,1280,139,1360,133.3L1440,128L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"></path>
+    </svg>
+  </div>
+
+  <!-- Main Activity Container -->
+  <div class="relative z-10 w-full max-w-5xl bg-white/90 backdrop-blur-sm rounded-3xl border-4 border-[#D2E9DD] shadow-2xl overflow-hidden">
+    
+    <!-- Top HUD / Bar -->
+    <div class="bg-gradient-to-r from-[#EAF5F0] to-[#E3F2FD] border-b-2 border-emerald-100 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <span class="text-2xl">🦎</span>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-wide">
+          <span class="text-emerald-600">My</span>MasteryLab
+        </h1>
+      </div>
+      <!-- HUD Trackers -->
+      <div id="game-stats" class="hidden flex items-center space-x-3">
+        <span class="px-4 py-1.5 rounded-full text-xs font-bold shadow-sm uppercase bg-[#E2F0D9] text-[#385723]">Make a Multiple of 10</span>
+        <span id="progress-text" class="text-xs font-semibold text-slate-500 bg-white border px-3 py-1 rounded-full">Question 1 of 10</span>
+        <span id="score-text" class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">Score: 0</span>
+      </div>
+    </div>
+
+    <!-- MAIN INTERACTIVE WRAPPER -->
+    <div class="p-6 md:p-8">
+      
+      <!-- SCREEN 1: ADVENTURE START SCREEN -->
+      <div id="screen-setup" class="space-y-8 py-6 text-center max-w-2xl mx-auto">
+        <div class="space-y-3">
+          <div class="inline-block bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">New Math Unit</div>
+          <h2 class="text-3xl font-extrabold text-[#1E3A2F]">Make a Multiple of 10</h2>
+          <p class="text-slate-500 text-sm leading-relaxed">
+            Welcome, Adventurer! Join our friendly flying dragon as we learn how to bridge to the next multiple of 10 (like 20, 30, 40, or 80) to make addition super simple!
+          </p>
+        </div>
+
+        <!-- Custom Progressive Curriculum Map View -->
+        <div class="bg-[#F4FAF6] border-2 border-dashed border-[#C3E4D4] p-5 rounded-2xl text-left space-y-4">
+          <h3 class="font-bold text-sm text-[#1E3A2F] flex items-center gap-2">
+            <span>🗺️</span> Today's Jungle Trail (10 Questions):
+          </h3>
+          <ul class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-600 font-medium">
+            <li class="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-emerald-100">
+              <span class="bg-emerald-100 text-emerald-700 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">1-3</span>
+              <span>Easy Additions (ending in 8, 9)</span>
+            </li>
+            <li class="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-emerald-100">
+              <span class="bg-amber-100 text-amber-700 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">4-7</span>
+              <span>Moderate Levels (ending in 6, 7)</span>
+            </li>
+            <li class="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-emerald-100">
+              <span class="bg-red-100 text-red-700 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">8-10</span>
+              <span>Hard Challenges (ending in 4, 5)</span>
+            </li>
+          </ul>
+        </div>
+
+        <button onclick="startCurriculum()" class="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition duration-200">
+          Begin Adventure 🥾
+        </button>
+      </div>
+
+      <!-- SCREEN 2: ACTIVE PLAYGROUND (Initially Hidden) -->
+      <div id="screen-game" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        <!-- Active Worksheet Sandbox (Left Side) -->
+        <div class="lg:col-span-3 space-y-6">
+          
+          <!-- Equation Showcase Row -->
+          <div class="flex flex-wrap items-center justify-between bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 gap-4">
+            <div class="flex items-center space-x-3 text-2xl font-bold text-slate-800">
+              <span>Solve:</span>
+              <div class="text-3xl font-extrabold tracking-wider">
+                <span id="display-num1" class="text-emerald-700">74</span>
+                <span class="text-slate-400">+</span>
+                <span id="display-num2" class="text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-200">9</span>
+                <span class="text-slate-400">=</span>
+                <span class="text-emerald-500 font-black">?</span>
+              </div>
+            </div>
+            
+            <!-- Female Audio Speech Synthesizer -->
+            <button onclick="speakTask()" class="flex items-center space-x-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-sm rounded-full shadow-sm hover:shadow transition transform duration-150 active:scale-95">
+              <span>🔊 Read Question</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Visual Tree Splitting Diagram -->
+          <div class="bg-[#F8FCF9] border border-emerald-100 p-6 rounded-2xl max-w-sm mx-auto flex flex-col items-center shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-3">Decompose Second Number</h3>
+            
+            <div id="diagram-top-box" class="w-14 h-14 bg-amber-100 border-2 border-amber-300 rounded-full flex items-center justify-center font-extrabold text-2xl text-amber-800 shadow-inner">
+              9
+            </div>
+            
+            <!-- SVG Split Branch Vector -->
+            <svg class="my-1" width="120" height="40" viewBox="0 0 120 40">
+              <path d="M 60,0 L 25,35" stroke="#059669" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+              <path d="M 60,0 L 95,35" stroke="#059669" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            </svg>
+            
+            <div class="flex justify-between w-full max-w-xs gap-6">
+              <div class="flex flex-col items-center w-1/2">
+                <input type="number" id="split1-field" class="w-16 h-14 text-center text-xl font-bold bg-white border-3 border-dashed border-emerald-300 rounded-xl focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition shadow-inner" placeholder="?">
+                <span class="text-[10px] font-bold text-emerald-600 mt-1 uppercase text-center leading-tight">To Make Next 10</span>
+              </div>
+              
+              <div class="flex flex-col items-center w-1/2">
+                <input type="number" id="split2-field" class="w-16 h-14 text-center text-xl font-bold bg-white border-3 border-dashed border-amber-300 rounded-xl focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100 transition shadow-inner" placeholder="?">
+                <span class="text-[10px] font-bold text-amber-600 mt-1 uppercase text-center leading-tight">Leftover</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- WORKFLOW SEQUENTIAL INTERACTIVE CARDS -->
+          <div class="space-y-4">
+            
+            <!-- Step 1 Command -->
+            <div id="step1-controls" class="flex justify-center">
+              <button onclick="verifyStep1()" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full shadow-md hover:shadow-lg transform active:scale-95 transition">
+                Check Number Split!
+              </button>
+            </div>
+
+            <!-- Step 2: Make friendly Multiple of 10 -->
+            <div id="step2-card" class="step-locked p-5 rounded-2xl bg-emerald-50/40 border-2 border-transparent">
+              <div class="flex items-center space-x-2 mb-3">
+                <span class="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">2</span>
+                <span class="font-bold text-emerald-800 text-sm">Add to reach next Multiple of 10</span>
+              </div>
+              <div class="flex flex-wrap items-center justify-center gap-3 text-xl font-bold text-emerald-900 bg-white/70 p-3 rounded-xl border border-emerald-100 max-w-md mx-auto">
+                <span id="step2-num1-val">74</span>
+                <span>+</span>
+                <span id="step2-split1-val" class="text-emerald-700 bg-emerald-100 px-3 py-1 rounded-lg border border-emerald-200">?</span>
+                <span>=</span>
+                <input type="number" id="step2-target-field" class="w-20 h-10 text-center font-extrabold text-lg bg-white border-2 border-emerald-300 rounded-lg focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" placeholder="?">
+              </div>
+              <div class="flex justify-center mt-3">
+                <button id="btn-check-step2" onclick="verifyStep2()" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-full shadow-sm hover:shadow active:scale-95 transition">
+                  Check Addition
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3: Add Leftovers -->
+            <div id="step3-card" class="step-locked p-5 rounded-2xl bg-amber-50/40 border-2 border-transparent">
+              <div class="flex items-center space-x-2 mb-3">
+                <span class="bg-amber-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">3</span>
+                <span class="font-bold text-amber-800 text-sm">Add Leftover Part</span>
+              </div>
+              <div class="flex flex-wrap items-center justify-center gap-3 text-xl font-bold text-amber-900 bg-white/70 p-3 rounded-xl border border-amber-100 max-w-md mx-auto">
+                <span id="step3-target-val" class="text-emerald-700 bg-emerald-100 px-3 py-1 rounded-lg border border-emerald-200">80</span>
+                <span>+</span>
+                <span id="step3-split2-val" class="text-amber-700 bg-amber-100 px-3 py-1 rounded-lg border border-amber-200">?</span>
+                <span>=</span>
+                <input type="number" id="step3-final-field" class="w-20 h-10 text-center font-extrabold text-lg bg-white border-2 border-amber-300 rounded-lg focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100" placeholder="?">
+              </div>
+              <div class="flex justify-center mt-3">
+                <button id="btn-check-step3" onclick="verifyStep3()" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-full shadow-sm hover:shadow active:scale-95 transition">
+                  Confirm Final Total
+                </button>
+              </div>
+            </div>
+
+            <!-- Navigation Box -->
+            <div id="navigation-area" class="hidden flex justify-center py-2">
+              <button id="btn-next" onclick="advanceStep()" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full shadow-md hover:shadow-lg transform active:scale-95 transition flex items-center space-x-2">
+                <span id="next-btn-text">Proceed on Trail</span>
+                <span>⛺</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- CUTE FLYING DRAGON SIDEKICK PANEL (Right Side) -->
+        <div class="lg:col-span-1 flex flex-col items-center justify-start py-4 space-y-4">
+          
+          <!-- Dialogue Bubble -->
+          <div class="relative bg-white border-2 border-[#C3E4D4] text-slate-700 px-5 py-4 rounded-2xl w-full shadow-sm">
+            <p id="dragon-speech" class="text-xs md:text-sm font-semibold leading-relaxed">
+              Hello adventurer! I'm flying along with you. Let's make a multiple of 10 together!
+            </p>
+            <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-white"></div>
+            <div class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-[#C3E4D4] -z-10"></div>
+          </div>
+          
+          <!-- Flying Dragon Sandbox Wrapper -->
+          <div id="dragon-wrapper" class="w-40 h-40 flex items-center justify-center relative transition-transform duration-[1500ms] ease-in-out">
+            
+            <!-- Cute SVG Dragon Graphic Asset -->
+            <svg id="dragon-svg" class="w-32 h-32" viewBox="0 0 120 120">
+              <!-- Dragon Wings (With Flap Animations) -->
+              <g id="dragon-wings">
+                <path class="wing-left" d="M35 50 C20 30, 10 45, 30 60 Z" fill="#68D391" />
+                <path class="wing-right" d="M85 50 C100 30, 110 45, 90 60 Z" fill="#68D391" />
+              </g>
+              
+              <!-- Dragon Tail -->
+              <path d="M 60 90 Q 80 110 95 95 Q 85 85 60 90" fill="#38A169" />
+              
+              <!-- Main Body -->
+              <circle cx="60" cy="75" r="22" fill="#38A169" />
+              <ellipse cx="60" cy="78" rx="14" ry="16" fill="#9AE6B4" />
+              
+              <!-- Head Layer -->
+              <circle cx="60" cy="45" r="18" fill="#38A169" />
+              
+              <!-- Horns -->
+              <path d="M 48 30 Q 42 20 46 16 Q 52 22 52 30" fill="#F6E05E" />
+              <path d="M 72 30 Q 78 20 74 16 Q 68 22 68 30" fill="#F6E05E" />
+              
+              <!-- Blinking Friendly Eyes -->
+              <circle class="eye-blink" cx="52" cy="42" r="4.5" fill="#1A4D2E" />
+              <circle class="eye-blink" cx="68" cy="42" r="4.5" fill="#1A4D2E" />
+              
+              <!-- White Shiny Pupils -->
+              <circle class="eye-blink" cx="53.5" cy="40.5" r="1.5" fill="#FFFFFF" />
+              <circle class="eye-blink" cx="69.5" cy="40.5" r="1.5" fill="#FFFFFF" />
+
+              <!-- Rosy Blushing Cheeks -->
+              <circle cx="46" cy="48" r="2.5" fill="#FC8181" opacity="0.7" />
+              <circle cx="74" cy="48" r="2.5" fill="#FC8181" opacity="0.7" />
+
+              <!-- Snout Details -->
+              <ellipse cx="60" cy="51" rx="7" ry="4" fill="#9AE6B4" />
+              <circle cx="58" cy="50" r="1" fill="#1A4D2E" />
+              <circle cx="62" cy="50" r="1" fill="#1A4D2E" />
+              
+              <!-- Smile Curve -->
+              <path d="M 57 53 Q 60 56 63 53" stroke="#1A4D2E" stroke-width="1.5" fill="none" stroke-linecap="round" />
+              
+              <!-- Fire Spit Element (Activated on Wrong Answer) -->
+              <g id="dragon-fire" class="opacity-0 scale-0" style="transform-origin: 60px 52px; transition: all 0.4s ease;">
+                <path d="M 60 52 Q 40 75 25 85 Q 45 95 60 52" fill="#FF7675" />
+                <path d="M 60 52 Q 50 80 40 90 Q 55 90 60 52" fill="#FDCB6E" />
+              </g>
+            </svg>
+
+          </div>
+          <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-0.5 mt-1 uppercase tracking-wide">Iggy the Dragon</span>
+        </div>
+
+      </div>
+
+      <!-- SCREEN 3: ADVENTURE END / RESULTS SCREEN (Initially Hidden) -->
+      <div id="screen-end" class="hidden text-center max-w-md mx-auto space-y-6 py-8">
+        <div class="text-6xl animate-bounce">🦖✨</div>
+        <h2 class="text-3xl font-extrabold text-emerald-950">Jungle Trail Complete!</h2>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Amazing job! You worked side-by-side with Iggy the Dragon and completed the Make a Multiple of 10 curriculum.
+        </p>
+        
+        <div class="p-6 bg-emerald-50 border border-emerald-100 rounded-2xl flex flex-col items-center">
+          <span class="text-xs uppercase font-bold tracking-wider text-slate-400 mb-1">Adventure Score</span>
+          <span id="final-score-display" class="text-5xl font-black text-emerald-600">10 / 10</span>
+        </div>
+
+        <button onclick="showSetup()" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition transform active:scale-95">
+          Play Again 🔄
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // RIGID SELECTION CURRICULUM POOLS
+    const easyPool = [
+      { num1: 19, num2: 4, split1: 1, split2: 3, target: 20, final: 23 },
+      { num1: 28, num2: 5, split1: 2, split2: 3, target: 30, final: 33 },
+      { num1: 39, num2: 3, split1: 1, split2: 2, target: 40, final: 42 },
+      { num1: 58, num2: 4, split1: 2, split2: 2, target: 60, final: 62 },
+      { num1: 69, num2: 5, split1: 1, split2: 4, target: 70, final: 74 }
+    ];
+
+    const moderatePool = [
+      { num1: 27, num2: 6, split1: 3, split2: 3, target: 30, final: 33 },
+      { num1: 36, num2: 5, split1: 4, split2: 1, target: 40, final: 41 },
+      { num1: 48, num2: 7, split1: 2, split2: 5, target: 50, final: 55 },
+      { num1: 57, num2: 5, split1: 3, split2: 2, target: 60, final: 62 },
+      { num1: 74, num2: 9, split1: 6, split2: 3, target: 80, final: 83 }, // Example problem
+      { num1: 66, num2: 6, split1: 4, split2: 2, target: 70, final: 72 },
+      { num1: 87, num2: 4, split1: 3, split2: 1, target: 90, final: 91 }
+    ];
+
+    const hardPool = [
+      { num1: 35, num2: 8, split1: 5, split2: 3, target: 40, final: 43 },
+      { num1: 44, num2: 9, split1: 6, split2: 3, target: 50, final: 53 },
+      { num1: 55, num2: 7, split1: 5, split2: 2, target: 60, final: 62 },
+      { num1: 73, num2: 8, split1: 7, split2: 1, target: 80, final: 81 },
+      { num1: 85, num2: 9, split1: 5, split2: 4, target: 90, final: 94 }
+    ];
+
+    // GAME STATE TRACKERS
+    let activeTrail = [];
+    let activeIndex = 0;
+    let currentScore = 0;
+    let femaleVoice = null;
+
+    // PRELOAD FEMALE VOICE CONTROLLER (SpeechSynthesis)
+    function preloadVoice() {
+      if ('speechSynthesis' in window) {
+        const voices = window.speechSynthesis.getVoices();
+        femaleVoice = voices.find(voice => 
+          voice.name.toLowerCase().includes('female') || 
+          voice.name.toLowerCase().includes('zira') || 
+          voice.name.toLowerCase().includes('samantha') || 
+          voice.name.toLowerCase().includes('google us english') ||
+          voice.name.toLowerCase().includes('hazel')
+        );
+      }
+    }
+    window.speechSynthesis.onvoiceschanged = preloadVoice;
+    preloadVoice();
+
+    // START PROGRESSIVE CURRICULUM TRAIL
+    function startCurriculum() {
+      currentScore = 0;
+      activeIndex = 0;
+
+      // Extract random subset matching constraints: 3 Easy, 4 Moderate, 3 Hard
+      const selectedEasy = [...easyPool].sort(() => 0.5 - Math.random()).slice(0, 3);
+      const selectedModerate = [...moderatePool].sort(() => 0.5 - Math.random()).slice(0, 4);
+      const selectedHard = [...hardPool].sort(() => 0.5 - Math.random()).slice(0, 3);
+
+      // Stack sequentially for organic educational progression
+      activeTrail = [...selectedEasy, ...selectedModerate, ...selectedHard];
+
+      document.getElementById('screen-setup').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      document.getElementById('game-stats').classList.remove('hidden');
+
+      loadActiveQuestion();
+    }
+
+    function showSetup() {
+      document.getElementById('screen-end').classList.add('hidden');
+      document.getElementById('game-stats').classList.add('hidden');
+      document.getElementById('screen-setup').classList.remove('hidden');
+    }
+
+    // LOAD CURRENT WORKSPACE TARGETS
+    function loadActiveQuestion() {
+      const q = activeTrail[activeIndex];
+
+      // Update HUD metrics
+      document.getElementById('progress-text').textContent = `Question ${activeIndex + 1} of 10`;
+      document.getElementById('score-text').textContent = `Score: ${currentScore}`;
+
+      // Set values inside DOM UI elements
+      document.getElementById('display-num1').textContent = q.num1;
+      document.getElementById('display-num2').textContent = q.num2;
+      document.getElementById('diagram-top-box').textContent = q.num2;
+
+      // Reset worksheet form inputs
+      document.getElementById('split1-field').value = '';
+      document.getElementById('split2-field').value = '';
+      document.getElementById('step2-target-field').value = '';
+      document.getElementById('step3-final-field').value = '';
+
+      document.getElementById('split1-field').disabled = false;
+      document.getElementById('split2-field').disabled = false;
+
+      resetStyle('split1-field');
+      resetStyle('split2-field');
+      resetStyle('step2-target-field');
+      resetStyle('step3-final-field');
+
+      document.getElementById('step1-controls').classList.remove('hidden');
+      lockCard('step2-card');
+      lockCard('step3-card');
+      document.getElementById('navigation-area').classList.add('hidden');
+
+      updateDragonSpeech(`Let's add ${q.num1} and ${q.num2}! Look at ${q.num1}. How many more does it need to reach the next ten (${q.target})? Split ${q.num2} into two parts accordingly!`);
+    }
+
+    // VERIFY SPLIT VALUES (STEP 1)
+    function verifyStep1() {
+      const q = activeTrail[activeIndex];
+      const s1 = parseInt(document.getElementById('split1-field').value);
+      const s2 = parseInt(document.getElementById('split2-field').value);
+
+      if (isNaN(s1) || isNaN(s2)) {
+        updateDragonSpeech("Write numbers in both of the dashed split circles to continue!");
+        return;
+      }
+
+      if (s1 === q.split1 && s2 === q.split2) {
+        playTone('correct');
+        dragonFlipAnimation();
+        updateDragonSpeech(`Perfect split! ${q.num2} is broken into ${s1} and ${s2}. Now let's combine ${q.num1} with ${s1} to bridge to ${q.target}!`);
+
+        applySuccess('split1-field');
+        applySuccess('split2-field');
+        document.getElementById('split1-field').disabled = true;
+        document.getElementById('split2-field').disabled = true;
+
+        document.getElementById('step1-controls').classList.add('hidden');
+
+        // Unlock Step 2 Workspace
+        unlockCard('step2-card');
+        document.getElementById('step2-num1-val').textContent = q.num1;
+        document.getElementById('step2-split1-val').textContent = q.split1;
+        document.getElementById('step2-target-field').focus();
+      } else {
+        playTone('wrong');
+        dragonBreatheFire();
+        applyError('split1-field');
+        applyError('split2-field');
+
+        if (s1 !== q.split1) {
+          updateDragonSpeech(`Let's think. We start with ${q.num1}. What number do we add to ${q.num1} to reach ${q.target}? Try counting up! That number goes in the first circle.`);
+        } else {
+          updateDragonSpeech(`You got the first circle correct! Since we took ${q.split1} out of ${q.num2}, what is left over? What is ${q.num2} minus ${q.split1}?`);
+        }
+      }
+    }
+
+    // VERIFY FIRST ADDITION (STEP 2)
+    function verifyStep2() {
+      const q = activeTrail[activeIndex];
+      const targetInput = parseInt(document.getElementById('step2-target-field').value);
+
+      if (isNaN(targetInput)) {
+        updateDragonSpeech("Put the answer in the green box to check your step!");
+        return;
+      }
+
+      if (targetInput === q.target) {
+        playTone('correct');
+        dragonFlipAnimation();
+        updateDragonSpeech(`Awesome! We bridged to the multiple of 10: ${q.target}! For the last step, let's add the leftover part.`);
+
+        applySuccess('step2-target-field');
+        document.getElementById('step2-target-field').disabled = true;
+        document.getElementById('btn-check-step2').disabled = true;
+
+        // Unlock Step 3 Workspace
+        unlockCard('step3-card');
+        document.getElementById('step3-target-val').textContent = q.target;
+        document.getElementById('step3-split2-val').textContent = q.split2;
+        document.getElementById('step3-final-field').focus();
+      } else {
+        playTone('wrong');
+        dragonBreatheFire();
+        applyError('step2-target-field');
+        updateDragonSpeech(`Double check the addition. What is ${q.num1} + ${q.split1}? It should be our nice round multiple of 10: ${q.target}.`);
+      }
+    }
+
+    // VERIFY TOTAL SUM (STEP 3)
+    function verifyStep3() {
+      const q = activeTrail[activeIndex];
+      const finalInput = parseInt(document.getElementById('step3-final-field').value);
+
+      if (isNaN(finalInput)) {
+        updateDragonSpeech("Enter the final sum inside the yellow box!");
+        return;
+      }
+
+      if (finalInput === q.final) {
+        playTone('victory');
+        dragonFlipAnimation();
+        sparkConfetti();
+
+        currentScore++;
+        document.getElementById('score-text').textContent = `Score: ${currentScore}`;
+        updateDragonSpeech(`Spectacular! ${q.num1} + ${q.num2} is indeed ${q.final}! Your math power is growing! Let's continue on our path.`);
+
+        applySuccess('step3-final-field');
+        document.getElementById('step3-final-field').disabled = true;
+        document.getElementById('btn-check-step3').disabled = true;
+
+        // Display path proceed buttons
+        const navBox = document.getElementById('navigation-area');
+        const nextText = document.getElementById('next-btn-text');
+        navBox.classList.remove('hidden');
+        nextText.textContent = (activeIndex === 9) ? "Finish Adventure" : "Proceed on Trail";
+      } else {
+        playTone('wrong');
+        dragonBreatheFire();
+        applyError('step3-final-field');
+        updateDragonSpeech(`Almost there! Add our bridged number ${q.target} to the remaining leftover part: ${q.split2}. What is ${q.target} + ${q.split2}?`);
+      }
+    }
+
+    // PATHWAY NAVIGATOR
+    function advanceStep() {
+      if (activeIndex < 9) {
+        activeIndex++;
+        loadActiveQuestion();
+      } else {
+        document.getElementById('screen-game').classList.add('hidden');
+        document.getElementById('screen-end').classList.remove('hidden');
+        document.getElementById('final-score-display').textContent = `${currentScore} / 10`;
+      }
+    }
+
+    // FEMALE VOICE SPEECH ENGINE
+    function speakTask() {
+      if (!('speechSynthesis' in window)) return;
+      
+      const q = activeTrail[activeIndex];
+      const speechString = `What is ${q.num1} plus ${q.num2}? Let's make a multiple of 10. Split ${q.num2} to make the next multiple of 10 with ${q.num1}.`;
+      
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(speechString);
+      
+      if (femaleVoice) {
+        utterance.voice = femaleVoice;
+      } else {
+        utterance.pitch = 1.2; 
+      }
+      utterance.rate = 0.85; 
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // DRAGON CHARACTER ACTIONS
+    function updateDragonSpeech(msg) {
+      document.getElementById('dragon-speech').innerHTML = msg;
+    }
+
+    function dragonBreatheFire() {
+      const fire = document.getElementById('dragon-fire');
+      fire.classList.remove('opacity-0', 'scale-0');
+      fire.classList.add('opacity-100', 'scale-100');
+      setTimeout(() => {
+        fire.classList.remove('opacity-100', 'scale-100');
+        fire.classList.add('opacity-0', 'scale-0');
+      }, 1500);
+    }
+
+    function dragonFlipAnimation() {
+      const dSvg = document.getElementById('dragon-svg');
+      dSvg.classList.add('dragon-flip-anim');
+      setTimeout(() => {
+        dSvg.classList.remove('dragon-flip-anim');
+      }, 800);
+    }
+
+    // RANDOM DRAGON DRIFT PHYSICS ENGINE (Mimics Flying Behavior)
+    function flyingWanderPhysics() {
+      const wrapper = document.getElementById('dragon-wrapper');
+      if (!wrapper) return;
+      
+      // Random wandering coordinates
+      const deltaX = (Math.random() - 0.5) * 45; 
+      const deltaY = (Math.random() - 0.5) * 45; 
+      const angle = (Math.random() - 0.5) * 12; 
+      
+      wrapper.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${angle}deg)`;
+    }
+    setInterval(flyingWanderPhysics, 3500);
+
+    // DYNAMIC WORKSPACE COMPONENT ACCESS UTILITIES
+    function unlockCard(id) {
+      const card = document.getElementById(id);
+      card.className = "step-active p-5 rounded-2xl bg-white border-2 border-emerald-200 shadow-sm transition-all duration-300";
+      
+      const btn = card.querySelector('button');
+      if (btn) btn.disabled = false;
+      const inputs = card.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.disabled = false;
+        input.value = '';
+      });
+    }
+
+    function lockCard(id) {
+      const card = document.getElementById(id);
+      card.className = "step-locked p-5 rounded-2xl bg-slate-50 border-2 border-transparent transition-all duration-300";
+      
+      const btn = card.querySelector('button');
+      if (btn) btn.disabled = true;
+      const inputs = card.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.disabled = true;
+        input.value = '';
+      });
+    }
+
+    function applySuccess(id) {
+      const field = document.getElementById(id);
+      field.classList.remove('border-red-400', 'border-emerald-300', 'border-amber-300', 'border-dashed');
+      field.classList.add('bg-emerald-100', 'border-emerald-400', 'text-emerald-700');
+    }
+
+    function applyError(id) {
+      const field = document.getElementById(id);
+      field.classList.add('bg-red-50', 'border-red-400', 'text-red-700');
+      field.classList.add('translate-x-1');
+      setTimeout(() => field.classList.remove('translate-x-1'), 100);
+    }
+
+    function resetStyle(id) {
+      const field = document.getElementById(id);
+      field.className = id.includes('split')
+        ? "w-16 h-14 text-center text-xl font-bold bg-white border-3 border-dashed border-emerald-300 rounded-xl focus:border-emerald-500 focus:outline-none"
+        : (id.includes('target')
+           ? "w-20 h-10 text-center font-extrabold text-lg bg-white border-2 border-emerald-300 rounded-lg focus:border-emerald-500 focus:outline-none"
+           : "w-20 h-10 text-center font-extrabold text-lg bg-white border-2 border-amber-300 rounded-lg focus:border-amber-500 focus:outline-none");
+    }
+
+    // AUDIO CHIME GENERATORS (WEB AUDIO API)
+    function playTone(actionType) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        if (actionType === 'correct') {
+          oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 Note
+          gainNode.gain.setValueAtTime(0.06, audioCtx.currentTime);
+          oscillator.start();
+          oscillator.stop(audioCtx.currentTime + 0.1);
+
+          const nextOsc = audioCtx.createOscillator();
+          const nextGain = audioCtx.createGain();
+          nextOsc.connect(nextGain);
+          nextGain.connect(audioCtx.destination);
+          nextOsc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.1); // G5 Note
+          nextGain.gain.setValueAtTime(0.06, audioCtx.currentTime + 0.1);
+          nextOsc.start(audioCtx.currentTime + 0.1);
+          nextOsc.stop(audioCtx.currentTime + 0.3);
+        } else if (actionType === 'wrong') {
+          oscillator.type = 'sawtooth';
+          oscillator.frequency.setValueAtTime(120, audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+          oscillator.start();
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          oscillator.stop(audioCtx.currentTime + 0.3);
+        } else if (actionType === 'victory') {
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, i) => {
+            const oscNode = audioCtx.createOscillator();
+            const gNode = audioCtx.createGain();
+            oscNode.connect(gNode);
+            gNode.connect(audioCtx.destination);
+            oscNode.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.1));
+            gNode.gain.setValueAtTime(0.06, audioCtx.currentTime + (i * 0.1));
+            gNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (i * 0.1) + 0.35);
+            oscNode.start(audioCtx.currentTime + (i * 0.1));
+            oscNode.stop(audioCtx.currentTime + (i * 0.1) + 0.35);
+          });
+        }
+      } catch (err) {}
+    }
+
+    // SPARK CONFETTI VISUAL ELEMENT GENERATOR
+    function sparkConfetti() {
+      const palette = ['#A7F3D0', '#FDE68A', '#FCA5A5', '#93C5FD', '#C4B5FD', '#FBCFE8', '#C6F6D5'];
+      for (let i = 0; i < 40; i++) {
+        const spark = document.createElement('div');
+        spark.className = 'absolute pointer-events-none rounded-full';
+        spark.style.width = Math.random() * 8 + 6 + 'px';
+        spark.style.height = Math.random() * 8 + 6 + 'px';
+        spark.style.backgroundColor = palette[Math.floor(Math.random() * palette.length)];
+        spark.style.left = Math.random() * 100 + '%';
+        spark.style.top = '-10px';
+        spark.style.zIndex = '999';
+
+        document.body.appendChild(spark);
+
+        const motion = spark.animate([
+          { transform: 'translate3d(0, 0, 0) rotate(0deg)', opacity: 1 },
+          { transform: `translate3d(${(Math.random() - 0.5) * 200}px, ${window.innerHeight}px, 0) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+        ], {
+          duration: Math.random() * 1200 + 800,
+          easing: 'cubic-bezier(0, .9, .57, 1)'
+        });
+
+        motion.onfinish = () => spark.remove();
+      }
+    }
+  </script>
+</body>
+</html>
