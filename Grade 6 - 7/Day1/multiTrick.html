@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏴‍☠️ Multiplication Treasure Hunt</title>
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     Palette: lagoon blue sky, jungle greens, sandy beach, gold treasure
+     ============================================================ */
+  :root{
+    --sky-top:#5EC8F2;
+    --sky-bottom:#BDEBFF;
+    --ocean:#0E86C2;
+    --ocean-deep:#0A5C8A;
+    --sand:#F4D58D;
+    --sand-dark:#E0B865;
+    --jungle:#2E8B57;
+    --jungle-dark:#1E6B41;
+    --gold:#FFC93C;
+    --gold-dark:#E8A317;
+    --coral:#FF6B5E;
+    --coral-dark:#E14F42;
+    --ink:#1B3B4B;
+    --white:#FFFDF7;
+    --card-shadow: 0 10px 0 rgba(0,0,0,0.15);
+    --font-title: 'Baloo 2','Comic Sans MS','Chalkboard SE','Marker Felt',cursive,sans-serif;
+    --font-body: 'Trebuchet MS','Verdana',sans-serif;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  html,body{
+    margin:0; padding:0; height:100%;
+    font-family:var(--font-body);
+    color:var(--ink);
+    overflow-x:hidden;
+    background:linear-gradient(180deg,var(--sky-top) 0%, var(--sky-bottom) 45%, var(--ocean) 100%);
+  }
+
+  /* Decorative floating clouds */
+  .cloud{
+    position:fixed; top:0; pointer-events:none; opacity:0.9; z-index:0;
+    font-size:48px; animation:drift 40s linear infinite;
+  }
+  .cloud.c1{ top:6%; animation-duration:55s; }
+  .cloud.c2{ top:14%; font-size:34px; animation-duration:70s; animation-delay:-20s;}
+  .cloud.c3{ top:3%; font-size:28px; animation-duration:65s; animation-delay:-40s;}
+  @keyframes drift{
+    from{ transform:translateX(-10vw); }
+    to{ transform:translateX(110vw); }
+  }
+
+  .screen{
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .hidden{ display:none !important; }
+
+  /* ============================================================
+     WELCOME SCREEN
+     ============================================================ */
+  #screen-welcome .title-wrap{
+    text-align:center;
+    animation:floatUp 3s ease-in-out infinite;
+  }
+  @keyframes floatUp{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-10px); }
+  }
+  .game-title{
+    font-family:var(--font-title);
+    font-size:clamp(32px,6vw,64px);
+    color:var(--white);
+    text-shadow: 3px 3px 0 var(--coral-dark), 6px 6px 0 rgba(0,0,0,0.2);
+    margin:0 0 8px 0;
+    line-height:1.15;
+  }
+  .subtitle{
+    font-size:clamp(16px,2.4vw,22px);
+    color:var(--white);
+    background:var(--ocean-deep);
+    display:inline-block;
+    padding:8px 18px;
+    border-radius:20px;
+    margin-bottom:30px;
+    box-shadow:var(--card-shadow);
+  }
+  .island-scene{
+    position:relative;
+    width:min(520px,90vw);
+    height:180px;
+    margin:10px auto 30px;
+  }
+  .palm{
+    position:absolute; bottom:0; font-size:70px;
+    animation:sway 4s ease-in-out infinite;
+    filter:drop-shadow(2px 4px 2px rgba(0,0,0,0.2));
+  }
+  .palm.p1{ left:0; animation-delay:0s;}
+  .palm.p2{ right:0; animation-delay:1.2s; transform:scaleX(-1);}
+  @keyframes sway{
+    0%,100%{ transform:rotate(-4deg); }
+    50%{ transform:rotate(4deg); }
+  }
+  .palm.p2{ }
+  .pirate-guide{
+    position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+    font-size:80px;
+    animation:bob 2.2s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%,100%{ transform:translateX(-50%) translateY(0) rotate(0deg); }
+    50%{ transform:translateX(-50%) translateY(-8px) rotate(-3deg); }
+  }
+  .big-btn{
+    font-family:var(--font-title);
+    font-size:clamp(18px,2.6vw,26px);
+    color:var(--white);
+    background:linear-gradient(180deg,var(--coral) 0%, var(--coral-dark) 100%);
+    border:none;
+    padding:16px 40px;
+    border-radius:50px;
+    cursor:pointer;
+    box-shadow:0 8px 0 #A93327, 0 12px 18px rgba(0,0,0,0.25);
+    transition:transform .08s ease, box-shadow .08s ease;
+    letter-spacing:0.5px;
+  }
+  .big-btn:hover{ transform:translateY(-2px); }
+  .big-btn:active{
+    transform:translateY(6px);
+    box-shadow:0 2px 0 #A93327, 0 4px 8px rgba(0,0,0,0.25);
+  }
+  .btn-row{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .ghost-btn{
+    font-family:var(--font-title);
+    font-size:16px;
+    color:var(--ocean-deep);
+    background:var(--white);
+    border:3px solid var(--ocean-deep);
+    padding:10px 22px;
+    border-radius:50px;
+    cursor:pointer;
+    box-shadow:0 5px 0 rgba(0,0,0,0.15);
+  }
+  .ghost-btn:active{ transform:translateY(3px); box-shadow:none; }
+
+  .challenge-toggle{
+    display:flex; align-items:center; gap:10px;
+    background:var(--white);
+    padding:10px 18px;
+    border-radius:30px;
+    margin-bottom:22px;
+    box-shadow:var(--card-shadow);
+    font-family:var(--font-title);
+    font-size:15px;
+    color:var(--ink);
+  }
+  .challenge-toggle input{ width:20px; height:20px; cursor:pointer; }
+
+  /* tiny teacher gear, unobtrusive corner */
+  .teacher-access{
+    position:fixed; bottom:14px; right:14px; z-index:50;
+    background:rgba(255,255,255,0.85);
+    border:2px solid var(--ocean-deep);
+    color:var(--ocean-deep);
+    width:42px; height:42px; border-radius:50%;
+    font-size:20px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; opacity:0.55;
+    transition:opacity .2s;
+  }
+  .teacher-access:hover{ opacity:1; }
+
+  /* ============================================================
+     HUD
+     ============================================================ */
+  #screen-game{ justify-content:flex-start; padding-top:14px; width:100%; }
+  .hud{
+    width:min(760px,96vw);
+    background:var(--white);
+    border-radius:22px;
+    padding:14px 18px;
+    box-shadow:var(--card-shadow);
+    margin-bottom:14px;
+  }
+  .hud-top{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--font-title);
+    margin-bottom:10px;
+    flex-wrap:wrap; gap:8px;
+  }
+  .hud-pill{
+    background:var(--sand);
+    border-radius:20px;
+    padding:6px 14px;
+    font-size:15px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .coin-count{ background:var(--gold); color:var(--ink); }
+  #coin-count-num{ font-weight:bold; }
+
+  .progress-track{
+    width:100%; height:16px; background:#E4EEF3; border-radius:10px; overflow:hidden;
+    border:2px solid var(--ocean-deep);
+  }
+  .progress-fill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg,var(--jungle),var(--gold));
+    border-radius:10px;
+    transition:width .5s ease;
+  }
+
+  /* Treasure map row */
+  .map-row{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:12px; gap:2px; overflow-x:auto; padding-bottom:2px;
+  }
+  .map-stop{
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    font-size:20px; opacity:0.4; transform:scale(0.85);
+    transition:all .3s ease; position:relative; min-width:36px;
+  }
+  .map-stop.done{ opacity:1; transform:scale(1); }
+  .map-stop.current{
+    opacity:1; transform:scale(1.25);
+    animation:pulse 1.2s ease-in-out infinite;
+  }
+  .map-stop .stop-label{ font-size:9px; font-family:var(--font-body); color:var(--ocean-deep); }
+  @keyframes pulse{
+    0%,100%{ filter:drop-shadow(0 0 0px var(--gold)); }
+    50%{ filter:drop-shadow(0 0 8px var(--gold)); }
+  }
+  .map-stop.done::after{
+    content:"✓"; position:absolute; top:-6px; right:-4px;
+    background:var(--jungle); color:white; border-radius:50%;
+    width:14px; height:14px; font-size:10px; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ============================================================
+     QUESTION CARD
+     ============================================================ */
+  .question-card{
+    width:min(620px,96vw);
+    background:var(--white);
+    border-radius:26px;
+    padding:26px 20px 30px;
+    box-shadow:var(--card-shadow);
+    text-align:center;
+    position:relative;
+  }
+  .location-banner{
+    font-family:var(--font-title);
+    font-size:clamp(18px,3vw,26px);
+    color:var(--ocean-deep);
+    margin-bottom:6px;
+  }
+  .question-text{
+    font-family:var(--font-title);
+    font-size:clamp(38px,8vw,64px);
+    color:var(--ink);
+    margin:14px 0 26px;
+    letter-spacing:1px;
+  }
+  .answers-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+  }
+  @media (max-width:480px){
+    .answers-grid{ grid-template-columns:1fr; }
+  }
+  .answer-btn{
+    font-family:var(--font-title);
+    font-size:clamp(22px,4vw,30px);
+    color:var(--white);
+    background:linear-gradient(180deg,#3FB6E8,var(--ocean));
+    border:none; border-radius:20px;
+    padding:20px 10px;
+    cursor:pointer;
+    box-shadow:0 6px 0 var(--ocean-deep);
+    transition:transform .08s ease, box-shadow .08s ease, background .2s;
+  }
+  .answer-btn:hover{ transform:translateY(-2px); }
+  .answer-btn:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--ocean-deep); }
+  .answer-btn.correct{
+    background:linear-gradient(180deg,#6FDC8C,var(--jungle));
+    box-shadow:0 6px 0 var(--jungle-dark);
+    animation:bounceCorrect .5s ease;
+  }
+  .answer-btn.wrong{
+    background:linear-gradient(180deg,#FF9C8F,var(--coral-dark));
+    animation:shake .4s ease;
+  }
+  @keyframes bounceCorrect{
+    0%{ transform:scale(1); } 40%{ transform:scale(1.12); } 100%{ transform:scale(1); }
+  }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-8px); }
+    40%{ transform:translateX(8px); }
+    60%{ transform:translateX(-6px); }
+    80%{ transform:translateX(6px); }
+  }
+  .feedback-msg{
+    min-height:34px;
+    font-family:var(--font-title);
+    font-size:22px;
+    margin-top:16px;
+  }
+  .feedback-msg.ok{ color:var(--jungle-dark); }
+  .feedback-msg.bad{ color:var(--coral-dark); }
+
+  /* flying coin */
+  .flying-coin{
+    position:fixed; font-size:30px; z-index:200; pointer-events:none;
+    transition:all .9s cubic-bezier(.2,.8,.2,1);
+  }
+
+  /* sparkle stars */
+  .sparkle{
+    position:fixed; font-size:22px; pointer-events:none; z-index:150;
+    animation:sparkleAnim 0.9s ease-out forwards;
+  }
+  @keyframes sparkleAnim{
+    0%{ transform:scale(0) rotate(0deg); opacity:1; }
+    60%{ transform:scale(1.3) rotate(180deg); opacity:1; }
+    100%{ transform:scale(0.4) rotate(360deg) translateY(-40px); opacity:0; }
+  }
+
+  /* ============================================================
+     WHITEBOARD (scratch pad for working out problems)
+     ============================================================ */
+  .whiteboard-card{
+    width:min(620px,96vw);
+    background:var(--white);
+    border-radius:22px;
+    padding:14px 16px 18px;
+    box-shadow:var(--card-shadow);
+    margin-top:16px;
+  }
+  .whiteboard-header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .whiteboard-title{
+    font-family:var(--font-title);
+    font-size:15px;
+    color:var(--ocean-deep);
+  }
+  .wb-toggle-btn{
+    font-family:var(--font-title);
+    font-size:13px;
+    background:var(--sand);
+    border:2px solid var(--sand-dark);
+    color:var(--ink);
+    border-radius:14px;
+    padding:5px 12px;
+    cursor:pointer;
+  }
+  .wb-toggle-btn:active{ transform:translateY(2px); }
+  .whiteboard-body.hidden{ display:none; }
+
+  .wb-toolbar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .wb-colors{ display:flex; gap:6px; }
+  .wb-swatch{
+    width:26px; height:26px; border-radius:50%;
+    border:3px solid transparent; cursor:pointer;
+    box-shadow:0 2px 0 rgba(0,0,0,0.15);
+  }
+  .wb-swatch.active{ border-color:var(--ocean-deep); transform:scale(1.15); }
+
+  .wb-sizes{ display:flex; gap:6px; align-items:center; }
+  .wb-size-btn{
+    background:#EDF4F7; border:2px solid var(--sand-dark);
+    border-radius:50%; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    width:30px; height:30px;
+  }
+  .wb-size-btn.active{ background:var(--sand); border-color:var(--ocean-deep); }
+  .wb-size-dot{ background:var(--ink); border-radius:50%; }
+
+  .wb-tool-btn{
+    font-family:var(--font-title);
+    font-size:13px;
+    background:#EDF4F7;
+    border:2px solid var(--sand-dark);
+    border-radius:14px;
+    padding:6px 12px;
+    cursor:pointer;
+  }
+  .wb-tool-btn:active{ transform:translateY(2px); }
+  .wb-tool-btn.active{ background:var(--coral); color:var(--white); border-color:var(--coral-dark); }
+
+  .whiteboard-canvas{
+    width:100%;
+    height:100%;
+    display:block;
+    touch-action:none;
+    cursor:crosshair;
+  }
+  .wb-canvas-wrap{
+    width:100%;
+    height:220px;
+    background:
+      linear-gradient(#E9F6FB 1px, transparent 1px) 0 0/100% 28px,
+      #F7FCFE;
+    border:3px dashed var(--sand-dark);
+    border-radius:14px;
+    overflow:hidden;
+    box-sizing:content-box;
+  }
+
+  /* ============================================================
+     END SCREEN
+     ============================================================ */
+  #screen-end .chest-wrap{
+    text-align:center;
+    position:relative;
+  }
+  .chest-emoji{
+    font-size:110px;
+    display:inline-block;
+    animation:chestOpen 1.2s ease;
+  }
+  @keyframes chestOpen{
+    0%{ transform:scale(0.3) rotate(-10deg); opacity:0;}
+    60%{ transform:scale(1.2) rotate(5deg); opacity:1;}
+    100%{ transform:scale(1) rotate(0deg); }
+  }
+  .end-title{
+    font-family:var(--font-title);
+    font-size:clamp(28px,5vw,46px);
+    color:var(--white);
+    text-shadow:3px 3px 0 var(--gold-dark);
+    margin:8px 0 4px;
+  }
+  .end-sub{
+    font-family:var(--font-title);
+    font-size:20px;
+    color:var(--white);
+    margin-bottom:22px;
+  }
+  .stats-card{
+    background:var(--white);
+    border-radius:22px;
+    padding:22px 30px;
+    box-shadow:var(--card-shadow);
+    display:flex; gap:30px; justify-content:center; flex-wrap:wrap;
+    margin-bottom:26px;
+    font-family:var(--font-title);
+  }
+  .stat-block{ text-align:center; }
+  .stat-num{ font-size:32px; color:var(--ocean-deep); }
+  .stat-label{ font-size:14px; color:var(--ink); opacity:0.7; }
+
+  /* confetti */
+  .confetti-piece{
+    position:fixed; top:-20px; width:10px; height:16px; z-index:300;
+    animation:confettiFall linear forwards;
+  }
+  @keyframes confettiFall{
+    to{ transform:translateY(110vh) rotate(720deg); opacity:0.9; }
+  }
+
+  /* ============================================================
+     TEACHER MODE MODAL
+     ============================================================ */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,30,40,0.55);
+    display:flex; align-items:center; justify-content:center; z-index:500;
+    padding:16px;
+  }
+  .modal-box{
+    background:var(--white); border-radius:20px; padding:24px;
+    width:min(520px,96vw); max-height:88vh; overflow-y:auto;
+    box-shadow:0 12px 30px rgba(0,0,0,0.3);
+  }
+  .modal-box h2{ font-family:var(--font-title); color:var(--ocean-deep); margin-top:0; }
+  .modal-box label{ font-family:var(--font-title); font-size:14px; display:block; margin:14px 0 6px; }
+  .modal-box select, .modal-box textarea{
+    width:100%; padding:10px; border-radius:10px; border:2px solid var(--sand-dark);
+    font-family:var(--font-body); font-size:15px;
+  }
+  .modal-box textarea{ height:130px; resize:vertical; }
+  .modal-actions{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .hint{ font-size:12px; opacity:0.65; margin-top:4px; }
+
+  footer.credit{
+    color:var(--white); opacity:0.75; font-size:12px; margin-top:20px; text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<!-- floating clouds, decorative -->
+<div class="cloud c1">☁️</div>
+<div class="cloud c2">☁️</div>
+<div class="cloud c3">☁️</div>
+
+<!-- ============================================================
+     SCREEN 1: WELCOME
+============================================================ -->
+<div id="screen-welcome" class="screen">
+  <div class="title-wrap">
+    <h1 class="game-title">🏴‍☠️ Multiplication<br>Treasure Hunt</h1>
+    <div class="subtitle">Sail, solve &amp; find the gold! ⚓</div>
+  </div>
+
+  <div class="island-scene">
+    <div class="palm p1">🌴</div>
+    <div class="pirate-guide">🏴‍☠️</div>
+    <div class="palm p2">🌴</div>
+  </div>
+
+  <label class="challenge-toggle">
+    <input type="checkbox" id="challenge-checkbox">
+    ⚔️ Challenge Mode (2-digit × 2-digit)
+  </label>
+
+  <div class="btn-row">
+    <button class="big-btn" id="start-btn">Start Adventure 🗺️</button>
+  </div>
+
+  <footer class="credit">Made for young treasure hunters — Grades 4–5</footer>
+</div>
+
+<!-- ============================================================
+     SCREEN 2: GAME
+============================================================ -->
+<div id="screen-game" class="screen hidden">
+
+  <div class="hud">
+    <div class="hud-top">
+      <div class="hud-pill" id="location-pill">📍 Location 1 / 8</div>
+      <div class="hud-pill coin-count">🪙 <span id="coin-count-num">0</span> coins</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="map-row" id="map-row"><!-- populated by JS --></div>
+  </div>
+
+  <div class="question-card">
+    <div class="location-banner" id="location-banner">🌴 Jungle</div>
+    <div class="question-text" id="question-text">? × ? = ?</div>
+    <div class="answers-grid" id="answers-grid"><!-- 4 buttons injected by JS --></div>
+    <div class="feedback-msg" id="feedback-msg"></div>
+  </div>
+
+  <!-- ============================================================
+       SCRATCH WHITEBOARD — work the problem out by hand
+  ============================================================ -->
+  <div class="whiteboard-card" id="whiteboard-card">
+    <div class="whiteboard-header">
+      <span class="whiteboard-title">✏️ Scratch Pad — work it out here!</span>
+      <button class="wb-toggle-btn" id="wb-toggle-btn">Hide ▲</button>
+    </div>
+    <div class="whiteboard-body" id="whiteboard-body">
+      <div class="wb-toolbar">
+        <div class="wb-colors" id="wb-colors"><!-- swatches injected by JS --></div>
+        <div class="wb-sizes" id="wb-sizes"><!-- pen sizes injected by JS --></div>
+        <button class="wb-tool-btn" id="wb-eraser-btn" title="Eraser">🧹 Eraser</button>
+        <button class="wb-tool-btn" id="wb-clear-btn" title="Clear the board">🗑️ Clear</button>
+      </div>
+      <div class="wb-canvas-wrap">
+        <canvas id="whiteboard-canvas" class="whiteboard-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 3: END / VICTORY
+============================================================ -->
+<div id="screen-end" class="screen hidden">
+  <div class="chest-wrap">
+    <div class="chest-emoji">🏆💰</div>
+    <h1 class="end-title">🎉 Congratulations!</h1>
+    <div class="end-sub">You found the treasure!</div>
+  </div>
+
+  <div class="stats-card">
+    <div class="stat-block">
+      <div class="stat-num" id="final-coins">0</div>
+      <div class="stat-label">🪙 Coins Collected</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num" id="final-time">0:00</div>
+      <div class="stat-label">⏱️ Time Taken</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="big-btn" id="play-again-btn">Play Again 🔁</button>
+  </div>
+</div>
+
+<!-- hidden teacher access button -->
+<button class="teacher-access" id="teacher-access-btn" title="Teacher Settings">⚙️</button>
+
+<script>
+/* ================================================================
+   MULTIPLICATION TREASURE HUNT — GAME LOGIC
+   All in vanilla JS, no external libraries.
+================================================================ */
+
+/* ---------- LOCATIONS (fixed order, 8 stops) ---------- */
+const LOCATIONS = [
+  { name:"Jungle",        emoji:"🌴" },
+  { name:"Bridge",        emoji:"🌉" },
+  { name:"Pirate Camp",   emoji:"🦜" },
+  { name:"Cave",          emoji:"🏔️" },
+  { name:"River",         emoji:"🌊" },
+  { name:"Beach",         emoji:"🏝️" },
+  { name:"Pirate Ship",   emoji:"⚓" },
+  { name:"Treasure Cave", emoji:"💎" },
+];
+
+/* ---------- DEFAULT QUESTION POOLS (editable via Teacher Mode) ---------- */
+// Stored as arrays of [a, b] pairs. Teacher mode edits these as "a x b" text lines.
+const DEFAULT_POOLS = {
+  easy: [[2,3],[3,4],[4,5],[5,6],[6,2],[7,3],[8,2],[9,3]],
+  medium: [[8,6],[12,4],[25,3],[14,6],[18,5],[16,7],[24,5],[32,4]],
+  hard: [[13,7],[15,8],[17,6],[19,4],[23,6],[27,3],[29,4],[34,3]],
+  challenge: [[24,13],[36,14],[54,12],[23,15],[41,12],[26,17],[33,19],[45,13]],
+};
+
+/* current active pool + difficulty, mutable at runtime via Teacher Mode */
+let activeDifficulty = "medium";
+let questionPools = JSON.parse(JSON.stringify(DEFAULT_POOLS)); // deep copy so we can edit safely
+
+/* ---------- GAME STATE ---------- */
+let state = {
+  order: [],          // shuffled array of [a,b] questions for this run, length 8
+  currentIndex: 0,
+  coins: 0,
+  startTime: null,
+  challengeMode: false,
+};
+
+/* ---------- DOM REFS ---------- */
+const screenWelcome = document.getElementById('screen-welcome');
+const screenGame    = document.getElementById('screen-game');
+const screenEnd     = document.getElementById('screen-end');
+
+const startBtn      = document.getElementById('start-btn');
+const playAgainBtn  = document.getElementById('play-again-btn');
+const challengeBox  = document.getElementById('challenge-checkbox');
+
+const locationPill   = document.getElementById('location-pill');
+const coinCountNum   = document.getElementById('coin-count-num');
+const progressFill   = document.getElementById('progress-fill');
+const mapRow         = document.getElementById('map-row');
+const locationBanner = document.getElementById('location-banner');
+const questionText   = document.getElementById('question-text');
+const answersGrid    = document.getElementById('answers-grid');
+const feedbackMsg    = document.getElementById('feedback-msg');
+
+const finalCoins = document.getElementById('final-coins');
+const finalTime  = document.getElementById('final-time');
+
+const teacherBtn = document.getElementById('teacher-access-btn');
+
+/* ================================================================
+   SOUND EFFECTS — simple Web Audio beeps (no external files needed)
+================================================================ */
+let audioCtx = null;
+function getCtx(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+function beep(freq, duration, type='sine', delay=0, gain=0.15){
+  try{
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.value = gain;
+    osc.connect(g); g.connect(ctx.destination);
+    const t0 = ctx.currentTime + delay;
+    osc.start(t0);
+    g.gain.setValueAtTime(gain, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+    osc.stop(t0 + duration + 0.02);
+  }catch(e){ /* audio not available, fail silently */ }
+}
+const sounds = {
+  correct: ()=>{ beep(660,0.12,'square',0); beep(880,0.16,'square',0.12); },
+  coin:    ()=>{ beep(1200,0.08,'triangle',0); beep(1600,0.1,'triangle',0.08); },
+  wrong:   ()=>{ beep(180,0.18,'sawtooth',0); },
+  victory: ()=>{
+    [523,659,784,1046].forEach((f,i)=> beep(f,0.22,'triangle', i*0.15, 0.18));
+  }
+};
+
+/* ================================================================
+   HELPERS
+================================================================ */
+function shuffleArray(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* Build the 8-question order for a run, picking from the active pool.
+   If pool has fewer than 8 entries, sample with repetition (shuffled). */
+function buildQuestionOrder(){
+  const poolKey = state.challengeMode ? 'challenge' : activeDifficulty;
+  const pool = questionPools[poolKey] && questionPools[poolKey].length
+    ? questionPools[poolKey] : DEFAULT_POOLS.medium;
+
+  let picks;
+  if(pool.length >= 8){
+    picks = shuffleArray(pool).slice(0,8);
+  } else {
+    // sample with repetition to always fill 8 locations
+    picks = [];
+    const shuffled = shuffleArray(pool);
+    for(let i=0;i<8;i++){ picks.push(shuffled[i % shuffled.length]); }
+    picks = shuffleArray(picks);
+  }
+  return picks;
+}
+
+/* Generate 4 answer options: 1 correct + 3 plausible distractors */
+function generateOptions(a,b){
+  const correct = a*b;
+  const distractorSet = new Set();
+  const candidates = [
+    a*(b+1), a*(b-1), (a+1)*b, (a-1)*b,
+    correct + a, correct - a, correct + b, correct - b,
+    correct + 10, correct - 10, correct + 1, correct - 1
+  ];
+  for(const c of candidates){
+    if(c > 0 && c !== correct) distractorSet.add(c);
+    if(distractorSet.size >= 8) break;
+  }
+  let distractors = shuffleArray(Array.from(distractorSet)).slice(0,3);
+  // fallback if not enough unique distractors were generated
+  while(distractors.length < 3){
+    const fallback = correct + Math.floor(Math.random()*20 - 10);
+    if(fallback > 0 && fallback !== correct && !distractors.includes(fallback)){
+      distractors.push(fallback);
+    }
+  }
+  const options = shuffleArray([correct, ...distractors]);
+  return { correct, options };
+}
+
+function formatTime(ms){
+  const totalSec = Math.floor(ms/1000);
+  const m = Math.floor(totalSec/60);
+  const s = totalSec % 60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+/* ================================================================
+   RENDER: TREASURE MAP ROW
+================================================================ */
+function renderMap(){
+  mapRow.innerHTML = '';
+  LOCATIONS.forEach((loc, idx)=>{
+    const el = document.createElement('div');
+    el.className = 'map-stop';
+    if(idx < state.currentIndex) el.classList.add('done');
+    if(idx === state.currentIndex) el.classList.add('current');
+    el.innerHTML = `<span>${loc.emoji}</span><span class="stop-label">${idx+1}</span>`;
+    mapRow.appendChild(el);
+  });
+}
+
+/* ================================================================
+   RENDER: CURRENT QUESTION
+================================================================ */
+function renderQuestion(){
+  const loc = LOCATIONS[state.currentIndex];
+  const [a,b] = state.order[state.currentIndex];
+
+  locationPill.textContent = `📍 Location ${state.currentIndex+1} / 8`;
+  locationBanner.textContent = `${loc.emoji} ${loc.name}`;
+  questionText.textContent = `${a} × ${b} = ?`;
+  feedbackMsg.textContent = '';
+  feedbackMsg.className = 'feedback-msg';
+
+  const { correct, options } = generateOptions(a,b);
+  answersGrid.innerHTML = '';
+  options.forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', ()=> handleAnswer(opt, correct, btn));
+    answersGrid.appendChild(btn);
+  });
+
+  progressFill.style.width = `${(state.currentIndex/8)*100}%`;
+  renderMap();
+}
+
+/* ================================================================
+   VISUAL FX: sparkles, flying coin, confetti
+================================================================ */
+function spawnSparkles(x,y,count=8){
+  for(let i=0;i<count;i++){
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    s.textContent = ['✨','⭐','🌟'][Math.floor(Math.random()*3)];
+    s.style.left = (x + (Math.random()*80-40)) + 'px';
+    s.style.top  = (y + (Math.random()*40-20)) + 'px';
+    document.body.appendChild(s);
+    setTimeout(()=> s.remove(), 950);
+  }
+}
+
+function flyCoinToHUD(originEl){
+  const originRect = originEl.getBoundingClientRect();
+  const targetRect = coinCountNum.getBoundingClientRect();
+  const coin = document.createElement('div');
+  coin.className = 'flying-coin';
+  coin.textContent = '🪙';
+  coin.style.left = (originRect.left + originRect.width/2) + 'px';
+  coin.style.top  = (originRect.top + originRect.height/2) + 'px';
+  document.body.appendChild(coin);
+
+  requestAnimationFrame(()=>{
+    coin.style.left = (targetRect.left) + 'px';
+    coin.style.top  = (targetRect.top) + 'px';
+    coin.style.transform = 'scale(0.4)';
+    coin.style.opacity = '0.6';
+  });
+  setTimeout(()=>{
+    coin.remove();
+    sounds.coin();
+    state.coins++;
+    coinCountNum.textContent = state.coins;
+  }, 850);
+}
+
+function launchConfetti(count=60){
+  const colors = ['#FFC93C','#FF6B5E','#2E8B57','#0E86C2','#FFFDF7'];
+  for(let i=0;i<count;i++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (2 + Math.random()*2) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    document.body.appendChild(p);
+    setTimeout(()=> p.remove(), 4200);
+  }
+}
+
+/* ================================================================
+   ANSWER HANDLING
+================================================================ */
+function handleAnswer(selected, correct, btnEl){
+  if(selected === correct){
+    // CORRECT
+    btnEl.classList.add('correct');
+    feedbackMsg.textContent = '✅ Correct!';
+    feedbackMsg.classList.add('ok');
+    sounds.correct();
+
+    // disable all buttons during celebration
+    [...answersGrid.children].forEach(b=> b.style.pointerEvents='none');
+
+    const rect = btnEl.getBoundingClientRect();
+    spawnSparkles(rect.left + rect.width/2, rect.top);
+    flyCoinToHUD(btnEl);
+
+    setTimeout(()=>{
+      state.currentIndex++;
+      if(state.currentIndex >= LOCATIONS.length){
+        finishGame();
+      } else {
+        renderQuestion();
+      }
+    }, 950);
+
+  } else {
+    // WRONG — unlimited retries, do not reveal the answer
+    btnEl.classList.add('wrong');
+    feedbackMsg.textContent = '❌ Try Again!';
+    feedbackMsg.className = 'feedback-msg bad';
+    sounds.wrong();
+    setTimeout(()=> btnEl.classList.remove('wrong'), 400);
+  }
+}
+
+/* ================================================================
+   GAME FLOW CONTROL
+================================================================ */
+function startGame(){
+  state.challengeMode = challengeBox.checked;
+  state.order = buildQuestionOrder();
+  state.currentIndex = 0;
+  state.coins = 0;
+  state.startTime = Date.now();
+  coinCountNum.textContent = 0;
+
+  screenWelcome.classList.add('hidden');
+  screenEnd.classList.add('hidden');
+  screenGame.classList.remove('hidden');
+
+  renderQuestion();
+}
+
+function finishGame(){
+  const elapsed = Date.now() - state.startTime;
+  screenGame.classList.add('hidden');
+  screenEnd.classList.remove('hidden');
+  finalCoins.textContent = state.coins;
+  finalTime.textContent = formatTime(elapsed);
+  sounds.victory();
+  launchConfetti(70);
+}
+
+startBtn.addEventListener('click', startGame);
+playAgainBtn.addEventListener('click', ()=>{
+  screenEnd.classList.add('hidden');
+  screenWelcome.classList.remove('hidden');
+});
+
+/* ================================================================
+   TEACHER MODE
+================================================================ */
+function poolToText(poolKey){
+  return questionPools[poolKey].map(([a,b])=> `${a} x ${b}`).join('\n');
+}
+function textToPool(text){
+  return text.split('\n')
+    .map(line=> line.trim())
+    .filter(line=> line.length)
+    .map(line=>{
+      const match = line.match(/(\d+)\s*[x×X\*]\s*(\d+)/);
+      if(match) return [parseInt(match[1],10), parseInt(match[2],10)];
+      return null;
+    })
+    .filter(pair=> pair !== null);
+}
+
+function openTeacherModal(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h2>⚙️ Teacher Mode</h2>
+      <label>Choose difficulty for regular play</label>
+      <select id="teacher-difficulty">
+        <option value="easy">Easy (single digits)</option>
+        <option value="medium">Medium (default set)</option>
+        <option value="hard">Hard</option>
+      </select>
+
+      <label>Edit questions (one per line, format: <code>a x b</code>)</label>
+      <textarea id="teacher-questions"></textarea>
+      <div class="hint">This list is used for the selected difficulty above. Add or remove lines freely — the game will always create 8 stops, repeating questions if fewer than 8 are given.</div>
+
+      <label>Challenge Mode questions (2-digit × 2-digit)</label>
+      <textarea id="teacher-challenge"></textarea>
+
+      <div class="modal-actions">
+        <button class="big-btn" id="teacher-save" style="font-size:15px;padding:10px 22px;">Save Changes</button>
+        <button class="ghost-btn" id="teacher-reset">Reset to Defaults</button>
+        <button class="ghost-btn" id="teacher-close">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const diffSelect = overlay.querySelector('#teacher-difficulty');
+  const qArea = overlay.querySelector('#teacher-questions');
+  const cArea = overlay.querySelector('#teacher-challenge');
+
+  diffSelect.value = activeDifficulty;
+  qArea.value = poolToText(activeDifficulty);
+  cArea.value = poolToText('challenge');
+
+  diffSelect.addEventListener('change', ()=>{
+    qArea.value = poolToText(diffSelect.value);
+  });
+
+  overlay.querySelector('#teacher-save').addEventListener('click', ()=>{
+    activeDifficulty = diffSelect.value;
+    const newPool = textToPool(qArea.value);
+    const newChallenge = textToPool(cArea.value);
+    if(newPool.length) questionPools[activeDifficulty] = newPool;
+    if(newChallenge.length) questionPools.challenge = newChallenge;
+    overlay.remove();
+  });
+  overlay.querySelector('#teacher-reset').addEventListener('click', ()=>{
+    questionPools = JSON.parse(JSON.stringify(DEFAULT_POOLS));
+    activeDifficulty = 'medium';
+    diffSelect.value = 'medium';
+    qArea.value = poolToText('medium');
+    cArea.value = poolToText('challenge');
+  });
+  overlay.querySelector('#teacher-close').addEventListener('click', ()=> overlay.remove());
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+}
+
+teacherBtn.addEventListener('click', openTeacherModal);
+
+/* ================================================================
+   SCRATCH WHITEBOARD — lets kids work out the multiplication
+   by hand (draw, write, doodle) before picking an answer.
+================================================================ */
+const wbCanvas   = document.getElementById('whiteboard-canvas');
+const wbCtx      = wbCanvas.getContext('2d');
+const wbColorsEl = document.getElementById('wb-colors');
+const wbSizesEl  = document.getElementById('wb-sizes');
+const wbEraserBtn= document.getElementById('wb-eraser-btn');
+const wbClearBtn = document.getElementById('wb-clear-btn');
+const wbToggleBtn= document.getElementById('wb-toggle-btn');
+const wbBody     = document.getElementById('whiteboard-body');
+
+const WB_COLORS = ['#1B3B4B','#E14F42','#0E86C2','#2E8B57','#E8A317'];
+const WB_SIZES  = [3,6,10];
+
+let wbState = {
+  color: WB_COLORS[0],
+  size: WB_SIZES[1],
+  erasing: false,
+  drawing: false,
+  lastX: 0,
+  lastY: 0,
+};
+
+/* Build color swatches */
+WB_COLORS.forEach((c,i)=>{
+  const sw = document.createElement('div');
+  sw.className = 'wb-swatch' + (i===0 ? ' active' : '');
+  sw.style.background = c;
+  sw.addEventListener('click', ()=>{
+    wbState.color = c;
+    wbState.erasing = false;
+    [...wbColorsEl.children].forEach(el=> el.classList.remove('active'));
+    sw.classList.add('active');
+    wbEraserBtn.classList.remove('active');
+  });
+  wbColorsEl.appendChild(sw);
+});
+
+/* Build pen size buttons */
+WB_SIZES.forEach((s,i)=>{
+  const btn = document.createElement('div');
+  btn.className = 'wb-size-btn' + (s===wbState.size ? ' active' : '');
+  const dot = document.createElement('div');
+  dot.className = 'wb-size-dot';
+  dot.style.width = (s+2)+'px';
+  dot.style.height = (s+2)+'px';
+  btn.appendChild(dot);
+  btn.addEventListener('click', ()=>{
+    wbState.size = s;
+    [...wbSizesEl.children].forEach(el=> el.classList.remove('active'));
+    btn.classList.add('active');
+  });
+  wbSizesEl.appendChild(btn);
+});
+
+wbEraserBtn.addEventListener('click', ()=>{
+  wbState.erasing = !wbState.erasing;
+  wbEraserBtn.classList.toggle('active', wbState.erasing);
+});
+
+wbClearBtn.addEventListener('click', clearWhiteboard);
+
+wbToggleBtn.addEventListener('click', ()=>{
+  const nowHidden = wbBody.classList.toggle('hidden');
+  wbToggleBtn.textContent = nowHidden ? 'Show ▼' : 'Hide ▲';
+});
+
+/* Resize canvas backing store to match its displayed size (crisp on retina too).
+   Because the canvas has no border/padding of its own (the dashed border lives
+   on the wrapper), getBoundingClientRect() here always equals the exact
+   drawable area, keeping mouse/touch coordinates perfectly aligned. */
+function sizeWhiteboardCanvas(){
+  const rect = wbCanvas.getBoundingClientRect();
+  if(rect.width === 0 || rect.height === 0) return; // not visible yet, skip
+  const ratio = window.devicePixelRatio || 1;
+  wbCanvas.width = Math.round(rect.width * ratio);
+  wbCanvas.height = Math.round(rect.height * ratio);
+  wbCtx.setTransform(ratio,0,0,ratio,0,0);
+  wbCtx.lineCap = 'round';
+  wbCtx.lineJoin = 'round';
+}
+window.addEventListener('resize', sizeWhiteboardCanvas);
+
+function clearWhiteboard(){
+  sizeWhiteboardCanvas(); // re-sync size in case layout shifted, then wipe
+  wbCtx.clearRect(0,0,wbCanvas.width,wbCanvas.height);
+}
+
+function getWbPos(evt){
+  const rect = wbCanvas.getBoundingClientRect();
+  const point = evt.touches ? evt.touches[0] : evt;
+  return { x: point.clientX - rect.left, y: point.clientY - rect.top };
+}
+
+function wbStart(evt){
+  evt.preventDefault();
+  wbState.drawing = true;
+  const p = getWbPos(evt);
+  wbState.lastX = p.x; wbState.lastY = p.y;
+  // draw a dot for single taps/clicks
+  wbDrawSegment(p.x, p.y, p.x, p.y);
+}
+function wbMove(evt){
+  if(!wbState.drawing) return;
+  evt.preventDefault();
+  const p = getWbPos(evt);
+  wbDrawSegment(wbState.lastX, wbState.lastY, p.x, p.y);
+  wbState.lastX = p.x; wbState.lastY = p.y;
+}
+function wbEnd(){ wbState.drawing = false; }
+
+function wbDrawSegment(x1,y1,x2,y2){
+  wbCtx.save();
+  if(wbState.erasing){
+    wbCtx.globalCompositeOperation = 'destination-out';
+    wbCtx.lineWidth = wbState.size * 3;
+  } else {
+    wbCtx.globalCompositeOperation = 'source-over';
+    wbCtx.strokeStyle = wbState.color;
+    wbCtx.lineWidth = wbState.size;
+  }
+  wbCtx.beginPath();
+  wbCtx.moveTo(x1,y1);
+  wbCtx.lineTo(x2,y2);
+  wbCtx.stroke();
+  wbCtx.restore();
+}
+
+wbCanvas.addEventListener('mousedown', wbStart);
+wbCanvas.addEventListener('mousemove', wbMove);
+window.addEventListener('mouseup', wbEnd);
+wbCanvas.addEventListener('touchstart', wbStart, { passive:false });
+wbCanvas.addEventListener('touchmove', wbMove, { passive:false });
+wbCanvas.addEventListener('touchend', wbEnd);
+
+/* Initialize canvas sizing once the game screen becomes visible,
+   and clear it fresh for every new question so kids start blank each time. */
+const _origRenderQuestion = renderQuestion;
+renderQuestion = function(){
+  _origRenderQuestion();
+  clearWhiteboard(); // re-syncs canvas size and wipes it for the new question
+};
+
+const _origStartGame = startGame;
+startGame = function(){
+  _origStartGame();
+  // extra safety pass once the browser has painted the now-visible game screen
+  requestAnimationFrame(clearWhiteboard);
+};
+
+</script>
+</body>
+</html>
