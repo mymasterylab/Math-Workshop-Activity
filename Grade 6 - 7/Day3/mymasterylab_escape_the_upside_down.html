@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyMasteryLab — Escape the Upside Down</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#07090b;
+    --fog:#10161a;
+    --panel:#141b1f;
+    --red-neon:#ff1b3d;
+    --red-deep:#5e0d18;
+    --teal-spore:#37e0a0;
+    --fog-white:#e7e4da;
+    --ink:#a9b0ad;
+    --gold:#ffb238;
+    --display: 'Creepster', cursive;
+    --body: 'Space Grotesk', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(ellipse at 50% -10%, #1a2420 0%, var(--void) 55%, #030405 100%);
+    color:var(--fog-white);
+    font-family:var(--body);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  /* floating spores */
+  .spore-field{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+  .spore{
+    position:absolute;bottom:-10px;width:6px;height:6px;border-radius:50%;
+    background:var(--teal-spore);opacity:.35;filter:blur(1px);
+    animation:drift linear infinite;
+  }
+  @keyframes drift{
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    10%{opacity:.5;}
+    100%{transform:translateY(-110vh) translateX(var(--dx,20px));opacity:0;}
+  }
+
+  /* roaming demogorgon layer */
+  #demogorgon{
+    position:fixed;top:50%;left:50%;width:120px;height:120px;
+    z-index:5;pointer-events:none;
+    transform:translate(-50%,-50%) scale(0.01);
+    opacity:0;
+    transition:top 2.4s cubic-bezier(.5,0,.3,1), left 2.4s cubic-bezier(.5,0,.3,1),
+               transform 1.1s cubic-bezier(.34,1.56,.64,1), opacity 1.1s ease;
+    filter:drop-shadow(0 0 18px rgba(255,27,61,.55));
+  }
+  #demogorgon.visible{opacity:1;}
+  #demogorgon svg{width:100%;height:100%;display:block;}
+  #demogorgon.jumpscare{transition:transform .18s ease-out, opacity .18s ease-out !important;}
+
+  .taunt-bubble{
+    position:fixed;z-index:6;max-width:230px;background:#1a0407;
+    border:2px solid var(--red-neon);border-radius:10px;padding:10px 12px;
+    font-family:var(--body);font-size:.82rem;color:#ffd7dc;
+    box-shadow:0 0 20px rgba(255,27,61,.45);
+    opacity:0;transform:scale(.8);transition:opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+  }
+  .taunt-bubble.show{opacity:1;transform:scale(1);}
+  .taunt-bubble::before{content:"👹 ";}
+
+  body.shake{animation:shake .4s;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-8px) rotate(-.3deg);}
+    40%{transform:translateX(7px) rotate(.3deg);}
+    60%{transform:translateX(-5px);}
+    80%{transform:translateX(4px);}
+  }
+
+  .wrap{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:28px 18px 60px;}
+
+  header{text-align:center;margin-bottom:18px;}
+  .brand{
+    font-family:var(--display);letter-spacing:2px;font-size:2.1rem;color:var(--red-neon);
+    text-shadow:0 0 8px rgba(255,27,61,.8), 0 0 22px rgba(255,27,61,.4);
+    margin:0;
+  }
+  .brand small{display:block;font-family:var(--body);font-size:.7rem;letter-spacing:4px;
+    color:var(--teal-spore);text-transform:uppercase;margin-top:4px;font-weight:600;}
+  .tagline{font-size:.95rem;color:var(--ink);margin-top:10px;}
+
+  .progress-row{display:flex;justify-content:center;gap:10px;margin:22px 0 8px;}
+  .key-dot{
+    width:30px;height:30px;border-radius:50%;border:2px solid var(--red-deep);
+    display:flex;align-items:center;justify-content:center;font-size:.85rem;
+    color:var(--ink);background:#0c0f10;transition:all .4s ease;
+  }
+  .key-dot.done{
+    background:var(--teal-spore);border-color:var(--teal-spore);color:#05100a;
+    box-shadow:0 0 12px rgba(55,224,160,.7);
+  }
+
+  .card{
+    background:linear-gradient(180deg,var(--panel),#0d1215);
+    border:1px solid #26312f;border-radius:14px;padding:24px;margin-top:18px;
+    box-shadow:0 20px 50px rgba(0,0,0,.55), inset 0 0 40px rgba(55,224,160,.03);
+    position:relative;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;border-radius:14px;padding:1px;
+    background:linear-gradient(135deg,rgba(255,27,61,.25),transparent 40%);
+    pointer-events:none;
+  }
+
+  h2.level-title{
+    font-family:var(--display);color:var(--gold);font-size:1.5rem;letter-spacing:1px;
+    margin:0 0 6px;text-shadow:0 0 10px rgba(255,178,56,.35);
+  }
+  .level-desc{color:var(--ink);font-size:.92rem;margin-bottom:16px;}
+
+  .grade-toggle{display:flex;gap:12px;justify-content:center;margin:20px 0;flex-wrap:wrap;}
+  .grade-btn{
+    flex:1 1 160px;max-width:220px;background:#0c1113;border:2px solid #2b3a37;
+    color:var(--fog-white);padding:16px 10px;border-radius:12px;cursor:pointer;
+    font-family:var(--body);font-weight:600;font-size:1rem;transition:all .2s ease;
+  }
+  .grade-btn:hover{border-color:var(--teal-spore);transform:translateY(-2px);}
+  .grade-btn small{display:block;color:var(--ink);font-weight:400;font-size:.78rem;margin-top:4px;}
+
+  .primary-btn{
+    background:linear-gradient(135deg,var(--red-neon),#b3122b);color:#fff;border:none;
+    padding:13px 22px;border-radius:8px;font-family:var(--body);font-weight:700;
+    font-size:1rem;cursor:pointer;letter-spacing:.5px;transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 6px 18px rgba(255,27,61,.35);
+  }
+  .primary-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(255,27,61,.5);}
+  .primary-btn:active{transform:translateY(0);}
+  .primary-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+  .ghost-btn{
+    background:transparent;border:1px solid #3a4844;color:var(--ink);
+    padding:10px 16px;border-radius:8px;font-family:var(--body);cursor:pointer;font-size:.88rem;
+  }
+  .ghost-btn:hover{border-color:var(--teal-spore);color:var(--teal-spore);}
+
+  .center{text-align:center;}
+  .q-meta{display:flex;justify-content:space-between;color:var(--ink);font-size:.78rem;
+    font-family:var(--mono);margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase;}
+  .q-tag{color:var(--gold);}
+  .q-tag.g7{color:var(--red-neon);}
+
+  .question-box{
+    background:#0a0d0e;border:1px dashed #33403c;border-radius:10px;
+    padding:20px;margin:14px 0;font-family:var(--mono);font-size:1.15rem;
+    color:var(--fog-white);text-align:center;line-height:1.5;
+  }
+
+  .workspace{margin:16px 0 6px;border:1px dashed #33403c;border-radius:10px;padding:10px;background:#0a0d0e;}
+  .workspace-label{font-family:var(--mono);font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--teal-spore);margin-bottom:8px;text-align:center;}
+  .tool-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;justify-content:center;}
+  .tool-btn{
+    background:#141b1f;border:2px solid #2b3a37;color:var(--ink);border-radius:8px;
+    padding:8px 12px;font-family:var(--body);font-size:.85rem;font-weight:600;cursor:pointer;
+    transition:all .15s ease;
+  }
+  .tool-btn:hover{border-color:var(--teal-spore);}
+  .tool-btn.active{border-color:var(--teal-spore);color:var(--teal-spore);background:rgba(55,224,160,.08);
+    box-shadow:0 0 10px rgba(55,224,160,.25);}
+  .color-swatches{display:flex;gap:6px;padding:0 6px;border-left:1px solid #2b3a37;border-right:1px solid #2b3a37;}
+  .swatch{
+    width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;
+    padding:0;transition:transform .15s ease, border-color .15s ease;
+  }
+  .swatch:hover{transform:scale(1.12);}
+  .swatch.active{border-color:#fff;box-shadow:0 0 0 2px var(--teal-spore);}
+  #scratchCanvas{
+    width:100%;height:200px;display:block;border-radius:8px;
+    background:
+      linear-gradient(#1a2420 1px, transparent 1px) 0 0/100% 20px,
+      linear-gradient(90deg,#1a2420 1px, transparent 1px) 0 0/20px 100%,
+      #0d1315;
+    touch-action:none;cursor:crosshair;
+  }
+  .answer-row{display:flex;gap:10px;margin-top:16px;}
+  input[type=text]{
+    flex:1;background:#0a0d0e;border:2px solid #2b3a37;border-radius:8px;
+    padding:12px 14px;color:var(--fog-white);font-family:var(--mono);font-size:1rem;
+    outline:none;transition:border-color .2s ease;
+  }
+  input[type=text]:focus{border-color:var(--teal-spore);box-shadow:0 0 0 3px rgba(55,224,160,.15);}
+
+  .feedback{margin-top:14px;font-size:.9rem;min-height:22px;font-weight:600;}
+  .feedback.good{color:var(--teal-spore);}
+  .feedback.bad{color:var(--red-neon);}
+
+  .stability-bar{height:10px;border-radius:6px;background:#1a1010;overflow:hidden;margin:14px 0 4px;border:1px solid #3a1017;}
+  .stability-fill{height:100%;background:linear-gradient(90deg,var(--teal-spore),#8be3c2);transition:width .5s ease;}
+
+  .code-gate{text-align:center;margin-top:8px;}
+  .code-gate input{
+    width:220px;text-align:center;letter-spacing:3px;text-transform:uppercase;
+    font-weight:700;margin:14px auto;display:block;
+  }
+  .badge-earned{
+    display:inline-block;background:rgba(55,224,160,.12);border:1px solid var(--teal-spore);
+    color:var(--teal-spore);padding:6px 14px;border-radius:20px;font-size:.82rem;margin-top:8px;
+  }
+
+  .victory{text-align:center;}
+  .victory h1{font-family:var(--display);font-size:2.4rem;color:var(--gold);
+    text-shadow:0 0 20px rgba(255,178,56,.6);margin-bottom:6px;}
+  .certificate{
+    border:2px solid var(--gold);border-radius:14px;padding:26px;margin-top:20px;
+    background:radial-gradient(ellipse at top, rgba(255,178,56,.08), transparent 70%);
+  }
+  .certificate input{
+    text-align:center;font-family:var(--display);font-size:1.3rem;color:var(--gold);
+    background:transparent;border:none;border-bottom:2px dashed var(--gold);
+    width:80%;margin:10px auto;display:block;padding:6px;
+  }
+  .certificate input:focus{outline:none;}
+
+  .confetti{position:fixed;top:-20px;width:8px;height:14px;z-index:7;opacity:.9;}
+
+  footer{text-align:center;color:#4a5652;font-size:.75rem;margin-top:30px;}
+
+  @media (prefers-reduced-motion: reduce){
+    #demogorgon{transition:none;}
+    .spore{animation:none;display:none;}
+  }
+  @media (max-width:480px){
+    .brand{font-size:1.6rem;}
+    .question-box{font-size:1rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="spore-field" id="sporeField"></div>
+<div id="demogorgon">
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <g id="dgBody">
+      <ellipse cx="100" cy="115" rx="55" ry="65" fill="#3a0107"/>
+      <ellipse cx="100" cy="115" rx="55" ry="65" fill="url(#dgGrad)" opacity="0.9"/>
+      <g id="petals">
+        <path d="M100 115 L60 20 Q100 40 100 70 Z" fill="#7a0d1a"/>
+        <path d="M100 115 L140 20 Q100 40 100 70 Z" fill="#8f1220"/>
+        <path d="M100 115 L45 60 Q90 55 100 85 Z" fill="#6b0916"/>
+        <path d="M100 115 L155 60 Q110 55 100 85 Z" fill="#7a0d1a"/>
+        <path d="M100 115 L35 110 Q80 95 100 100 Z" fill="#5c0712"/>
+        <path d="M100 115 L165 110 Q120 95 100 100 Z" fill="#6b0916"/>
+      </g>
+      <ellipse cx="100" cy="150" rx="30" ry="18" fill="#1a0004"/>
+    </g>
+    <defs>
+      <radialGradient id="dgGrad" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#8a1425"/>
+        <stop offset="100%" stop-color="#2a0006"/>
+      </radialGradient>
+    </defs>
+  </svg>
+</div>
+<div class="taunt-bubble" id="tauntBubble"></div>
+
+<div class="wrap">
+  <header>
+    <h1 class="brand">MyMasteryLab<small>Presents</small></h1>
+    <div class="tagline">🌩 Escape the Upside Down — An Algebra Rescue Mission</div>
+  </header>
+
+  <div class="progress-row" id="progressRow"></div>
+
+  <div class="card" id="app"></div>
+
+  <footer>MyMasteryLab · Grades 6–7 Algebra Adventure · Ask your teacher for rescue codes</footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   DATA
+--------------------------------------------------------- */
+const LEVELS = [
+  {
+    key:'decoder', title:'Level 1 — Portal Decoder', workspace:false,
+    desc:'The portal only opens for those who can turn its whispers into algebra. Translate each clue, using x as your mystery number.',
+    code:'WAFFLE11',
+    base:[
+      {q:'A number increased by 5', a:['x+5','5+x'], hint:'Increased means add. Try x + 5.'},
+      {q:'Eight decreased by a number', a:['8-x'], hint:'Decreased BY a number means the number is subtracted from 8. Try 8 − x.'},
+      {q:'Half of a number', a:['x/2'], hint:'Half means divide by 2. Try x ÷ 2.'},
+      {q:'Three times a number, plus four', a:['3x+4','4+3x'], hint:'Three times means multiply by 3 first, then add 4.'},
+      {q:'Ten less than a number', a:['x-10'], hint:'Less than flips the order — it\'s x minus 10, not 10 minus x.'}
+    ],
+    g7:[
+      {q:'(Grade 7) Twice the sum of a number and 3', a:['2(x+3)','2*(x+3)'], hint:'"The sum of" means group x and 3 together first: 2(x + 3).'},
+      {q:'(Grade 7) Seven more than twice a number', a:['2x+7','7+2x'], hint:'Twice a number is 2x. Then add 7.'}
+    ]
+  },
+  {
+    key:'demogorgon', title:'Level 2 — Demogorgon Equations', workspace:true,
+    desc:'The beast hides your number inside an equation. Undo its spell and solve for the letter.',
+    code:'HAWKINS22',
+    base:[
+      {q:'x + 8 = 15', a:['7'], hint:'Undo +8 by subtracting 8 from both sides.'},
+      {q:'y − 4 = 9', a:['13'], hint:'Undo −4 by adding 4 to both sides.'},
+      {q:'n × 3 = 18', a:['6'], hint:'Undo ×3 by dividing both sides by 3.'},
+      {q:'m ÷ 4 = 7', a:['28'], hint:'Undo ÷4 by multiplying both sides by 4.'},
+      {q:'x + 9 = 20', a:['11'], hint:'Subtract 9 from both sides.'}
+    ],
+    g7:[
+      {q:'(Grade 7) −3x = 21', a:['-7'], hint:'Divide both sides by −3. Careful with the sign!'},
+      {q:'(Grade 7) x ÷ (−5) = 4', a:['-20'], hint:'Multiply both sides by −5.'}
+    ]
+  },
+  {
+    key:'escaperoom', title:'Level 3 — Escape Room', workspace:true,
+    desc:'Two-step portals guard this exit. Undo backwards: addition or subtraction first, then multiplication or division.',
+    code:'STARCOURT7',
+    base:[
+      {q:'2x + 5 = 15', a:['5'], hint:'Subtract 5 first, then divide by 2.'},
+      {q:'3x − 4 = 20', a:['8'], hint:'Add 4 first, then divide by 3.'},
+      {q:'x/4 + 6 = 9', a:['12'], hint:'Subtract 6 first, then multiply by 4.'},
+      {q:'5x + 10 = 40', a:['6'], hint:'Subtract 10 first, then divide by 5.'}
+    ],
+    g7:[
+      {q:'(Grade 7) 3x + 6 = 2x + 14', a:['8'], hint:'Move the x terms to one side first: subtract 2x from both sides.'},
+      {q:'(Grade 7) 2(x + 3) = 18', a:['6'], hint:'Distribute the 2 first: 2x + 6 = 18.'},
+      {q:'(Grade 7) 4(x − 2) = 16', a:['6'], hint:'Distribute the 4 first: 4x − 8 = 16.'}
+    ]
+  },
+  {
+    key:'relay', title:'Level 4 — Upside Down Relay', workspace:true,
+    desc:'Speed round! The gate is closing fast — solve each one before the fog rolls in.',
+    code:'SCOOPS83',
+    base:[
+      {q:'x + 9 = 14', a:['5'], hint:'Subtract 9 from both sides.'},
+      {q:'3x = 27', a:['9'], hint:'Divide both sides by 3.'},
+      {q:'x − 11 = 8', a:['19'], hint:'Add 11 to both sides.'},
+      {q:'4x = 36', a:['9'], hint:'Divide both sides by 4.'},
+      {q:'x + 15 = 21', a:['6'], hint:'Subtract 15 from both sides.'}
+    ],
+    g7:[
+      {q:'(Grade 7) 4x + 5 = 29', a:['6'], hint:'Subtract 5, then divide by 4.'},
+      {q:'(Grade 7) 5x − 7 = 3x + 9', a:['8'], hint:'Subtract 3x from both sides first, then finish solving.'}
+    ]
+  },
+  {
+    key:'mindflayer', title:'Level 5 — Final Boss: The Mind Flayer', workspace:true,
+    desc:'One last stand between your class and home. Every equation you solve chips away the Mind Flayer\'s shield.',
+    code:'VECNA84',
+    base:[
+      {q:'2x + 8 = 20', a:['6'], hint:'Subtract 8, then divide by 2.'},
+      {q:'4x = 52', a:['13'], hint:'Divide both sides by 4.'},
+      {q:'3x + 6 = 27', a:['7'], hint:'Subtract 6, then divide by 3.'},
+      {q:'5x − 10 = 40', a:['10'], hint:'Add 10, then divide by 5.'}
+    ],
+    g7:[
+      {q:'(Grade 7) 2(x + 4) = 18', a:['5'], hint:'Distribute first: 2x + 8 = 18.'},
+      {q:'(Grade 7) 4x − 9 = 3x + 8', a:['17'], hint:'Subtract 3x from both sides, then add 9.'},
+      {q:'(Grade 7) 3(x + 5) = 30', a:['5'], hint:'Distribute first: 3x + 15 = 30.'}
+    ]
+  }
+];
+
+const TAUNTS = [
+  "Not quite... the Upside Down grows stronger.",
+  "Hmm. Try again before the fog thickens.",
+  "Wrong turn. I can smell your fear.",
+  "Close, but the portal stays shut.",
+  "That number won't save you..."
+];
+
+/* ---------------------------------------------------------
+   STATE
+--------------------------------------------------------- */
+let state = {
+  grade: null,
+  levelIdx: 0,
+  qIdx: 0,
+  questions: [],
+  levelsDone: []
+};
+
+function currentLevelQuestions(level){
+  const qs = level.base.slice();
+  if(state.grade === 7) qs.push(...level.g7);
+  return qs;
+}
+
+/* ---------------------------------------------------------
+   AUDIO (generated, no external files)
+--------------------------------------------------------- */
+let actx = null;
+function audioCtx(){
+  if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+  return actx;
+}
+function tone(freq,start,dur,type='sine',gainPeak=0.18){
+  const ctx = audioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime+start);
+  gain.gain.setValueAtTime(0, ctx.currentTime+start);
+  gain.gain.linearRampToValueAtTime(gainPeak, ctx.currentTime+start+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+start+dur);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(ctx.currentTime+start);
+  osc.stop(ctx.currentTime+start+dur+0.05);
+}
+function playCorrect(){
+  tone(523.25,0,0.16,'triangle');
+  tone(659.25,0.12,0.16,'triangle');
+  tone(783.99,0.24,0.28,'triangle',0.22);
+}
+function playVictoryFanfare(){
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,i*0.15,0.35,'triangle',0.22));
+}
+function playWrong(){
+  const ctx = audioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(180, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(55, ctx.currentTime+0.45);
+  gain.gain.setValueAtTime(0.001, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.22, ctx.currentTime+0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime+0.55);
+}
+
+/* ---------------------------------------------------------
+   DEMOGORGON ROAMING
+--------------------------------------------------------- */
+const dg = document.getElementById('demogorgon');
+const bubble = document.getElementById('tauntBubble');
+let roamTimer = null;
+
+function randomSpot(){
+  const margin = 90;
+  const top = margin + Math.random()*(window.innerHeight - margin*2);
+  const left = margin + Math.random()*(window.innerWidth - margin*2);
+  return {top,left};
+}
+function roam(){
+  const {top,left} = randomSpot();
+  const scale = (0.55 + Math.random()*0.9).toFixed(2);
+  dg.classList.remove('jumpscare');
+  dg.style.top = top+'px';
+  dg.style.left = left+'px';
+  dg.style.transform = `translate(-50%,-50%) scale(${scale})`;
+  dg.classList.add('visible');
+}
+function startRoaming(){
+  roam();
+  roamTimer = setInterval(roam, 9000 + Math.random()*7000);
+}
+function jumpscare(){
+  clearInterval(roamTimer);
+  dg.classList.add('jumpscare');
+  const spot = randomSpot();
+  dg.style.top = spot.top+'px';
+  dg.style.left = spot.left+'px';
+  dg.style.transform = `translate(-50%,-50%) scale(${(1.5+Math.random()*0.6).toFixed(2)})`;
+  dg.classList.add('visible');
+  document.body.classList.add('shake');
+  setTimeout(()=>document.body.classList.remove('shake'),400);
+  setTimeout(()=>{
+    dg.classList.remove('jumpscare');
+    roam();
+    roamTimer = setInterval(roam, 9000 + Math.random()*7000);
+  }, 1300);
+}
+function showTaunt(text){
+  bubble.textContent = text;
+  const dgRect = dg.getBoundingClientRect();
+  let bx = dgRect.left + dgRect.width + 10;
+  let by = dgRect.top - 10;
+  if(bx + 240 > window.innerWidth) bx = dgRect.left - 240;
+  if(by < 0) by = dgRect.top + dgRect.height;
+  bubble.style.left = Math.max(8,bx)+'px';
+  bubble.style.top = Math.max(8,by)+'px';
+  bubble.classList.add('show');
+  setTimeout(()=>bubble.classList.remove('show'), 2600);
+}
+
+/* spores */
+function spawnSpores(){
+  const field = document.getElementById('sporeField');
+  for(let i=0;i<28;i++){
+    const s = document.createElement('div');
+    s.className = 'spore';
+    s.style.left = Math.random()*100+'vw';
+    s.style.setProperty('--dx',(Math.random()*80-40)+'px');
+    s.style.animationDuration = (10+Math.random()*12)+'s';
+    s.style.animationDelay = (Math.random()*10)+'s';
+    field.appendChild(s);
+  }
+}
+spawnSpores();
+
+/* ---------------------------------------------------------
+   PROGRESS DOTS
+--------------------------------------------------------- */
+function renderProgress(){
+  const row = document.getElementById('progressRow');
+  row.innerHTML = '';
+  LEVELS.forEach((lv,i)=>{
+    const dot = document.createElement('div');
+    dot.className = 'key-dot' + (state.levelsDone.includes(i) ? ' done':'');
+    dot.textContent = state.levelsDone.includes(i) ? '🔑' : (i+1);
+    row.appendChild(dot);
+  });
+}
+
+/* ---------------------------------------------------------
+   SCREENS
+--------------------------------------------------------- */
+const app = document.getElementById('app');
+
+function screenGradeSelect(){
+  app.innerHTML = `
+    <h2 class="level-title">Choose Your Rescue Squad</h2>
+    <p class="level-desc">The portal calibrates itself to your squad's training level.</p>
+    <div class="grade-toggle">
+      <button class="grade-btn" id="pick6">Grade 6 — Explorers<small>Core algebra challenges</small></button>
+      <button class="grade-btn" id="pick7">Grade 7 — Rangers<small>Core + bonus advanced portals</small></button>
+    </div>
+  `;
+  document.getElementById('pick6').onclick = ()=>{ state.grade=6; startLevelIntro(0); };
+  document.getElementById('pick7').onclick = ()=>{ state.grade=7; startLevelIntro(0); };
+}
+
+function startLevelIntro(idx){
+  state.levelIdx = idx;
+  state.qIdx = 0;
+  const lv = LEVELS[idx];
+  state.questions = currentLevelQuestions(lv);
+  renderProgress();
+  app.innerHTML = `
+    <h2 class="level-title">${lv.title}</h2>
+    <p class="level-desc">${lv.desc}</p>
+    <p class="level-desc" style="color:var(--ink);font-size:.82rem;">${state.questions.length} portals stand between you and the next key.</p>
+    <div class="center"><button class="primary-btn" id="enterBtn">Enter the Portal</button></div>
+  `;
+  document.getElementById('enterBtn').onclick = ()=>{ startRoaming(); renderQuestion(); };
+}
+
+function renderQuestion(){
+  const lv = LEVELS[state.levelIdx];
+  const total = state.questions.length;
+  const q = state.questions[state.qIdx];
+  const isG7 = q.q.startsWith('(Grade 7)');
+  const pct = Math.round((state.qIdx/total)*100);
+  app.innerHTML = `
+    <h2 class="level-title">${lv.title}</h2>
+    <div class="q-meta">
+      <span>Portal ${state.qIdx+1} of ${total}</span>
+      <span class="q-tag ${isG7?'g7':''}">${isG7 ? 'GRADE 7 BONUS' : 'CORE'}</span>
+    </div>
+    <div class="stability-bar"><div class="stability-fill" style="width:${pct}%"></div></div>
+    <div class="question-box">${q.q}</div>
+    ${lv.workspace ? `
+    <div class="workspace">
+      <div class="workspace-label">✏️ Scratch Portal — work it out, then write your answer below</div>
+      <div class="tool-row">
+        <button class="tool-btn active" id="toolPen" data-tool="pen">✏️ Pen</button>
+        <button class="tool-btn" id="toolEraser" data-tool="eraser">🧽 Eraser</button>
+        <div class="color-swatches">
+          <button class="swatch active" data-color="#e7e4da" style="background:#e7e4da"></button>
+          <button class="swatch" data-color="#ff1b3d" style="background:#ff1b3d"></button>
+          <button class="swatch" data-color="#37e0a0" style="background:#37e0a0"></button>
+          <button class="swatch" data-color="#ffb238" style="background:#ffb238"></button>
+          <button class="swatch" data-color="#4da6ff" style="background:#4da6ff"></button>
+        </div>
+        <button class="ghost-btn" id="clearCanvas">Clear</button>
+      </div>
+      <canvas id="scratchCanvas"></canvas>
+    </div>` : ''}
+    <div class="answer-row">
+      <input type="text" id="answerInput" placeholder="Your answer..." autocomplete="off">
+      <button class="primary-btn" id="submitBtn">Cast</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  `;
+  if(lv.workspace) initScratchCanvas();
+  const input = document.getElementById('answerInput');
+  input.focus();
+  const submit = ()=>{
+    const val = input.value.trim();
+    if(!val) return;
+    const norm = val.replace(/\s+/g,'').toLowerCase();
+    const correct = q.a.some(a=>a.replace(/\s+/g,'').toLowerCase()===norm);
+    const fb = document.getElementById('feedback');
+    if(correct){
+      playCorrect();
+      fb.textContent = '✅ Portal sealed! Well solved.';
+      fb.className = 'feedback good';
+      document.getElementById('submitBtn').disabled = true;
+      setTimeout(()=>{
+        state.qIdx++;
+        if(state.qIdx >= total){
+          clearInterval(roamTimer);
+          dg.classList.remove('visible');
+          screenCodeGate();
+        } else {
+          renderQuestion();
+        }
+      }, 700);
+    } else {
+      playWrong();
+      jumpscare();
+      showTaunt(q.hint);
+      fb.textContent = '❌ ' + TAUNTS[Math.floor(Math.random()*TAUNTS.length)];
+      fb.className = 'feedback bad';
+      input.value='';
+      input.focus();
+    }
+  };
+  document.getElementById('submitBtn').onclick = submit;
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+}
+
+function initScratchCanvas(){
+  const canvas = document.getElementById('scratchCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  let tool = 'pen';
+  let color = '#e7e4da';
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+
+  function pos(e){
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  function start(e){
+    drawing = true;
+    const p = pos(e);
+    lastX = p.x; lastY = p.y;
+    canvas.setPointerCapture(e.pointerId);
+  }
+  function move(e){
+    if(!drawing) return;
+    const p = pos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    if(tool === 'eraser'){
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = 22;
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+    }
+    ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  }
+  function end(e){
+    drawing = false;
+  }
+  canvas.addEventListener('pointerdown', start);
+  canvas.addEventListener('pointermove', move);
+  canvas.addEventListener('pointerup', end);
+  canvas.addEventListener('pointerleave', end);
+
+  const penBtn = document.getElementById('toolPen');
+  const eraserBtn = document.getElementById('toolEraser');
+  penBtn.onclick = ()=>{ tool='pen'; penBtn.classList.add('active'); eraserBtn.classList.remove('active'); };
+  eraserBtn.onclick = ()=>{ tool='eraser'; eraserBtn.classList.add('active'); penBtn.classList.remove('active'); };
+
+  document.querySelectorAll('.swatch').forEach(sw=>{
+    sw.onclick = ()=>{
+      color = sw.dataset.color;
+      tool = 'pen';
+      penBtn.classList.add('active');
+      eraserBtn.classList.remove('active');
+      document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+      sw.classList.add('active');
+    };
+  });
+
+  document.getElementById('clearCanvas').onclick = ()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  };
+}
+
+function screenCodeGate(){
+  const lv = LEVELS[state.levelIdx];
+  app.innerHTML = `
+    <h2 class="level-title">Level Cleared!</h2>
+    <p class="level-desc">You've weakened the beast. Ask your teacher for the <strong>Rescue Code</strong> to unlock the next portal.</p>
+    <div class="code-gate">
+      <input type="text" id="codeInput" placeholder="ENTER CODE" maxlength="12">
+      <button class="primary-btn" id="codeBtn">Unlock Next Level</button>
+      <div class="feedback" id="codeFeedback"></div>
+    </div>
+  `;
+  document.getElementById('codeBtn').onclick = ()=>{
+    const val = document.getElementById('codeInput').value.trim().toUpperCase();
+    const fb = document.getElementById('codeFeedback');
+    if(val === lv.code){
+      playVictoryFanfare();
+      if(!state.levelsDone.includes(state.levelIdx)) state.levelsDone.push(state.levelIdx);
+      renderProgress();
+      fb.textContent = '🔑 Key acquired!';
+      fb.className = 'feedback good';
+      setTimeout(()=>{
+        if(state.levelIdx+1 < LEVELS.length){
+          startLevelIntro(state.levelIdx+1);
+        } else {
+          screenVictory();
+        }
+      }, 900);
+    } else {
+      playWrong();
+      jumpscare();
+      fb.textContent = 'The seal holds firm... check with your teacher.';
+      fb.className = 'feedback bad';
+    }
+  };
+  document.getElementById('codeInput').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('codeBtn').click();
+  });
+}
+
+function screenVictory(){
+  dg.classList.remove('visible');
+  clearInterval(roamTimer);
+  playVictoryFanfare();
+  launchConfetti();
+  app.innerHTML = `
+    <div class="victory">
+      <h1>YOU ESCAPED!</h1>
+      <p class="level-desc">All five keys collected. The portal closes behind you — the Upside Down loses its grip on the classroom.</p>
+      <div class="certificate">
+        <div style="color:var(--ink);font-size:.8rem;letter-spacing:2px;">CERTIFICATE OF ALGEBRAIC COURAGE</div>
+        <input type="text" id="nameInput" placeholder="Type your name">
+        <div style="color:var(--ink);font-size:.85rem;margin-top:10px;">is hereby named an</div>
+        <div style="font-family:'Creepster',cursive;color:var(--red-neon);font-size:1.4rem;margin-top:4px;">Upside Down Escape Engineer</div>
+      </div>
+      <div class="center" style="margin-top:20px;">
+        <button class="ghost-btn" id="restartBtn">Play Again</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('restartBtn').onclick = ()=>{
+    state = {grade:null, levelIdx:0, qIdx:0, questions:[], levelsDone:[]};
+    renderProgress();
+    screenGradeSelect();
+  };
+}
+
+function launchConfetti(){
+  const colors = ['#ff1b3d','#37e0a0','#ffb238','#e7e4da'];
+  for(let i=0;i<60;i++){
+    const c = document.createElement('div');
+    c.className='confetti';
+    c.style.left = Math.random()*100+'vw';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.animation = `fall ${2+Math.random()*2}s linear forwards`;
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 4500);
+  }
+}
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `@keyframes fall{to{transform:translateY(110vh) rotate(400deg);}}`;
+document.head.appendChild(styleSheet);
+
+/* ---------------------------------------------------------
+   INIT
+--------------------------------------------------------- */
+renderProgress();
+screenGradeSelect();
+</script>
+</body>
+</html>

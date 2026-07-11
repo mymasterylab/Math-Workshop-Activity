@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyMasteryLab — Geometry Dash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0614;
+    --panel:#160f28;
+    --panel2:#1d1436;
+    --cyan:#00e5ff;
+    --pink:#ff2e97;
+    --yellow:#ffe600;
+    --green:#39ff14;
+    --purple:#b026ff;
+    --ink:#eef0ff;
+    --mute:#8d86ad;
+    --accent:#00e5ff;
+    --display:'Orbitron', sans-serif;
+    --body:'Rubik', sans-serif;
+    --mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(176,38,255,.18), transparent 55%),
+      radial-gradient(ellipse at 85% 15%, rgba(0,229,255,.14), transparent 50%),
+      var(--void);
+    color:var(--ink);
+    font-family:var(--body);
+    overflow-x:hidden;
+    position:relative;
+    min-height:100vh;
+  }
+
+  /* floating neon geometry (ambient background only) */
+  .shape-field{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+  .fshape{position:absolute;opacity:.16;animation:floaty linear infinite;}
+  @keyframes floaty{
+    0%{transform:translateY(0) rotate(0deg);}
+    100%{transform:translateY(-120vh) rotate(360deg);}
+  }
+
+  /* ambient scrolling neon grid floor (background flavor only) */
+  .ground{
+    position:fixed;left:0;right:0;bottom:0;height:70px;z-index:1;
+    background:
+      linear-gradient(transparent 0%, rgba(0,229,255,.04) 100%),
+      repeating-linear-gradient(90deg, rgba(0,229,255,.22) 0 2px, transparent 2px 62px);
+    animation:scrollGround 2.4s linear infinite;
+    border-top:1px solid rgba(0,229,255,.35);
+    opacity:.5;
+  }
+  @keyframes scrollGround{ from{background-position:0 0,0 0;} to{background-position:0 0,-62px 0;} }
+
+  body.shake{animation:shake .4s;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-8px);} 40%{transform:translateX(7px);}
+    60%{transform:translateX(-5px);} 80%{transform:translateX(4px);}
+  }
+  .flash-red{position:fixed;inset:0;background:rgba(255,20,60,.22);z-index:3;pointer-events:none;
+    opacity:0;transition:opacity .1s ease;}
+  .flash-red.show{opacity:1;}
+
+  .particle{position:fixed;z-index:8;border-radius:3px;pointer-events:none;}
+
+  .tip-bubble{
+    position:fixed;z-index:9;max-width:230px;background:var(--panel2);
+    border:2px solid var(--pink);border-radius:12px;padding:10px 12px;
+    font-family:var(--body);font-size:.82rem;color:var(--ink);
+    box-shadow:0 0 20px rgba(255,46,151,.5);
+    opacity:0;transform:scale(.8);transition:opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+  }
+  .tip-bubble.show{opacity:1;transform:scale(1);}
+  .tip-bubble::before{content:"🤖 Dash says: ";font-weight:700;color:var(--pink);}
+
+  .wrap{position:relative;z-index:3;max-width:760px;margin:0 auto;padding:26px 18px 60px;}
+
+  header{text-align:center;margin-bottom:14px;}
+  .brand{
+    font-family:var(--display);font-weight:900;letter-spacing:2px;font-size:1.9rem;
+    background:linear-gradient(90deg,var(--cyan),var(--pink));-webkit-background-clip:text;
+    background-clip:text;color:transparent;margin:0;
+  }
+  .brand small{display:block;font-family:var(--body);font-size:.68rem;letter-spacing:5px;
+    color:var(--mute);text-transform:uppercase;margin-top:4px;font-weight:600;}
+  .tagline{font-size:.92rem;color:var(--mute);margin-top:8px;}
+
+  .badge-tray{display:flex;justify-content:center;gap:10px;margin:18px 0 6px;flex-wrap:wrap;}
+  .badge-slot{
+    width:52px;height:52px;border-radius:50%;border:2px solid #2c2450;
+    display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+    background:var(--panel);transition:all .4s ease;
+  }
+  .badge-slot.earned{
+    border-color:var(--yellow);box-shadow:0 0 16px rgba(255,230,0,.6);
+    background:radial-gradient(circle,#2b2410,var(--panel));
+  }
+
+  .card{
+    background:linear-gradient(180deg,var(--panel),#100a20);
+    border:1px solid #2c2450;border-radius:16px;padding:24px;margin-top:16px;
+    box-shadow:0 20px 50px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.02) inset;
+    position:relative;
+  }
+
+  /* ---------- HURDLE TRACK ---------- */
+  .track-wrap{
+    position:relative;height:132px;margin:6px 0 18px;border-radius:12px;overflow:hidden;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.02), transparent 60%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 34px),
+      #0d0820;
+    border:1px solid #2c2450;
+  }
+  .track-floor{
+    position:absolute;left:0;right:0;bottom:14px;height:2px;
+    background:var(--accent);box-shadow:0 0 10px var(--accent);
+    transition:background .4s ease, box-shadow .4s ease;
+  }
+  .track-finish{
+    position:absolute;bottom:14px;right:4%;width:4px;height:34px;
+    background:repeating-linear-gradient(180deg,#fff 0 6px,#333 6px 12px);
+    opacity:.5;
+  }
+  .track-obstacle{
+    position:absolute;bottom:16px;left:55%;transform:translateX(-50%);
+    display:flex;align-items:flex-end;justify-content:center;
+    filter:drop-shadow(0 0 8px currentColor);
+  }
+  .track-cube{
+    position:absolute;bottom:16px;left:6%;width:38px;height:38px;
+    border-radius:9px;background:linear-gradient(135deg,var(--accent),#fff2);
+    box-shadow:0 0 14px var(--accent), inset 0 0 8px rgba(255,255,255,.4);
+    transition:background .4s ease, box-shadow .4s ease;
+  }
+  .track-cube::before,.track-cube::after{
+    content:"";position:absolute;top:12px;width:6px;height:6px;background:var(--void);border-radius:50%;
+  }
+  .track-cube::before{left:8px;} .track-cube::after{right:8px;}
+  .track-label{
+    position:absolute;top:8px;left:10px;font-family:var(--mono);font-size:.65rem;
+    color:var(--mute);letter-spacing:1px;text-transform:uppercase;
+  }
+
+  .percent-bar{height:12px;border-radius:8px;background:#140c26;overflow:hidden;
+    margin:16px 0 4px;border:1px solid #2c2450;position:relative;}
+  .percent-fill{height:100%;background:linear-gradient(90deg,var(--accent),#fff);transition:width .5s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 0 10px var(--accent);}
+  .percent-label{text-align:right;font-family:var(--mono);font-size:.7rem;color:var(--mute);margin-top:4px;}
+
+  h2.level-title{
+    font-family:var(--display);color:var(--accent);font-size:1.5rem;letter-spacing:1px;
+    margin:0 0 6px;text-shadow:0 0 12px rgba(0,229,255,.3);
+  }
+  .level-desc{color:var(--mute);font-size:.9rem;margin-bottom:14px;}
+
+  .grade-toggle{display:flex;gap:12px;justify-content:center;margin:20px 0;flex-wrap:wrap;}
+  .grade-btn{
+    flex:1 1 160px;max-width:230px;background:var(--panel2);border:2px solid #2c2450;
+    color:var(--ink);padding:18px 12px;border-radius:14px;cursor:pointer;
+    font-family:var(--body);font-weight:700;font-size:1rem;transition:all .2s ease;
+  }
+  .grade-btn:hover{border-color:var(--accent);transform:translateY(-3px) scale(1.02);
+    box-shadow:0 8px 24px rgba(0,229,255,.25);}
+  .grade-btn small{display:block;color:var(--mute);font-weight:400;font-size:.78rem;margin-top:5px;}
+
+  .primary-btn{
+    background:linear-gradient(135deg,var(--accent),var(--pink));color:#0a0614;border:none;
+    padding:14px 24px;border-radius:10px;font-family:var(--display);font-weight:700;
+    font-size:.95rem;letter-spacing:1px;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 6px 20px rgba(0,229,255,.35);
+  }
+  .primary-btn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 10px 26px rgba(0,229,255,.5);}
+  .primary-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+  .ghost-btn{
+    background:transparent;border:1px solid #3a3468;color:var(--mute);
+    padding:10px 16px;border-radius:8px;font-family:var(--body);cursor:pointer;font-size:.85rem;
+  }
+  .ghost-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  .center{text-align:center;}
+  .q-meta{display:flex;justify-content:space-between;color:var(--mute);font-size:.75rem;
+    font-family:var(--mono);margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase;}
+  .q-tag{color:var(--green);}
+  .q-tag.g7{color:var(--pink);}
+
+  .question-box{
+    background:#0d0820;border:1px solid #2c2450;border-radius:12px;
+    padding:20px;margin:10px 0;font-family:var(--body);font-size:1.08rem;font-weight:500;
+    color:var(--ink);text-align:center;line-height:1.5;
+  }
+
+  .answer-row{display:flex;gap:10px;margin-top:14px;}
+  input[type=text]{
+    flex:1;background:#0d0820;border:2px solid #2c2450;border-radius:10px;
+    padding:13px 14px;color:var(--ink);font-family:var(--mono);font-size:1rem;
+    outline:none;transition:border-color .2s ease;
+  }
+  input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.15);}
+  input[type=text]:disabled{opacity:.5;}
+
+  .feedback{margin-top:12px;font-size:.9rem;min-height:22px;font-weight:600;}
+  .feedback.good{color:var(--green);}
+  .feedback.bad{color:var(--pink);}
+
+  .code-gate{text-align:center;margin-top:8px;}
+  .code-gate input{
+    width:220px;text-align:center;letter-spacing:3px;text-transform:uppercase;
+    font-weight:700;margin:14px auto;display:block;
+  }
+
+  .badge-reveal{text-align:center;}
+  .badge-reveal .big-badge{
+    font-size:5rem;margin:10px 0;filter:drop-shadow(0 0 24px rgba(255,230,0,.6));
+    animation:spinIn .7s ease-out;
+  }
+  @keyframes spinIn{0%{transform:scale(0) rotate(-180deg);opacity:0;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
+  .badge-reveal h3{font-family:var(--display);color:var(--yellow);font-size:1.5rem;margin:6px 0 2px;}
+  .badge-reveal p{color:var(--mute);font-size:.9rem;margin-top:0;}
+
+  .doors-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0;}
+  .door{
+    aspect-ratio:2/3;border-radius:10px 10px 4px 4px;border:2px solid var(--purple);
+    background:linear-gradient(180deg,#241a44,#150e2a);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease;
+    font-family:var(--display);font-size:1.4rem;color:var(--ink);position:relative;
+  }
+  .door:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(176,38,255,.4);}
+  .door.done{border-color:var(--green);background:linear-gradient(180deg,#123322,#0d1f16);color:var(--green);}
+  .door .door-icon{font-size:1.6rem;margin-bottom:4px;}
+
+  .victory{text-align:center;}
+  .victory h1{font-family:var(--display);font-size:2.2rem;
+    background:linear-gradient(90deg,var(--yellow),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-bottom:6px;}
+  .leaderboard{margin-top:20px;text-align:left;border:1px solid #2c2450;border-radius:12px;overflow:hidden;}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:.9rem;
+    border-bottom:1px solid #241d40;background:var(--panel2);}
+  .lb-row:nth-child(even){background:var(--panel);}
+  .lb-rank{width:28px;font-family:var(--mono);color:var(--mute);}
+  .lb-name{flex:1;font-weight:600;}
+  .lb-time{font-family:var(--mono);color:var(--accent);}
+  .lb-note{font-size:.75rem;color:var(--mute);margin-top:8px;text-align:center;}
+
+  .name-gate input{width:80%;text-align:center;font-family:var(--display);font-size:1.1rem;
+    color:var(--yellow);background:transparent;border:none;border-bottom:2px dashed var(--yellow);
+    margin:14px auto;display:block;padding:8px;}
+  .name-gate input:focus{outline:none;}
+
+  footer.credit{text-align:center;color:#4a466e;font-size:.75rem;margin-top:26px;}
+
+  @media (prefers-reduced-motion: reduce){
+    .ground{animation:none;} .fshape{animation:none;display:none;}
+  }
+  @media (max-width:480px){
+    .brand{font-size:1.5rem;}
+    .doors-grid{grid-template-columns:repeat(5,1fr);gap:6px;}
+    .door{font-size:1rem;}
+    .track-wrap{height:110px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="flash-red" id="flashRed"></div>
+<div class="shape-field" id="shapeField"></div>
+<div class="ground"></div>
+<div class="tip-bubble" id="tipBubble"></div>
+
+<div class="wrap">
+  <header>
+    <h1 class="brand">MyMasteryLab<small>Geometry Dash</small></h1>
+    <div class="tagline">🔺 Run. Jump the hurdle. Solve. Escape with every badge. 🔺</div>
+  </header>
+
+  <div class="badge-tray" id="badgeTray"></div>
+
+  <div class="card" id="app"></div>
+
+  <footer class="credit">MyMasteryLab · Grades 6–7 Geometry Adventure · Ask your teacher for badge codes</footer>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+============================================================ */
+const LEVELS = [
+  {
+    key:'shapesprint', name:'Shape Sprint', icon:'⭐', code:'HEXABYTE6',
+    badge:{emoji:'⭐', name:'Shape Scout', line:'Completed Shape Sprint'},
+    g6:[
+      {q:'How many sides does a hexagon have?', a:['6'], h:'Hexa- means six!'},
+      {q:'How many vertices does a pentagon have?', a:['5'], h:'Vertices = corners. Penta- means five.'},
+      {q:'Which of these is NOT a polygon: Circle, Triangle, Square?', a:['circle'], h:'Polygons have straight sides — circles are round.'},
+      {q:'How many sides does an octagon have?', a:['8'], h:"Octa- means eight, like an octopus's legs!"},
+      {q:'A closed figure made only of straight sides is called a ______.', a:['polygon'], h:'Think: poly = many, gon = sides.'},
+      {q:'How many vertices does a triangle have?', a:['3'], h:'Tri- means three.'},
+      {q:'Which shape has 4 equal sides and 4 right angles?', a:['square'], h:'All sides equal, all angles 90°.'},
+      {q:'How many sides does a quadrilateral have?', a:['4'], h:'Quad- means four.'},
+      {q:'True or False: an oval is a polygon.', a:['false'], h:'Ovals are curved, not straight-sided.'},
+      {q:'How many sides does a heptagon have?', a:['7'], h:'Hepta- means seven.'}
+    ],
+    g7:[
+      {q:'What is the sum of interior angles of a triangle?', a:['180'], h:"Every triangle's angles add to the same number."},
+      {q:'What is the sum of interior angles of a quadrilateral?', a:['360'], h:'Split it into 2 triangles: 180×2.'},
+      {q:'Interior angle sum formula is (n−2)×___. Fill the blank.', a:['180'], h:'Each triangle inside contributes 180°.'},
+      {q:'A polygon has 6 sides. Find the sum of its interior angles.', a:['720'], h:'(6−2)×180'},
+      {q:'Which has a greater interior angle sum: pentagon or hexagon?', a:['hexagon'], h:'More sides means more triangles inside.'},
+      {q:"A regular polygon's interior angles sum to 540°. How many sides does it have?", a:['5'], h:'540÷180 = 3 triangles, so n−2=3.'},
+      {q:'How many diagonals can be drawn from ONE vertex of a hexagon?', a:['3'], h:'n−3 diagonals from one vertex.'},
+      {q:'What is the sum of interior angles of an octagon?', a:['1080'], h:'(8−2)×180'},
+      {q:'A polygon has 9 sides. Find the sum of its interior angles.', a:['1260'], h:'(9−2)×180'},
+      {q:'Which has the greater interior angle sum: heptagon or hexagon?', a:['heptagon'], h:'More sides always means a bigger sum.'}
+    ]
+  },
+  {
+    key:'anglejump', name:'Angle Jump', icon:'📐', code:'RIGHTANGLE9',
+    badge:{emoji:'📐', name:'Angle Ace', line:'Mastered Angle Jump'},
+    g6:[
+      {q:'An angle less than 90° is called?', a:['acute'], h:'Small and sharp — a cute little angle.'},
+      {q:'An angle of exactly 90° is called?', a:['right'], h:'Think of a square corner.'},
+      {q:'An angle between 90° and 180° is called?', a:['obtuse'], h:'Bigger than right, less than straight.'},
+      {q:'An angle of exactly 180° is called?', a:['straight'], h:'It looks like a straight line.'},
+      {q:'An angle greater than 180° is called?', a:['reflex'], h:'It bends back past a straight line.'},
+      {q:'What type of angle is 120°?', a:['obtuse'], h:'Between 90° and 180°.'},
+      {q:'What type of angle is 45°?', a:['acute'], h:'Less than 90°.'},
+      {q:'Two angles that add up to 180° are called?', a:['supplementary'], h:"'S' for straight line = 180°."},
+      {q:'Two angles that add up to 90° are called?', a:['complementary'], h:"'C' for corner = 90°."},
+      {q:'What type of angle is exactly 90°?', a:['right'], h:'A perfect square corner.'}
+    ],
+    g7:[
+      {q:'x + 45 = 90. Find x.', a:['45'], h:'Subtract 45 from both sides.'},
+      {q:'An angle is twice its complement. Find the angle.', a:['60'], h:'Let complement=c, angle=2c, c+2c=90.'},
+      {q:'Two complementary angles: one is 35°. Find the other.', a:['55'], h:'90 − 35'},
+      {q:'Two supplementary angles: one is 110°. Find the other.', a:['70'], h:'180 − 110'},
+      {q:'x + 60 = 180. Find x.', a:['120'], h:'Subtract 60 from both sides.'},
+      {q:'An angle and its complement differ by 10°. Find the smaller angle.', a:['40'], h:'Let smaller=x, other=x+10, sum=90.'},
+      {q:'x + 2x = 90. Find x.', a:['30'], h:'Combine like terms: 3x=90.'},
+      {q:'Two supplementary angles: one is twice the other. Find the smaller.', a:['60'], h:'x + 2x = 180'},
+      {q:'2x + 30 = 90. Find x.', a:['30'], h:'Subtract 30, then divide by 2.'},
+      {q:'One angle is three times another; they are supplementary. Find the smaller.', a:['45'], h:'x + 3x = 180'}
+    ]
+  },
+  {
+    key:'perimeterdash', name:'Perimeter Dash', icon:'🏃', code:'FENCEFAST12',
+    badge:{emoji:'🏃', name:'Perimeter Pro', line:'Completed Perimeter Dash'},
+    g6:[
+      {q:'Find the perimeter of a rectangle 5m × 3m.', a:['16'], h:'Perimeter = 2×(length+width).'},
+      {q:'Find the perimeter of a square with side 6cm.', a:['24'], h:'Perimeter = 4×side.'},
+      {q:'Find the area of a rectangle 4m × 5m.', a:['20'], h:'Area = length×width.'},
+      {q:'Find the area of a square with side 7cm.', a:['49'], h:'Area = side×side.'},
+      {q:'Find the perimeter of a rectangle 10m × 2m.', a:['24'], h:'2×(10+2)'},
+      {q:'Which measures the distance around a shape — perimeter or area?', a:['perimeter'], h:'Think: the fence around a garden.'},
+      {q:'Which measures the space inside a shape — perimeter or area?', a:['area'], h:'Think: the paint needed to cover it.'},
+      {q:'A playground is 12m × 8m. Find its perimeter.', a:['40'], h:'2×(12+8)'},
+      {q:'A playground is 12m × 8m. Find its area.', a:['96'], h:'12×8'},
+      {q:'Find the perimeter of a square with side 9cm.', a:['36'], h:'4×9'}
+    ],
+    g7:[
+      {q:'Area = 48 cm², length = 8cm. Find the width.', a:['6'], h:'width = area ÷ length'},
+      {q:'Area=48cm², length=8cm. Now find the perimeter.', a:['28'], h:'Find width (6) first, then 2×(8+6).'},
+      {q:'A rectangle has perimeter 30cm and length 9cm. Find the width.', a:['6'], h:'width = (perimeter÷2) − length'},
+      {q:'A square has area 81cm². Find its perimeter.', a:['36'], h:'side=√81=9, perimeter=4×9'},
+      {q:"A rectangle's area is 60m², width is 5m. Find the length.", a:['12'], h:'length = area ÷ width'},
+      {q:"A rectangle's perimeter is 40cm, width 8cm. Find the length.", a:['12'], h:'length = (perimeter÷2) − width'},
+      {q:"A square's perimeter is 28cm. Find its area.", a:['49'], h:'side=28÷4=7, area=7×7'},
+      {q:'Length=12cm, width=5cm. Find the area.', a:['60'], h:'length×width'},
+      {q:"A square's area is 36cm². Find its side length.", a:['6'], h:'√36'},
+      {q:"A rectangle's length is 15m and area is 90m². Find its width.", a:['6'], h:'width = area ÷ length'}
+    ]
+  },
+  {
+    key:'coordquest', name:'Coordinate Quest', icon:'🗺️', code:'PLOTPIRATE7',
+    badge:{emoji:'🗺️', name:'Coordinate Commander', line:'Completed Coordinate Quest'},
+    g6:[
+      {q:'In the point (3,5), which number tells you how far to move across (x)?', a:['3'], h:'x always comes first.'},
+      {q:'In the point (3,5), which number tells you how far to move up (y)?', a:['5'], h:'y always comes second.'},
+      {q:'What is the x-coordinate of the point (7,2)?', a:['7'], h:'First number in the pair.'},
+      {q:'What is the y-coordinate of the point (7,2)?', a:['2'], h:'Second number in the pair.'},
+      {q:'Points (2,3),(5,3),(5,6),(2,6) joined in order make what shape?', a:['square','rectangle'], h:'Check: is the width equal to the height?'},
+      {q:'What is the y-coordinate of the origin (0,0)?', a:['0'], h:'The origin is where both axes meet.'},
+      {q:'Which axis do you move along first when plotting (x,y)?', a:['x-axis','xaxis','x'], h:'x comes before y.'},
+      {q:'What is the x-coordinate of the point (0,4)?', a:['0'], h:'First number in the pair.'},
+      {q:'Points (1,1) and (1,5): find the vertical distance between them.', a:['4'], h:'Subtract the y-values: 5−1'},
+      {q:'Points (2,2) and (6,2): find the horizontal distance between them.', a:['4'], h:'Subtract the x-values: 6−2'}
+    ],
+    g7:[
+      {q:'Plot (-2,2),(3,2),(3,-1),(-2,-1) in order. Name the shape.', a:['rectangle'], h:'Check the side lengths — are all four equal?'},
+      {q:'Using those same 4 points, find the length (horizontal side).', a:['5'], h:'3 − (−2)'},
+      {q:'Using those same 4 points, find the width (vertical side).', a:['3'], h:'2 − (−1)'},
+      {q:'Find the perimeter of that rectangle.', a:['16'], h:'2×(5+3)'},
+      {q:'Find the area of that rectangle.', a:['15'], h:'5×3'},
+      {q:'Distance between (-2,2) and (3,2)?', a:['5'], h:'Subtract the x-values.'},
+      {q:'Distance between (3,2) and (3,-1)?', a:['3'], h:'Subtract the y-values.'},
+      {q:'A rectangle has vertices (0,0),(4,0),(4,3),(0,3). Find its area.', a:['12'], h:'4×3'},
+      {q:'Same rectangle — find its perimeter.', a:['14'], h:'2×(4+3)'},
+      {q:'Points (-1,-1) and (-1,4): find the distance.', a:['5'], h:'Subtract the y-values: 4−(−1)'}
+    ]
+  }
+];
+
+const BOSS = {
+  name:'Final Boss Battle', code:'CHAMPION84',
+  badge:{emoji:'👑', name:'Geometry Dash Champion', line:'Successfully Completed All Levels'},
+  g6:[
+    {q:'How many sides does a pentagon have?', a:['5'], h:'Penta- means five.'},
+    {q:'What type of angle is 90°?', a:['right'], h:'A perfect square corner.'},
+    {q:'Find the perimeter of a square with side 5cm.', a:['20'], h:'4×side'},
+    {q:'Find the area of a rectangle 6m × 4m.', a:['24'], h:'length×width'},
+    {q:'What is the x-coordinate of the point (4,9)?', a:['4'], h:'First number in the pair.'},
+    {q:'Which is NOT a polygon: Square, Circle, Triangle?', a:['circle'], h:'No straight sides.'},
+    {q:'What type of angle is 150°?', a:['obtuse'], h:'Between 90° and 180°.'},
+    {q:'Find the perimeter of a rectangle 7cm × 3cm.', a:['20'], h:'2×(7+3)'},
+    {q:'Find the area of a square with side 8cm.', a:['64'], h:'8×8'},
+    {q:'What is the y-coordinate of the point (2,6)?', a:['6'], h:'Second number in the pair.'}
+  ],
+  g7:[
+    {q:'Find the sum of interior angles of a pentagon.', a:['540'], h:'(5−2)×180'},
+    {q:'x + 30 = 90. Find x.', a:['60'], h:'Subtract 30 from both sides.'},
+    {q:'Area=54cm², length=9cm. Find the width.', a:['6'], h:'width = area ÷ length'},
+    {q:'A rectangle has vertices (0,0),(5,0),(5,4),(0,4). Find its perimeter.', a:['18'], h:'2×(5+4)'},
+    {q:'An angle is twice its complement. Find the angle.', a:['60'], h:'c+2c=90'},
+    {q:'Find the sum of interior angles of an octagon.', a:['1080'], h:'(8−2)×180'},
+    {q:"A square has perimeter 32cm. Find its area.", a:['64'], h:'side=8, area=8×8'},
+    {q:'Area=72cm², width=8cm. Find the length.', a:['9'], h:'length = area ÷ width'},
+    {q:'Two supplementary angles: one is 3× the other. Find the smaller.', a:['45'], h:'x + 3x = 180'},
+    {q:'Distance between (2,3) and (2,9)?', a:['6'], h:'Subtract the y-values.'}
+  ]
+};
+
+/* ============================================================
+   STATE
+============================================================ */
+let state = {
+  grade:null,
+  levelIdx:0,
+  qList:[],
+  qIdx:0,
+  earnedBadges:[],
+  startTime:null,
+  bossDoors:[],
+  bossOpen:[false,false,false,false,false],
+  trackCounter:0
+};
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function pick5(level){
+  const pool = state.grade===7 ? level.g7 : level.g6;
+  return shuffle(pool).slice(0,5).map(x=>({...x, isG7: state.grade===7}));
+}
+
+/* ============================================================
+   AUDIO (generated — no external files)
+============================================================ */
+let actx=null;
+function audioCtx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+function tone(freq,start,dur,type='sine',peak=0.18){
+  const ctx=audioCtx(); const osc=ctx.createOscillator(); const gain=ctx.createGain();
+  osc.type=type; osc.frequency.setValueAtTime(freq, ctx.currentTime+start);
+  gain.gain.setValueAtTime(0, ctx.currentTime+start);
+  gain.gain.linearRampToValueAtTime(peak, ctx.currentTime+start+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+start+dur);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(ctx.currentTime+start); osc.stop(ctx.currentTime+start+dur+0.05);
+}
+function playSuccess(){ tone(880,0,0.1,'square',0.12); tone(1174.66,0.09,0.12,'square',0.14); tone(1567.98,0.19,0.22,'square',0.16); }
+function playBadge(){ [523.25,659.25,783.99,1046.5,1318.5].forEach((f,i)=>tone(f,i*0.11,0.3,'triangle',0.2)); }
+function playChampion(){ [523.25,659.25,783.99,1046.5,1318.5,1567.98].forEach((f,i)=>tone(f,i*0.09,0.35,'triangle',0.22)); }
+function playWrong(){
+  const ctx=audioCtx(); const osc=ctx.createOscillator(); const lfo=ctx.createOscillator();
+  const gain=ctx.createGain(); const lfoGain=ctx.createGain();
+  osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime+0.5);
+  lfo.frequency.setValueAtTime(28, ctx.currentTime); lfoGain.gain.setValueAtTime(18, ctx.currentTime);
+  lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+  gain.gain.setValueAtTime(0.001, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime+0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.55);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(); lfo.start(); osc.stop(ctx.currentTime+0.6); lfo.stop(ctx.currentTime+0.6);
+}
+
+/* ============================================================
+   PARTICLES + TIP BUBBLE (generic, positioned from any element)
+============================================================ */
+const flashRed = document.getElementById('flashRed');
+const tip = document.getElementById('tipBubble');
+
+function spawnParticles(colors, count, fromEl){
+  if(!fromEl) return;
+  const rect = fromEl.getBoundingClientRect();
+  for(let i=0;i<count;i++){
+    const p = document.createElement('div');
+    p.className='particle';
+    const size = 5+Math.random()*7;
+    p.style.width=size+'px'; p.style.height=size+'px';
+    p.style.left=(rect.left+rect.width/2)+'px'; p.style.top=(rect.top+rect.height/2)+'px';
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    const angle = Math.random()*Math.PI*2;
+    const dist = 50+Math.random()*80;
+    const dx = Math.cos(angle)*dist, dy = Math.sin(angle)*dist;
+    document.body.appendChild(p);
+    p.animate([
+      {transform:'translate(0,0) rotate(0deg)', opacity:1},
+      {transform:`translate(${dx}px,${dy}px) rotate(${Math.random()*360}deg)`, opacity:0}
+    ], {duration:600+Math.random()*300, easing:'ease-out'});
+    setTimeout(()=>p.remove(), 950);
+  }
+}
+function showTip(text, anchorEl){
+  tip.textContent = text;
+  const r = (anchorEl||document.body).getBoundingClientRect();
+  let bx = r.left + r.width + 14, by = r.top - 50;
+  if(bx+240 > window.innerWidth) bx = Math.max(8, window.innerWidth-250);
+  if(by < 10) by = r.top + 50;
+  tip.style.left = Math.max(8,bx)+'px';
+  tip.style.top = Math.max(8,by)+'px';
+  tip.classList.add('show');
+  setTimeout(()=>tip.classList.remove('show'), 2800);
+}
+
+/* background floating shapes (ambient only) */
+function spawnShapes(){
+  const field = document.getElementById('shapeField');
+  const palette = ['#00e5ff','#ff2e97','#ffe600','#39ff14','#b026ff'];
+  const kinds = ['square','triangle','circle'];
+  for(let i=0;i<20;i++){
+    const el = document.createElement('div');
+    el.className='fshape';
+    const kind = kinds[Math.floor(Math.random()*kinds.length)];
+    const size = 14+Math.random()*22;
+    const color = palette[Math.floor(Math.random()*palette.length)];
+    el.style.left = Math.random()*100+'vw';
+    el.style.bottom = (-10-Math.random()*20)+'vh';
+    el.style.animationDuration = (14+Math.random()*14)+'s';
+    el.style.animationDelay = (Math.random()*14)+'s';
+    if(kind==='square'){ el.style.width=size+'px'; el.style.height=size+'px'; el.style.border='2px solid '+color; el.style.borderRadius='3px'; }
+    else if(kind==='circle'){ el.style.width=size+'px'; el.style.height=size+'px'; el.style.border='2px solid '+color; el.style.borderRadius='50%'; }
+    else { el.style.width='0'; el.style.height='0'; el.style.borderLeft=(size/2)+'px solid transparent';
+      el.style.borderRight=(size/2)+'px solid transparent'; el.style.borderBottom=size+'px solid '+color; el.style.opacity='.18'; }
+    field.appendChild(el);
+  }
+}
+spawnShapes();
+
+/* ============================================================
+   BADGE TRAY
+============================================================ */
+const ALL_BADGES = [...LEVELS.map(l=>l.badge), BOSS.badge];
+function renderBadgeTray(){
+  const tray = document.getElementById('badgeTray');
+  tray.innerHTML='';
+  ALL_BADGES.forEach(b=>{
+    const slot = document.createElement('div');
+    slot.className='badge-slot'+(state.earnedBadges.includes(b.name)?' earned':'');
+    slot.textContent = state.earnedBadges.includes(b.name) ? b.emoji : '?';
+    slot.title = b.name;
+    tray.appendChild(slot);
+  });
+}
+
+/* ============================================================
+   HURDLE TRACK — obstacle course rendering + physics
+============================================================ */
+const OBSTACLE_KINDS = ['spike','block','ball','diamond','hex'];
+const TRACK_COLORS   = ['#00e5ff','#ff2e97','#ffe600','#39ff14','#b026ff'];
+
+function themeFor(idx){
+  return { kind: OBSTACLE_KINDS[idx % OBSTACLE_KINDS.length], color: TRACK_COLORS[idx % TRACK_COLORS.length] };
+}
+function obstacleInner(kind, color){
+  switch(kind){
+    case 'spike':   return `<div style="width:0;height:0;border-left:22px solid transparent;border-right:22px solid transparent;border-bottom:42px solid ${color};color:${color};"></div>`;
+    case 'block':   return `<div style="width:38px;height:38px;background:${color};border-radius:6px;color:${color};"></div>`;
+    case 'ball':    return `<div style="width:38px;height:38px;background:${color};border-radius:50%;color:${color};"></div>`;
+    case 'diamond': return `<div style="width:32px;height:32px;background:${color};transform:rotate(45deg);color:${color};"></div>`;
+    case 'hex':     return `<div style="width:38px;height:38px;background:${color};clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);color:${color};"></div>`;
+  }
+}
+function trackMarkup(themeIdx, labelText){
+  const t = themeFor(themeIdx);
+  return `
+    <div class="track-wrap" id="trackWrap" style="--accent:${t.color};">
+      <div class="track-label">${labelText||''}</div>
+      <div class="track-floor" style="background:${t.color};box-shadow:0 0 10px ${t.color};"></div>
+      <div class="track-finish"></div>
+      <div class="track-obstacle" id="trackObstacle">${obstacleInner(t.kind, t.color)}</div>
+      <div class="track-cube" id="trackCube" style="background:linear-gradient(135deg, ${t.color}, #fff2); box-shadow:0 0 14px ${t.color}, inset 0 0 8px rgba(255,255,255,.4);"></div>
+    </div>`;
+}
+
+function animateFrames(duration, frameFn){
+  return new Promise(resolve=>{
+    const start = performance.now();
+    function step(now){
+      const t = Math.min(1, (now-start)/duration);
+      frameFn(t);
+      if(t<1) requestAnimationFrame(step); else resolve();
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+/* Cube runs from start, leaps clean over the hurdle, lands past it. */
+async function runAndClearHurdle(cubeEl){
+  await animateFrames(850, t=>{
+    const x = 6 + t*(90-6);
+    const center=0.52, half=0.24;
+    let bump=0;
+    if(t>center-half && t<center+half){
+      const local = (t-(center-half))/(2*half);
+      bump = Math.sin(local*Math.PI);
+    }
+    const y = bump*52;
+    const squash = 1 - bump*0.18;
+    cubeEl.style.left = x+'%';
+    cubeEl.style.transform = `translateY(-${y}px) scaleY(${squash}) rotate(${bump*18}deg)`;
+  });
+  cubeEl.style.transform = 'translateY(0) rotate(0deg)';
+}
+
+/* Cube runs toward the hurdle, crashes into it, and tumbles back to start. */
+async function runAndCrash(cubeEl, obstacleEl){
+  await animateFrames(600, t=>{
+    const x = 6 + t*(49-6);
+    cubeEl.style.left = x+'%';
+    cubeEl.style.transform = `translateY(0) scaleY(${1+t*0.05}) rotate(0deg)`;
+  });
+  // impact
+  spawnParticles(['#ff2e97','#ff5252','#ffe600'], 16, obstacleEl);
+  document.body.classList.add('shake');
+  flashRed.classList.add('show');
+  setTimeout(()=>flashRed.classList.remove('show'), 150);
+  setTimeout(()=>document.body.classList.remove('shake'), 400);
+  await animateFrames(550, t=>{
+    const x = 49 - t*(49-6);
+    const rot = -t*320;
+    const hop = Math.sin(t*Math.PI)*16;
+    cubeEl.style.left = x+'%';
+    cubeEl.style.transform = `translateY(-${hop}px) rotate(${rot}deg)`;
+  });
+  cubeEl.style.transform = 'translateY(0) rotate(0deg)';
+}
+
+/* ============================================================
+   SCREENS
+============================================================ */
+const app = document.getElementById('app');
+
+function screenGradeSelect(){
+  app.innerHTML = `
+    <h2 class="level-title">Choose Your Runner Class</h2>
+    <p class="level-desc">Your class calibrates the portal's difficulty. Pick your squad to begin the dash.</p>
+    <div class="grade-toggle">
+      <button class="grade-btn" id="pick6">Grade 6 — Rookie Runners<small>Core geometry challenges</small></button>
+      <button class="grade-btn" id="pick7">Grade 7 — Pro Dashers<small>Advanced, formula-driven challenges</small></button>
+    </div>
+  `;
+  document.getElementById('pick6').onclick=()=>{ state.grade=6; state.startTime=Date.now(); startLevelIntro(0); };
+  document.getElementById('pick7').onclick=()=>{ state.grade=7; state.startTime=Date.now(); startLevelIntro(0); };
+}
+
+function startLevelIntro(idx){
+  state.levelIdx = idx;
+  const lv = LEVELS[idx];
+  state.qList = pick5(lv);
+  state.qIdx = 0;
+  renderBadgeTray();
+  app.innerHTML = `
+    <h2 class="level-title">${lv.icon} Level ${idx+1} — ${lv.name}</h2>
+    <p class="level-desc">${state.qList.length} random challenges pulled from this level's question bank. Clear every hurdle to earn the badge.</p>
+    <div class="center"><button class="primary-btn" id="enterBtn">▶ START DASH</button></div>
+  `;
+  document.getElementById('enterBtn').onclick = ()=>renderQuestion();
+}
+
+function renderQuestion(){
+  const lv = LEVELS[state.levelIdx];
+  const total = state.qList.length;
+  const q = state.qList[state.qIdx];
+  const pct = Math.round((state.qIdx/total)*100);
+  state.trackCounter++;
+  app.innerHTML = `
+    <h2 class="level-title">${lv.icon} ${lv.name}</h2>
+    <div class="q-meta">
+      <span>Challenge ${state.qIdx+1} of ${total}</span>
+      <span class="q-tag ${q.isG7?'g7':''}">${q.isG7 ? 'GRADE 7' : 'GRADE 6'}</span>
+    </div>
+    <div class="percent-bar"><div class="percent-fill" style="width:${pct}%"></div></div>
+    <div class="percent-label">${pct}% COMPLETE</div>
+    ${trackMarkup(state.trackCounter, 'HURDLE '+(state.qIdx+1))}
+    <div class="question-box">${q.q}</div>
+    <div class="answer-row">
+      <input type="text" id="answerInput" placeholder="Your answer..." autocomplete="off">
+      <button class="primary-btn" id="submitBtn">DASH</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  `;
+  wireAnswerFlow({
+    q, onAdvance: ()=>{
+      state.qIdx++;
+      if(state.qIdx >= total){ screenBadgeReveal(); }
+      else{ renderQuestion(); }
+    }
+  });
+}
+
+function wireAnswerFlow(opts){
+  const q = opts.q;
+  const input = document.getElementById('answerInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const cubeEl = document.getElementById('trackCube');
+  const obstacleEl = document.getElementById('trackObstacle');
+  input.focus();
+  let busy = false;
+  const submit = async ()=>{
+    if(busy) return;
+    const val = input.value.trim();
+    if(!val) return;
+    const norm = val.toLowerCase().replace(/[\s-]+/g,'');
+    const correct = q.a.some(a=>a.toLowerCase().replace(/[\s-]+/g,'')===norm);
+    const fb = document.getElementById('feedback');
+    busy = true; input.disabled = true; submitBtn.disabled = true;
+    if(correct){
+      playSuccess();
+      await runAndClearHurdle(cubeEl);
+      spawnParticles(['#00e5ff','#ffe600','#39ff14'], 16, cubeEl);
+      fb.textContent = '✅ Cleared the hurdle! New obstacle ahead...';
+      fb.className = 'feedback good';
+      setTimeout(()=> opts.onAdvance(), 500);
+    } else {
+      playWrong();
+      await runAndCrash(cubeEl, obstacleEl);
+      showTip(q.h, cubeEl);
+      fb.textContent = '💥 Crashed into the hurdle! Back to the start — check the hint and try again.';
+      fb.className = 'feedback bad';
+      input.disabled = false; submitBtn.disabled = false;
+      input.value=''; input.focus();
+      busy = false;
+    }
+  };
+  submitBtn.onclick = submit;
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+}
+
+function screenBadgeReveal(){
+  const lv = LEVELS[state.levelIdx];
+  playBadge();
+  if(!state.earnedBadges.includes(lv.badge.name)) state.earnedBadges.push(lv.badge.name);
+  renderBadgeTray();
+  app.innerHTML = `
+    <div class="badge-reveal">
+      <div class="big-badge" id="bigBadgeEmoji">${lv.badge.emoji}</div>
+      <h3>${lv.badge.name}</h3>
+      <p>${lv.badge.line}</p>
+      <div class="center" style="margin-top:18px;"><button class="primary-btn" id="codeBtnGo">GET RESCUE CODE →</button></div>
+    </div>
+  `;
+  spawnParticles(['#ffe600','#00e5ff','#ff2e97','#39ff14'], 26, document.getElementById('bigBadgeEmoji'));
+  document.getElementById('codeBtnGo').onclick = ()=>screenCodeGate();
+}
+
+function screenCodeGate(){
+  const lv = LEVELS[state.levelIdx];
+  app.innerHTML = `
+    <h2 class="level-title">🔒 Level Locked</h2>
+    <p class="level-desc">Ask your teacher for the <strong>Badge Code</strong> to unlock the next level.</p>
+    <div class="code-gate">
+      <input type="text" id="codeInput" placeholder="ENTER CODE" maxlength="14">
+      <button class="primary-btn" id="codeBtn">UNLOCK NEXT LEVEL</button>
+      <div class="feedback" id="codeFeedback"></div>
+    </div>
+  `;
+  document.getElementById('codeBtn').onclick = ()=>{
+    const val = document.getElementById('codeInput').value.trim().toUpperCase();
+    const fb = document.getElementById('codeFeedback');
+    if(val === lv.code){
+      playBadge();
+      fb.textContent='🔓 Unlocked!'; fb.className='feedback good';
+      setTimeout(()=>{
+        if(state.levelIdx+1 < LEVELS.length) startLevelIntro(state.levelIdx+1);
+        else startBossIntro();
+      }, 700);
+    } else {
+      playWrong();
+      fb.textContent='Not quite — check with your teacher.'; fb.className='feedback bad';
+    }
+  };
+  document.getElementById('codeInput').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('codeBtn').click(); });
+}
+
+function startBossIntro(){
+  state.bossDoors = shuffle(state.grade===7 ? BOSS.g7 : BOSS.g6).slice(0,5).map(x=>({...x, isG7: state.grade===7}));
+  state.bossOpen = [false,false,false,false,false];
+  renderBadgeTray();
+  app.innerHTML = `
+    <h2 class="level-title">👑 Final Boss Battle</h2>
+    <p class="level-desc">Five mystery doors. Five mixed challenges — shapes, angles, area &amp; perimeter, coordinates. Clear them all to become Geometry Dash Champion.</p>
+    <div class="center"><button class="primary-btn" id="enterBoss">▶ ENTER THE ARENA</button></div>
+  `;
+  document.getElementById('enterBoss').onclick = ()=>renderDoors();
+}
+
+function renderDoors(){
+  const doneCount = state.bossOpen.filter(Boolean).length;
+  const pct = Math.round((doneCount/5)*100);
+  app.innerHTML = `
+    <h2 class="level-title">👑 Final Boss Battle</h2>
+    <p class="level-desc">Choose a door to reveal its challenge.</p>
+    <div class="percent-bar"><div class="percent-fill" style="width:${pct}%"></div></div>
+    <div class="percent-label">${pct}% COMPLETE</div>
+    <div class="doors-grid" id="doorsGrid"></div>
+  `;
+  const grid = document.getElementById('doorsGrid');
+  for(let i=0;i<5;i++){
+    const d = document.createElement('div');
+    d.className = 'door'+(state.bossOpen[i]?' done':'');
+    d.innerHTML = state.bossOpen[i]
+      ? `<div class="door-icon">✅</div><div>${i+1}</div>`
+      : `<div class="door-icon">🚪</div><div>${i+1}</div>`;
+    if(!state.bossOpen[i]){
+      d.onclick = ()=>renderBossQuestion(i);
+    }
+    grid.appendChild(d);
+  }
+  if(doneCount===5){
+    setTimeout(()=>screenChampion(), 200);
+  }
+}
+
+function renderBossQuestion(doorIdx){
+  const q = state.bossDoors[doorIdx];
+  state.trackCounter++;
+  app.innerHTML = `
+    <h2 class="level-title">👑 Door ${doorIdx+1}</h2>
+    <div class="q-meta"><span>Boss Challenge</span><span class="q-tag ${q.isG7?'g7':''}">${q.isG7?'GRADE 7':'GRADE 6'}</span></div>
+    ${trackMarkup(state.trackCounter, 'DOOR '+(doorIdx+1))}
+    <div class="question-box">${q.q}</div>
+    <div class="answer-row">
+      <input type="text" id="answerInput" placeholder="Your answer..." autocomplete="off">
+      <button class="primary-btn" id="submitBtn">DASH</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="center" style="margin-top:14px;"><button class="ghost-btn" id="backDoors">← Back to Doors</button></div>
+  `;
+  wireAnswerFlow({
+    q, onAdvance: ()=>{ state.bossOpen[doorIdx] = true; renderDoors(); }
+  });
+  document.getElementById('backDoors').onclick = ()=>renderDoors();
+}
+
+/* ============================================================
+   CHAMPION + SHARED LEADERBOARD (persistent storage)
+============================================================ */
+function screenChampion(){
+  playChampion();
+  if(!state.earnedBadges.includes(BOSS.badge.name)) state.earnedBadges.push(BOSS.badge.name);
+  renderBadgeTray();
+  const elapsed = Math.max(1, Math.round((Date.now()-state.startTime)/1000));
+  app.innerHTML = `
+    <div class="victory">
+      <div class="big-badge" id="championBadge">👑</div>
+      <h1>GEOMETRY DASH CHAMPION!</h1>
+      <p class="level-desc">All five badges earned in ${elapsed}s. Add your name to the class leaderboard!</p>
+      <div class="name-gate">
+        <input type="text" id="nameInput" placeholder="Type your name" maxlength="18">
+        <div class="center"><button class="primary-btn" id="saveScoreBtn">SAVE MY SCORE</button></div>
+      </div>
+      <div id="lbWrap"></div>
+      <p class="lb-note">Your name and time are saved to a shared class leaderboard visible to everyone using this activity.</p>
+      <div class="center" style="margin-top:14px;"><button class="ghost-btn" id="restartBtn">Play Again</button></div>
+    </div>
+  `;
+  spawnParticles(['#ffe600','#00e5ff','#ff2e97','#39ff14','#b026ff'], 30, document.getElementById('championBadge'));
+  document.getElementById('saveScoreBtn').onclick = async ()=>{
+    const name = document.getElementById('nameInput').value.trim() || 'Anonymous Dasher';
+    try{
+      const key = 'leaderboard:'+Date.now()+'-'+Math.floor(Math.random()*10000);
+      await window.storage.set(key, JSON.stringify({name, time:elapsed, grade:state.grade}), true);
+    }catch(e){ console.error('Could not save score', e); }
+    loadLeaderboard();
+  };
+  document.getElementById('restartBtn').onclick = ()=>{
+    state = {grade:null, levelIdx:0, qList:[], qIdx:0, earnedBadges:[], startTime:null, bossDoors:[], bossOpen:[false,false,false,false,false], trackCounter:0};
+    renderBadgeTray();
+    screenGradeSelect();
+  };
+  loadLeaderboard();
+}
+
+async function loadLeaderboard(){
+  const wrap = document.getElementById('lbWrap');
+  if(!wrap) return;
+  wrap.innerHTML = `<p class="level-desc" style="text-align:center;">Loading leaderboard…</p>`;
+  try{
+    const list = await window.storage.list('leaderboard:', true);
+    if(!list || !list.keys || list.keys.length===0){
+      wrap.innerHTML = `<p class="level-desc" style="text-align:center;">No scores yet — be the first Champion!</p>`;
+      return;
+    }
+    const entries = [];
+    for(const k of list.keys){
+      try{
+        const res = await window.storage.get(k, true);
+        if(res && res.value){ entries.push(JSON.parse(res.value)); }
+      }catch(e){ /* skip unreadable entry */ }
+    }
+    entries.sort((a,b)=>a.time-b.time);
+    const top = entries.slice(0,10);
+    const medals = ['🥇','🥈','🥉'];
+    wrap.innerHTML = `<div class="leaderboard">${top.map((e,i)=>`
+      <div class="lb-row">
+        <div class="lb-rank">${medals[i]||(i+1)}</div>
+        <div class="lb-name">${(e.name||'Anonymous').slice(0,24)}</div>
+        <div class="lb-time">${e.time}s · G${e.grade||'?'}</div>
+      </div>`).join('')}</div>`;
+  }catch(e){
+    wrap.innerHTML = `<p class="level-desc" style="text-align:center;">Leaderboard unavailable right now.</p>`;
+  }
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+renderBadgeTray();
+screenGradeSelect();
+</script>
+</body>
+</html>
