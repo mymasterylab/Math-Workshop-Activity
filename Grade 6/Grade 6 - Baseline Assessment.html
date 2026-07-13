@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyMasteryLab - Question-Timed Grade 6 Entry Math Diagnostic</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #f4f8f9; 
+            color: #252b31; /* Deep Slate Gray */
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+        
+        /* Branding Header */
+        .brand-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 4px solid #00a5ba; /* Bright Teal */
+        }
+        .brand-logo {
+            max-width: 300px;
+            height: auto;
+            display: block;
+        }
+
+        .card { 
+            background: white; 
+            padding: 35px; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); 
+            border-top: 6px solid #00a5ba; 
+        }
+        
+        .welcome-brief {
+            background-color: #e6f6f8; /* Light Teal Tint */
+            border-left: 4px solid #00a5ba; 
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+        .welcome-brief h2 { margin: 0 0 5px 0; color: #252b31; font-size: 14pt; }
+        .welcome-brief p { margin: 0; font-size: 10.5pt; color: #3a454f; }
+
+        h1 { margin-top: 0; color: #252b31; text-transform: uppercase; font-size: 18pt; text-align: center; letter-spacing: 1px; }
+        
+        .section-break {
+            margin: 35px 0 15px 0;
+            font-size: 12pt;
+            font-weight: bold;
+            color: #00a5ba; 
+            text-transform: uppercase;
+            border-bottom: 2px solid #e6f6f8;
+            padding-bottom: 5px;
+        }
+
+        .question-block {
+            margin-bottom: 25px;
+            padding: 10px 0;
+        }
+
+        label { font-weight: bold; display: block; color: #252b31; margin-top: 10px; }
+        .instruction { font-size: 10pt; color: #627281; margin-top: 2px; margin-bottom: 8px; font-style: italic; }
+        
+        /* Time Tracker HUD Styling for individual questions */
+        .question-timer-hud {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9pt;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #252b31;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+            font-family: monospace;
+            border-left: 3px solid #f39f24; /* Marigold Orange */
+        }
+
+        input[type="text"], select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 2px solid #e1e7ec; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 11pt; 
+            transition: all 0.2s; 
+            font-family: inherit; 
+            color: #252b31;
+        }
+        input[type="text"]:focus, select:focus, textarea:focus { 
+            border-color: #00a5ba; 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(0, 165, 186, 0.15);
+        }
+        
+        .grid-mcq { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+        .mcq-option { 
+            background: #f8fafb; 
+            padding: 10px 15px; 
+            border: 2px solid #e1e7ec; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 10.5pt;
+            transition: all 0.2s;
+        }
+        .mcq-option:hover { border-color: #00a5ba; background-color: #f0f9fa; }
+        .mcq-option input { cursor: pointer; accent-color: #00a5ba; }
+        
+        .grid-metadata { display: flex; gap: 15px; margin-bottom: 15px; }
+        .grid-metadata div { flex: 1; }
+        
+        .pattern-grid { display: flex; gap: 10px; align-items: center; margin-top: 5px; font-size: 12pt; font-weight: bold; color: #252b31; }
+        .pattern-grid input { width: 70px; text-align: center; }
+
+        .matching-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .matching-table th, .matching-table td { border: 1px solid #e1e7ec; padding: 12px; text-align: left; font-size: 10.5pt; }
+        .matching-table th { background-color: #f8fafb; color: #252b31; }
+        .matching-table select { width: 100%; padding: 6px; margin: 0; }
+
+        .reasoning-box {
+            background-color: #fef6ec; /* Light Marigold Tint */
+            border-left: 4px solid #f39f24; /* Marigold Orange */
+            padding: 12px; 
+            border-radius: 6px; 
+            font-size: 10.5pt; 
+            margin-top: 5px; 
+            color: #794a07;
+        }
+
+        button { 
+            background-color: #00a5ba; 
+            color: white; 
+            border: none; 
+            padding: 16px 20px; 
+            font-size: 13pt; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 40px; 
+            box-shadow: 0 4px 6px rgba(0, 165, 186, 0.2); 
+            transition: all 0.2s; 
+        }
+        button:hover { background-color: #008799; transform: translateY(-1px); }
+        .note { font-size: 9.5pt; color: #627281; text-align: center; margin-top: 15px; }
+        
+        .footer-copyright {
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e7ec;
+            text-align: center;
+            font-size: 9pt;
+            color: #8c9ba5;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Branding Header Bar -->
+    <div class="brand-header">
+           <h1> MyMasteryLab   </h1>
+        <img src="mymasteryLab_logo_CTC - Round.png" alt="MyMasteryLab Logo" class="brand-logo">
+    </div>
+
+    <div class="card">
+        <h1>Grade 6 Entry Baseline Math Diagnostic</h1>
+        
+        <div class="welcome-brief">
+            <h2>Per-Question Time Tracking Analysis (Total: 50 Marks)</h2>
+            <p>Welcome to your baseline evaluation. This interactive form monitors Key Stage 2 computational accuracy and notes the exact time taken per question block to evaluate focus trends.</p>
+        </div>
+        
+        <!-- REPLACE THE ACTION URL BELOW WITH YOUR FORMSPREE OR WEB3FORMS ENDPOINT LINK -->
+        <form id="diagnosticForm" action="https://formspree.io/f/YOUR_ENDPOINT_HERE" method="POST">
+            
+            <!-- Student Metadata Profile -->
+            <div class="grid-metadata">
+                <div>
+                    <label for="student-name">Student Full Name:</label>
+                    <input type="text" id="student-name" name="Student Name" placeholder="First and Last Name" required>
+                </div>
+                <div>
+                    <label for="parent-email">Parent Email Address:</label>
+                    <input type="text" id="parent-email" name="Parent Email" placeholder="email@example.com" required>
+                </div>
+            </div>
+
+            <!-- SECTION 1 -->
+            <div class="section-break">1. Number Systems & Place Value (10 Marks)</div>
+
+            <div class="question-block">
+                <label>Q1. What is the value of the underlined digit in the number 4<u>7</u>2,903? (2 Marks)</label>
+                <div class="grid-mcq">
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="A" onfocus="startTimer(1)" required> A) 7,000</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="B" onfocus="startTimer(1)"> B) 70,000</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="C" onfocus="startTimer(1)"> C) 700,000</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="D" onfocus="startTimer(1)"> D) 70</label>
+                </div>
+                <div class="question-timer-hud">⏱️ Q1 Time: <span id="timer-display-1">00:00</span></div>
+                <input type="hidden" id="time-spent-1" name="Time Taken Q1" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label>Q2. Round 845,291 to the nearest ten-thousand (10,000). (2 Marks)</label>
+                <div class="grid-mcq">
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="A" onfocus="startTimer(2)" required> A) 850,000</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="B" onfocus="startTimer(2)"> B) 840,000</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="C" onfocus="startTimer(2)"> C) 800,000</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="D" onfocus="startTimer(2)"> D) 845,000</label>
+                </div>
+                <div class="question-timer-hud">⏱️ Q2 Time: <span id="timer-display-2">00:00</span></div>
+                <input type="hidden" id="time-spent-2" name="Time Taken Q2" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q3-ans">Q3. Fill in the missing values for this scale sequence counting backward in powers of 10: (2 Marks)</label>
+                <div class="instruction">83,400 , 73,400 , 63,400 , _______________ , 43,400 , _______________</div>
+                <input type="text" id="q3-ans" name="Q3_Powers_Of_10" placeholder="Enter the two missing numbers" onfocus="startTimer(3)" onblur="stopTimer(3)" required>
+                <div class="question-timer-hud">⏱️ Q3 Time: <span id="timer-display-3">00:00</span></div>
+                <input type="hidden" id="time-spent-3" name="Time Taken Q3" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q4-ans">Q4. Partition the number 608,340 into its component parts: (2 Marks)</label>
+                <input type="text" id="q4-ans" name="Q4_Number_Partitioning" placeholder="e.g., 600,000 + 8,000 + ..." onfocus="startTimer(4)" onblur="stopTimer(4)" required>
+                <div class="question-timer-hud">⏱️ Q4 Time: <span id="timer-display-4">00:00</span></div>
+                <input type="hidden" id="time-spent-4" name="Time Taken Q4" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q5-ans">Q5. Write down all the prime numbers that lie between 10 and 20. (2 Marks)</label>
+                <input type="text" id="q5-ans" name="Q5_Prime_Properties" placeholder="Enter the prime numbers" onfocus="startTimer(5)" onblur="stopTimer(5)" required>
+                <div class="question-timer-hud">⏱️ Q5 Time: <span id="timer-display-5">00:00</span></div>
+                <input type="hidden" id="time-spent-5" name="Time Taken Q5" value="0s">
+            </div>
+
+            <!-- SECTION 2 -->
+            <div class="section-break">2. Calculations & Operational Fluency (10 Marks)</div>
+
+            <div class="question-block">
+                <label for="q6-work">Q6. Calculate the total sum of 62,394 + 18,708. (2.5 Marks)</label>
+                <textarea id="q6-work" name="Q6_Column_Addition" rows="3" placeholder="Show column processing layout..." onfocus="startTimer(6)" onblur="stopTimer(6)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q6 Time: <span id="timer-display-6">00:00</span></div>
+                <input type="hidden" id="time-spent-6" name="Time Taken Q6" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q7-work">Q7. Find the exact difference of 41,005 - 16,349. (2.5 Marks)</label>
+                <textarea id="q7-work" name="Q7_Column_Subtraction" rows="3" placeholder="Show column borrowing steps..." onfocus="startTimer(7)" onblur="stopTimer(7)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q7 Time: <span id="timer-display-7">00:00</span></div>
+                <input type="hidden" id="time-spent-7" name="Time Taken Q7" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q8-work">Q8. Long Multiplication: Compute the product of 346 &times; 24. (2.5 Marks)</label>
+                <textarea id="q8-work" name="Q8_Long_Multiplication" rows="3" placeholder="Show intermediate multiplication rows..." onfocus="startTimer(8)" onblur="stopTimer(8)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q8 Time: <span id="timer-display-8">00:00</span></div>
+                <input type="hidden" id="time-spent-8" name="Time Taken Q8" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q9-work">Q9. Short Division: Find the value of 867 &divide; 7. State the quotient and the remainder clearly. (2.5 Marks)</label>
+                <textarea id="q9-work" name="Q9_Short_Division" rows="3" placeholder="Show work path and write: __ remainder __" onfocus="startTimer(9)" onblur="stopTimer(9)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q9 Time: <span id="timer-display-9">00:00</span></div>
+                <input type="hidden" id="time-spent-9" name="Time Taken Q9" value="0s">
+            </div>
+
+            <!-- SECTION 3 -->
+            <div class="section-break">3. Fractions & Decimals Operations (10 Marks)</div>
+
+            <div class="question-block">
+                <label for="q10-ans">Q10. Convert the improper fraction 23/5 into a mixed number. (2 Marks)</label>
+                <input type="text" id="q10-ans" name="Q10_Improper_To_Mixed" placeholder="Your mixed number answer" onfocus="startTimer(10)" onblur="stopTimer(10)" required>
+                <div class="question-timer-hud">⏱️ Q10 Time: <span id="timer-display-10">00:00</span></div>
+                <input type="hidden" id="time-spent-10" name="Time Taken Q10" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q11-ans">Q11. Calculate the following operation and write the answer in its simplest form: 3/4 - 1/8 = ___ (2 Marks)</label>
+                <input type="text" id="q11-ans" name="Q11_Fraction_Subtraction" placeholder="Simplest form fraction" onfocus="startTimer(11)" onblur="stopTimer(11)" required>
+                <div class="question-timer-hud">⏱️ Q11 Time: <span id="timer-display-11">00:00</span></div>
+                <input type="hidden" id="time-spent-11" name="Time Taken Q11" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q12-ans">Q12. Find the fractional quantity: 3/7 of 42 kilograms. (2 Marks)</label>
+                <input type="text" id="q12-ans" name="Q12_Fraction_Quantity" placeholder="Answer in kg" onfocus="startTimer(12)" onblur="stopTimer(12)" required>
+                <div class="question-timer-hud">⏱️ Q12 Time: <span id="timer-display-12">00:00</span></div>
+                <input type="hidden" id="time-spent-12" name="Time Taken Q12" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label>Q13. Select the correct letter matching the values in order from SMALLEST to LARGEST: (2 Marks)</label>
+                <div class="instruction">Values: 0.45 , 0.405 , 0.5 , 0.045</div>
+                <div class="grid-mcq">
+                    <label class="mcq-option"><input type="radio" name="Q13_Ordering_Decimals" value="A" onfocus="startTimer(13)" required> A) 0.045, 0.45, 0.405, 0.5</label>
+                    <label class="mcq-option"><input type="radio" name="Q13_Ordering_Decimals" value="B" onfocus="startTimer(13)"> B) 0.045, 0.405, 0.45, 0.5</label>
+                    <label class="mcq-option"><input type="radio" name="Q13_Ordering_Decimals" value="C" onfocus="startTimer(13)"> C) 0.5, 0.45, 0.405, 0.045</label>
+                    <label class="mcq-option"><input type="radio" name="Q13_Ordering_Decimals" value="D" onfocus="startTimer(13)"> D) 0.405, 0.045, 0.45, 0.5</label>
+                </div>
+                <div class="question-timer-hud">⏱️ Q13 Time: <span id="timer-display-13">00:00</span></div>
+                <input type="hidden" id="time-spent-13" name="Time Taken Q13" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q14-ans">Q14. Calculate the decimal operation: 7.32 + 14.8 = ___ (2 Marks)</label>
+                <input type="text" id="q14-ans" name="Q14_Decimal_Addition" placeholder="Enter decimal sum" onfocus="startTimer(14)" onblur="stopTimer(14)" required>
+                <div class="question-timer-hud">⏱️ Q14 Time: <span id="timer-display-14">00:00</span></div>
+                <input type="hidden" id="time-spent-14" name="Time Taken Q14" value="0s">
+            </div>
+
+            <!-- SECTION 4 -->
+            <div class="section-break">4. Measurement & Spatial Geometry (10 Marks)</div>
+
+            <div class="question-block">
+                <label for="q15-ans">Q15. Metric Unit Conversions: Fill in the missing quantities below. (2 Marks)</label>
+                <div class="instruction">a) 3.25 kg = ___________ grams &nbsp;&nbsp;&nbsp;&nbsp; b) 750 ml = ___________ Liters</div>
+                <input type="text" id="q15-ans" name="Q15_Unit_Conversions" placeholder="e.g., a) 3250g, b) 0.75L" onfocus="startTimer(15)" onblur="stopTimer(15)" required>
+                <div class="question-timer-hud">⏱️ Q15 Time: <span id="timer-display-15">00:00</span></div>
+                <input type="hidden" id="time-spent-15" name="Time Taken Q15" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q16-work">Q16. Area & Perimeter: A rectangle has a length of 9 cm and an area of 36 cm². Calculate its perimeter. (3 Marks)</label>
+                <textarea id="q16-work" name="Q16_Area_Perimeter_Logic" rows="3" placeholder="Find the width first, then show perimeter calculations..." onfocus="startTimer(16)" onblur="stopTimer(16)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q16 Time: <span id="timer-display-16">00:00</span></div>
+                <input type="hidden" id="time-spent-16" name="Time Taken Q16" value="0s">
+            </div>
+
+            <div class="question-block">
+                <table class="matching-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Q17. Angle Classification (3 Marks)</th>
+                            <th style="width: 20%;">Select Letter</th>
+                            <th style="width: 30%;">Options List</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>i) An angle measuring exactly 90&deg;</td>
+                            <td>
+                                <select name="Q17_Angle_1" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                                </select>
+                            </td>
+                            <td><strong>A:</strong> Acute Angle</td>
+                        </tr>
+                        <tr>
+                            <td>ii) An angle measuring exactly 135&deg;</td>
+                            <td>
+                                <select name="Q17_Angle_2" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                                </select>
+                            </td>
+                            <td><strong>B:</strong> Right Angle</td>
+                        </tr>
+                        <tr>
+                            <td>iii) An angle measuring exactly 210&deg;</td>
+                            <td>
+                                <select name="Q17_Angle_3" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                                </select>
+                            </td>
+                            <td><strong>C:</strong> Obtuse Angle</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="instruction" style="margin-top: 5px; text-align: right;"><strong>Option D:</strong> Reflex Angle</div>
+                <div class="question-timer-hud">⏱️ Q17 Time: <span id="timer-display-17">00:00</span></div>
+                <input type="hidden" id="time-spent-17" name="Time Taken Q17" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q18-ans">Q18. Coordinate Grid Reference: An object starts at position (2, 5). It translates 4 units to the right and 3 units down. What are its new coordinates? (2 Marks)</label>
+                <input type="text" id="q18-ans" name="Q18_Coordinates" placeholder="Format answer as (X, Y)" onfocus="startTimer(18)" onblur="stopTimer(18)" required>
+                <div class="question-timer-hud">⏱️ Q18 Time: <span id="timer-display-18">00:00</span></div>
+                <input type="hidden" id="time-spent-18" name="Time Taken Q18" value="0s">
+            </div>
+
+            <!-- SECTION 5 -->
+            <div class="section-break">5. Multi-Step Problem Solving & Logic (10 Marks)</div>
+
+            <div class="question-block">
+                <label for="q19-work">Q19. Multi-Step Data Modeling: (5 Marks)</label>
+                <div class="instruction">A train departs from the station with 145 passengers on board. At the first stop, 32 passengers step off the train and 48 new passengers board. At the second stop, exactly half of the current passengers step off. How many passengers remain on the train?</div>
+                <textarea id="q19-work" name="Q19_Multi_Step_Problem" rows="4" placeholder="Write out calculations step-by-step..." onfocus="startTimer(19)" onblur="stopTimer(19)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q19 Time: <span id="timer-display-19">00:00</span></div>
+                <input type="hidden" id="time-spent-19" name="Time Taken Q19" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q20-work">Q20. Algebraic Reasoning Challenge: (5 Marks)</label>
+                <div class="reasoning-box">
+                    • A mystery secret number is a <strong>square number</strong>.<br>
+                    • It is also a <strong>multiple of 6</strong>.<br>
+                    • The number is greater than 10 but strictly less than 50.
+                </div>
+                <textarea id="q20-work" name="Q20_Mathematical_Reasoning" rows="3" placeholder="Test the properties systematically..." onfocus="startTimer(20)" onblur="stopTimer(20)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q20 Time: <span id="timer-display-20">00:00</span></div>
+                <input type="hidden" id="time-spent-20" name="Time Taken Q20" value="0s">
+            </div>
+
+            <!-- Submit Button Trigger -->
+            <button type="submit" id="submitBtn">Submit Completed Diagnostic Form</button>
+            <p class="note">Data collection protocol active. Question-specific execution intervals will compile into your MyMasteryLab report profiles.</p>
+            
+            <!-- Copyright Footer -->
+            <div class="footer-copyright">
+                &copy; 2026 MyMasteryLab. All Rights Reserved. Private Diagnostic Assessment Tool.
+            </div>
+        </form>
+    </div>
+
+    <!-- Question-Wise Stopwatch Engine -->
+    <script>
+        let timers = {};
+        let activeQuestionId = null;
+
+        // Automatically start/switch timers depending on active input elements
+        function startTimer(questionId) {
+            // Stop previously active timer if changing sections
+            if (activeQuestionId !== null && activeQuestionId !== questionId) {
+                stopTimer(activeQuestionId);
+            }
+            
+            activeQuestionId = questionId;
+
+            if (!timers[questionId]) {
+                timers[questionId] = { timeSeconds: 0, interval: null };
+            }
+
+            if (!timers[questionId].interval) {
+                timers[questionId].interval = setInterval(() => {
+                    timers[questionId].timeSeconds++;
+                    updateDisplay(questionId);
+                }, 1000);
+            }
+        }
+
+        function stopTimer(questionId) {
+            if (timers[questionId] && timers[questionId].interval) {
+                clearInterval(timers[questionId].interval);
+                timers[questionId].interval = null;
+                
+                // Write final localized string value to hidden inputs
+                const min = Math.floor(timers[questionId].timeSeconds / 60);
+                const sec = timers[questionId].timeSeconds % 60;
+                document.getElementById(`time-spent-${questionId}`).value = `${min}m ${sec}s`;
+            }
+        }
+
+        function updateDisplay(questionId) {
+            const time = timers[questionId].timeSeconds;
+            let minutes = Math.floor(time / 60);
+            let seconds = time % 60;
+
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            document.getElementById(`timer-display-${questionId}`).textContent = `${minutes}:${seconds}`;
+        }
+        
+        // Final fallback block ensuring all data targets register on quick form submit
+        document.getElementById('diagnosticForm').addEventListener('submit', function() {
+            if (activeQuestionId !== null) {
+                stopTimer(activeQuestionId);
+            }
+        });
+    </script>
+</body>
+</html>

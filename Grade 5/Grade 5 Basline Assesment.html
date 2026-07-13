@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyMasteryLab - Question-Timed Grade 5 Entry Math Diagnostic</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #f4f8f9; 
+            color: #252b31; /* Deep Slate Gray */
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+        
+        /* Branding Header */
+        .brand-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 4px solid #00a5ba; /* Bright Teal */
+        }
+        .brand-logo {
+            max-width: 220px;
+            height: auto;
+            display: block;
+        }
+
+        .card { 
+            background: white; 
+            padding: 35px; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); 
+            border-top: 6px solid #00a5ba; 
+        }
+        
+        .welcome-brief {
+            background-color: #e6f6f8; /* Light Teal Tint */
+            border-left: 4px solid #00a5ba; 
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+        .welcome-brief h2 { margin: 0 0 5px 0; color: #252b31; font-size: 14pt; }
+        .welcome-brief p { margin: 0; font-size: 10.5pt; color: #3a454f; }
+
+        h1 { margin-top: 0; color: #252b31; text-transform: uppercase; font-size: 18pt; text-align: center; letter-spacing: 1px; }
+        
+        .section-break {
+            margin: 35px 0 15px 0;
+            font-size: 12pt;
+            font-weight: bold;
+            color: #00a5ba; 
+            text-transform: uppercase;
+            border-bottom: 2px solid #e6f6f8;
+            padding-bottom: 5px;
+        }
+
+        .question-block {
+            margin-bottom: 25px;
+            padding: 10px 0;
+        }
+
+        label { font-weight: bold; display: block; color: #252b31; margin-top: 10px; }
+        .instruction { font-size: 10pt; color: #627281; margin-top: 2px; margin-bottom: 8px; font-style: italic; }
+        
+        /* Time Tracker HUD Styling */
+        .question-timer-hud {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9pt;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #252b31;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+            font-family: monospace;
+            border-left: 3px solid #f39f24; /* Marigold Orange */
+        }
+
+        input[type="text"], select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 2px solid #e1e7ec; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 11pt; 
+            transition: all 0.2s; 
+            font-family: inherit; 
+            color: #252b31;
+        }
+        input[type="text"]:focus, select:focus, textarea:focus { 
+            border-color: #00a5ba; 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(0, 165, 186, 0.15);
+        }
+        
+        .grid-mcq { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+        .mcq-option { 
+            background: #f8fafb; 
+            padding: 10px 15px; 
+            border: 2px solid #e1e7ec; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 10.5pt;
+            transition: all 0.2s;
+        }
+        .mcq-option:hover { border-color: #00a5ba; background-color: #f0f9fa; }
+        .mcq-option input { cursor: pointer; accent-color: #00a5ba; }
+        
+        .grid-metadata { display: flex; gap: 15px; margin-bottom: 15px; }
+        .grid-metadata div { flex: 1; }
+        
+        .pattern-grid { display: flex; gap: 10px; align-items: center; margin-top: 5px; font-size: 12pt; font-weight: bold; color: #252b31; }
+        .pattern-grid input { width: 70px; text-align: center; }
+
+        .matching-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .matching-table th, .matching-table td { border: 1px solid #e1e7ec; padding: 12px; text-align: left; font-size: 10.5pt; }
+        .matching-table th { background-color: #f8fafb; color: #252b31; }
+        .matching-table select { width: 100%; padding: 6px; margin: 0; }
+
+        .reasoning-box {
+            background-color: #fef6ec; /* Light Marigold Tint */
+            border-left: 4px solid #f39f24; /* Marigold Orange */
+            padding: 12px; 
+            border-radius: 6px; 
+            font-size: 10.5pt; 
+            margin-top: 5px; 
+            color: #794a07;
+        }
+
+        button { 
+            background-color: #00a5ba; 
+            color: white; 
+            border: none; 
+            padding: 16px 20px; 
+            font-size: 13pt; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 40px; 
+            box-shadow: 0 4px 6px rgba(0, 165, 186, 0.2); 
+            transition: all 0.2s; 
+        }
+        button:hover { background-color: #008799; transform: translateY(-1px); }
+        .note { font-size: 9.5pt; color: #627281; text-align: center; margin-top: 15px; }
+        
+        .footer-copyright {
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e7ec;
+            text-align: center;
+            font-size: 9pt;
+            color: #8c9ba5;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Branding Header Bar -->
+    <div class="brand-header">
+                <h1> MyMasteryLab   </h1>
+        <img src="mymasteryLab_logo_CTC - Round.png" alt="MyMasteryLab Logo" class="brand-logo">
+    </div>
+
+    <div class="card">
+        <h1>Grade 5 Entry Baseline Math Diagnostic</h1>
+        
+        <div class="welcome-brief">
+            <h2>Grade 5 Mastery Bridge Analysis (Total: 50 Marks)</h2>
+            <p>Welcome to your baseline evaluation. This interactive form monitors multi-digit fluency, algebraic factor systems, fraction building blocks, and multi-step deduction frameworks to establish target growth vectors.</p>
+        </div>
+        
+        <!-- REPLACE THE ACTION URL BELOW WITH YOUR FORMSPREE OR WEB3FORMS ENDPOINT LINK -->
+        <form id="diagnosticForm" action="https://formspree.io/f/YOUR_ENDPOINT_HERE" method="POST">
+            
+            <!-- Student Metadata Profile -->
+            <div class="grid-metadata">
+                <div>
+                    <label for="student-name">Student Full Name:</label>
+                    <input type="text" id="student-name" name="Student Name" placeholder="First and Last Name" required>
+                </div>
+                <div>
+                    <label for="parent-email">Parent Email Address:</label>
+                    <input type="text" id="parent-email" name="Parent Email" placeholder="email@example.com" required>
+                </div>
+            </div>
+
+            <!-- SECTION 1 -->
+            <div class="section-break">1. Numbers & Place Value Fluency (10 Marks)</div>
+
+            <div class="question-block">
+                <label>Q1. What is the standard numerical form of the number: "Sixty-four thousand, two hundred and five"? (2 Marks)</label>
+                <div class="grid-mcq">
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="A" onfocus="startTimer(1)" required> A) 64,250</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="B" onfocus="startTimer(1)"> B) 64,025</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="C" onfocus="startTimer(1)"> C) 64,205</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="D" onfocus="startTimer(1)"> D) 604,205</label>
+                </div>
+                <div class="question-timer-hud">⏱️ Q1 Time: <span id="timer-display-1">00:00</span></div>
+                <input type="hidden" id="time-spent-1" name="Time Taken Q1" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label>Q2. What is the true value of the underlined digit in the number 5,<u>8</u>21? (2 Marks)</label>
+                <div class="grid-mcq">
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="A" onfocus="startTimer(2)" required> A) 8 ones</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="B" onfocus="startTimer(2)"> B) 8 tens</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="C" onfocus="startTimer(2)"> C) 8 hundreds</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="D" onfocus="startTimer(2)"> D) 8 thousands</label>
+                </div>
+                <div class="question-timer-hud">⏱️ Q2 Time: <span id="timer-display-2">00:00</span></div>
+                <input type="hidden" id="time-spent-2" name="Time Taken Q2" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q3-ans">Q3. Complete this number pattern by filling in the missing steps: (2 Marks)</label>
+                <div class="instruction">24 , 28 , 32 , _______________ , 40 , _______________</div>
+                <input type="text" id="q3-ans" name="Q3_Pattern_Flow" placeholder="Enter the two missing numbers" onfocus="startTimer(3)" onblur="stopTimer(3)" required>
+                <div class="question-timer-hud">⏱️ Q3 Time: <span id="timer-display-3">00:00</span></div>
+                <input type="hidden" id="time-spent-3" name="Time Taken Q3" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q4-ans">Q4. Round the number 3,748 to the nearest HUNDRED. (2 Marks)</label>
+                <input type="text" id="q4-ans" name="Q4_Rounding" placeholder="Your rounded answer" onfocus="startTimer(4)" onblur="stopTimer(4)" required>
+                <div class="question-timer-hud">⏱️ Q4 Time: <span id="timer-display-4">00:00</span></div>
+                <input type="hidden" id="time-spent-4" name="Time Taken Q4" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q5-ans">Q5. List all the factors of the number 16. (2 Marks)</label>
+                <input type="text" id="q5-ans" name="Q5_Factors" placeholder="Separate factors with commas..." onfocus="startTimer(5)" onblur="stopTimer(5)" required>
+                <div class="question-timer-hud">⏱️ Q5 Time: <span id="timer-display-5">00:00</span></div>
+                <input type="hidden" id="time-spent-5" name="Time Taken Q5" value="0s">
+            </div>
+
+
+            <!-- SECTION 2 -->
+            <div class="section-break">2. Operations & Advanced Algorithms (10 Marks)</div>
+
+            <div class="question-block">
+                <label for="q6-work">Q6. Multi-Digit Column Addition: Calculate 5,483 + 2,764. (2.5 Marks)</label>
+                <textarea id="q6-work" name="Q6_Column_Addition" rows="3" placeholder="Show carrying and working..." onfocus="startTimer(6)" onblur="stopTimer(6)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q6 Time: <span id="timer-display-6">00:00</span></div>
+                <input type="hidden" id="time-spent-6" name="Time Taken Q6" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q7-work">Q7. Regrouping Column Subtraction: Find the difference of 6,003 - 2,457. (2.5 Marks)</label>
+                <textarea id="q7-work" name="Q7_Column_Subtraction" rows="3" placeholder="Show borrowing steps across zeros..." onfocus="startTimer(7)" onblur="stopTimer(7)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q7 Time: <span id="timer-display-7">00:00</span></div>
+                <input type="hidden" id="time-spent-7" name="Time Taken Q7" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q8-work">Q8. Standard Multiplication: Compute 43 &times; 6. (2.5 Marks)</label>
+                <textarea id="q8-work" name="Q8_Multiplication" rows="3" placeholder="Show work layout..." onfocus="startTimer(8)" onblur="stopTimer(8)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q8 Time: <span id="timer-display-8">00:00</span></div>
+                <input type="hidden" id="time-spent-8" name="Time Taken Q8" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label style="color: #00a5ba;">⚙️ Grade 5 Bridge Target:</label>
+                <label for="q9-work">Q9. Division Mechanics: Calculate 156 &divide; 4. (2.5 Marks)</label>
+                <textarea id="q9-work" name="Q9_Division" rows="3" placeholder="Show division processing..." onfocus="startTimer(9)" onblur="stopTimer(9)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q9 Time: <span id="timer-display-9">00:00</span></div>
+                <input type="hidden" id="time-spent-9" name="Time Taken Q9" value="0s">
+            </div>
+
+
+            <!-- SECTION 3 -->
+            <div class="section-break">3. Fractions & Decimals Foundations (10 Marks)</div>
+
+            <div class="question-block">
+                <label>Q10. Which of these fractions is equivalent (equal) to 1/2? (2 Marks)</label>
+                <div class="grid-mcq">
+                    <label class="mcq-option"><input type="radio" name="Q10_Equivalent" value="A" onfocus="startTimer(10)" required> A) 2/3</label>
+                    <label class="mcq-option"><input type="radio" name="Q10_Equivalent" value="B" onfocus="startTimer(10)"> B) 4/8</label>
+                    <label class="mcq-option"><input type="radio" name="Q10_Equivalent" value="C" onfocus="startTimer(10)"> C) 3/5</label>
+                    <label class="mcq-option"><input type="radio" name="Q10_Equivalent" value="D" onfocus="startTimer(10)"> D) 2/6</label>
+                </div>
+                <div class="question-timer-hud">⏱️ Q10 Time: <span id="timer-display-10">00:00</span></div>
+                <input type="hidden" id="time-spent-10" name="Time Taken Q10" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q11-ans">Q11. Calculate the fractional quantity: 1/3 of 18 stars = ___ (2 Marks)</label>
+                <input type="text" id="q11-ans" name="Q11_Fraction_Quantity" placeholder="Answer in stars" onfocus="startTimer(11)" onblur="stopTimer(11)" required>
+                <div class="question-timer-hud">⏱️ Q11 Time: <span id="timer-display-11">00:00</span></div>
+                <input type="hidden" id="time-spent-11" name="Time Taken Q11" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q12-ans">Q12. Add the like fractions together: 2/7 + 3/7 = ___ (2 Marks)</label>
+                <input type="text" id="q12-ans" name="Q12_Fraction_Addition" placeholder="Fraction answer" onfocus="startTimer(12)" onblur="stopTimer(12)" required>
+                <div class="question-timer-hud">⏱️ Q12 Time: <span id="timer-display-12">00:00</span></div>
+                <input type="hidden" id="time-spent-12" name="Time Taken Q12" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label style="color: #00a5ba;">⚙️ Grade 5 Bridge Target:</label>
+                <label for="q13-ans">Q13. Convert the decimal value 0.75 into its matching simple fraction form. (2 Marks)</label>
+                <input type="text" id="q13-ans" name="Q13_Decimal_To_Fraction" placeholder="e.g., 1/4" onfocus="startTimer(13)" onblur="stopTimer(13)" required>
+                <div class="question-timer-hud">⏱️ Q13 Time: <span id="timer-display-13">00:00</span></div>
+                <input type="hidden" id="time-spent-13" name="Time Taken Q13" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q14-ans">Q14. Solve the basic decimal addition: 4.3 + 2.8 = ___ (2 Marks)</label>
+                <input type="text" id="q14-ans" name="Q14_Decimal_Addition" placeholder="Enter decimal sum" onfocus="startTimer(14)" onblur="stopTimer(14)" required>
+                <div class="question-timer-hud">⏱️ Q14 Time: <span id="timer-display-14">00:00</span></div>
+                <input type="hidden" id="time-spent-14" name="Time Taken Q14" value="0s">
+            </div>
+
+
+            <!-- SECTION 4 -->
+            <div class="section-break">4. Geometry & Applied Measurement (10 Marks)</div>
+
+            <div class="question-block">
+                <label for="q15-ans">Q15. Measurement Conversions: Fill in the missing quantities. (2 Marks)</label>
+                <div class="instruction">a) 4 meters = ___________ cm &nbsp;&nbsp;&nbsp;&nbsp; b) 2 Liters = ___________ ml</div>
+                <input type="text" id="q15-ans" name="Q15_Unit_Conversions" placeholder="e.g., a) 400cm, b) 2000ml" onfocus="startTimer(15)" onblur="stopTimer(15)" required>
+                <div class="question-timer-hud">⏱️ Q15 Time: <span id="timer-display-15">00:00</span></div>
+                <input type="hidden" id="time-spent-15" name="Time Taken Q15" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q16-work">Q16. Perimeter Calculations: A rectangle measures 8 meters long and 5 meters wide. Calculate its total perimeter. (3 Marks)</label>
+                <textarea id="q16-work" name="Q16_Perimeter_Calculation" rows="3" placeholder="Show addition steps for all four sides..." onfocus="startTimer(16)" onblur="stopTimer(16)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q16 Time: <span id="timer-display-16">00:00</span></div>
+                <input type="hidden" id="time-spent-16" name="Time Taken Q16" value="0s">
+            </div>
+
+            <div class="question-block">
+                <table class="matching-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Q17. Shape Attributes (3 Marks)</th>
+                            <th style="width: 20%;">Select Letter</th>
+                            <th style="width: 30%;">Options List</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>i) A 2D polygon with exactly 3 straight sides</td>
+                            <td>
+                                <select name="Q17_Shape_1" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                                </select>
+                            </td>
+                            <td><strong>A:</strong> Quadrilateral</td>
+                        </tr>
+                        <tr>
+                            <td>ii) Any closed four-sided geometric flat shape</td>
+                            <td>
+                                <select name="Q17_Shape_2" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                                </select>
+                            </td>
+                            <td><strong>B:</strong> Triangle</td>
+                        </tr>
+                        <tr>
+                            <td>iii) A shape with 2 sets of parallel sides and 4 right angles</td>
+                            <td>
+                                <select name="Q17_Shape_3" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                                </select>
+                            </td>
+                            <td><strong>C:</strong> Rectangle</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="instruction" style="margin-top: 5px; text-align: right;"><strong>Option D:</strong> Pentagon</div>
+                <div class="question-timer-hud">⏱️ Q17 Time: <span id="timer-display-17">00:00</span></div>
+                <input type="hidden" id="time-spent-17" name="Time Taken Q17" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label style="color: #00a5ba;">⚙️ Grade 5 Bridge Target:</label>
+                <label for="q18-ans">Q18. Rectilinear Area: A rectangle has a length of 7 cm and a width of 4 cm. Calculate its grid area space. (2 Marks)</label>
+                <input type="text" id="q18-ans" name="Q18_Area" placeholder="Answer in cm² (Area = length x width)" onfocus="startTimer(18)" onblur="stopTimer(18)" required>
+                <div class="question-timer-hud">⏱️ Q18 Time: <span id="timer-display-18">00:00</span></div>
+                <input type="hidden" id="time-spent-18" name="Time Taken Q18" value="0s">
+            </div>
+
+
+            <!-- SECTION 5 -->
+            <div class="section-break">5. Integrated Reasoning & Problem Solving (10 Marks)</div>
+
+            <div class="question-block">
+                <label for="q19-work">Q19. The Toy Purchase Word Problem: (5 Marks)</label>
+                <div class="instruction">Liam buys 4 packs of trading cards. Each pack costs exactly $6. He hands the cashier a $50 bill. How much currency change should Liam receive back?</div>
+                <textarea id="q19-work" name="Q19_Multi_Step_Problem" rows="4" placeholder="Show your cost calculation first, then subtract to find the change..." onfocus="startTimer(19)" onblur="stopTimer(19)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q19 Time: <span id="timer-display-19">00:00</span></div>
+                <input type="hidden" id="time-spent-19" name="Time Taken Q19" value="0s">
+            </div>
+
+            <div class="question-block">
+                <label for="q20-work">Q20. Logic Deduction Code Riddle: (5 Marks)</label>
+                <div class="reasoning-box">
+                    • I am an <strong>even number</strong>.<br>
+                    • I am greater than 10 but strictly less than 20.<br>
+                    • If you count upward skip-counting by <strong>4s</strong>, you will say my name out loud!
+                </div>
+                <textarea id="q20-work" name="Q20_Mathematical_Reasoning" rows="3" placeholder="Deduce the properties step-by-step..." onfocus="startTimer(20)" onblur="stopTimer(20)" required></textarea>
+                <div class="question-timer-hud">⏱️ Q20 Time: <span id="timer-display-20">00:00</span></div>
+                <input type="hidden" id="time-spent-20" name="Time Taken Q20" value="0s">
+            </div>
+
+            <!-- Submit Button Trigger -->
+            <button type="submit" id="submitBtn">Submit Completed Diagnostic Form</button>
+            <p class="note">Data collection protocol active. Question-specific execution intervals will compile into your MyMasteryLab report profiles.</p>
+            
+            <!-- Copyright Footer -->
+            <div class="footer-copyright">
+                &copy; 2026 MyMasteryLab. All Rights Reserved. Private Diagnostic Assessment Tool.
+            </div>
+        </form>
+    </div>
+
+    <!-- Question-Wise Stopwatch Engine -->
+    <script>
+        let timers = {};
+        let activeQuestionId = null;
+
+        function startTimer(questionId) {
+            if (activeQuestionId !== null && activeQuestionId !== questionId) {
+                stopTimer(activeQuestionId);
+            }
+            
+            activeQuestionId = questionId;
+
+            if (!timers[questionId]) {
+                timers[questionId] = { timeSeconds: 0, interval: null };
+            }
+
+            if (!timers[questionId].interval) {
+                timers[questionId].interval = setInterval(() => {
+                    timers[questionId].timeSeconds++;
+                    updateDisplay(questionId);
+                }, 1000);
+            }
+        }
+
+        function stopTimer(questionId) {
+            if (timers[questionId] && timers[questionId].interval) {
+                clearInterval(timers[questionId].interval);
+                timers[questionId].interval = null;
+                
+                const min = Math.floor(timers[questionId].timeSeconds / 60);
+                const sec = timers[questionId].timeSeconds % 60;
+                document.getElementById(`time-spent-${questionId}`).value = `${min}m ${sec}s`;
+            }
+        }
+
+        function updateDisplay(questionId) {
+            const time = timers[questionId].timeSeconds;
+            let minutes = Math.floor(time / 60);
+            let seconds = time % 60;
+
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            document.getElementById(`timer-display-${questionId}`).textContent = `${minutes}:${seconds}`;
+        }
+        
+        document.getElementById('diagnosticForm').addEventListener('submit', function() {
+            if (activeQuestionId !== null) {
+                stopTimer(activeQuestionId);
+            }
+        });
+    </script>
+</body>
+</html>

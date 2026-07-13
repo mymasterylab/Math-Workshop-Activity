@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyMasteryLab - Global Grade 4 Entry Math Diagnostic</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #f4f8f9; /* Soft cool background to complement teal */
+            color: #252b31; /* Deep Slate Gray from the logo base */
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+        
+        /* Branding Header */
+        .brand-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 4px solid #00a5ba; /* Logo Teal */
+        }
+        .brand-logo {
+            max-width: 200px;
+            height: auto;
+            display: block;
+        }
+
+        .card { 
+            background: white; 
+            padding: 35px; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); 
+            border-top: 6px solid #00a5ba; /* Logo Teal */
+        }
+        
+        .welcome-brief {
+            background-color: #e6f6f8; /* Ultra-light Teal tint */
+            border-left: 4px solid #00a5ba; /* Logo Teal */
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+        .welcome-brief h2 { margin: 0 0 5px 0; color: #252b31; font-size: 14pt; }
+        .welcome-brief p { margin: 0; font-size: 10.5pt; color: #3a454f; }
+
+        h1 { margin-top: 0; color: #252b31; text-transform: uppercase; font-size: 18pt; text-align: center; letter-spacing: 1px; }
+        
+        .section-break {
+            margin: 35px 0 15px 0;
+            font-size: 12pt;
+            font-weight: bold;
+            color: #00a5ba; /* Logo Teal */
+            text-transform: uppercase;
+            border-bottom: 2px solid #e6f6f8;
+            padding-bottom: 5px;
+        }
+
+        label { font-weight: bold; display: block; margin-top: 20px; color: #252b31; }
+        .instruction { font-size: 10pt; color: #627281; margin-top: 2px; margin-bottom: 8px; font-style: italic; }
+        
+        input[type="text"], select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 2px solid #e1e7ec; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 11pt; 
+            transition: all 0.2s; 
+            font-family: inherit; 
+            color: #252b31;
+        }
+        input[type="text"]:focus, select:focus, textarea:focus { 
+            border-color: #00a5ba; /* Logo Teal focus boundary */
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(0, 165, 186, 0.15);
+        }
+        
+        /* Layout Grids & Elements */
+        .grid-metadata { display: flex; gap: 15px; margin-bottom: 15px; }
+        .grid-metadata div { flex: 1; }
+        
+        .grid-mcq { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+        .mcq-option { 
+            background: #f8fafb; 
+            padding: 10px 15px; 
+            border: 2px solid #e1e7ec; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 10.5pt;
+            transition: all 0.2s;
+        }
+        .mcq-option:hover {
+            border-color: #00a5ba;
+            background-color: #f0f9fa;
+        }
+        .mcq-option input { cursor: pointer; accent-color: #00a5ba; }
+        
+        .pattern-grid { display: flex; gap: 10px; align-items: center; margin-top: 5px; font-size: 12pt; font-weight: bold; color: #252b31; }
+        .pattern-grid input { width: 70px; text-align: center; }
+
+        .matching-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .matching-table th, .matching-table td { border: 1px solid #e1e7ec; padding: 12px; text-align: left; font-size: 10.5pt; }
+        .matching-table th { background-color: #f8fafb; color: #252b31; }
+        .matching-table select { width: 100%; padding: 6px; margin: 0; }
+
+        .riddle-box {
+            background-color: #fef6ec; /* Light Marigold tint */
+            border-left: 4px solid #f39f24; /* Logo Marigold Orange */
+            padding: 12px; 
+            border-radius: 6px; 
+            font-size: 10.5pt; 
+            margin-top: 5px; 
+            color: #794a07;
+        }
+
+        button { 
+            background-color: #00a5ba; /* Logo Teal primary button */
+            color: white; 
+            border: none; 
+            padding: 16px 20px; 
+            font-size: 13pt; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 40px; 
+            box-shadow: 0 4px 6px rgba(0, 165, 186, 0.2); 
+            transition: all 0.2s; 
+        }
+        button:hover { 
+            background-color: #008799; 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 12px rgba(0, 165, 186, 0.3);
+        }
+        .note { font-size: 9.5pt; color: #627281; text-align: center; margin-top: 15px; }
+        
+        /* Copyright Footer */
+        .footer-copyright {
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e7ec;
+            text-align: center;
+            font-size: 9pt;
+            color: #8c9ba5;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Branding Header Bar -->
+    <div class="brand-header">
+        <h1> MyMasteryLab   </h1>
+        <img src="mymasteryLab_logo_CTC - Round.png" alt="MyMasteryLab Logo" class="brand-logo" >
+    </div>
+
+    <div class="card">
+        <h1>Global Grade 4 Math Entry Diagnostic Assessment</h1>
+        <div class="welcome-brief">
+            <h2>Total Score Evaluation: 50 Marks</h2>
+            <p>Welcome to your MyMasteryLab evaluation session. Please enter your profile details below and answer all the questions carefully. Your coach will evaluate the diagnostic trends live.</p>
+        </div>
+        
+        <!-- REPLACE THE ACTION URL BELOW WITH YOUR FORMSPREE OR WEB3FORMS ENDPOINT LINK -->
+        <form action="https://formspree.io/f/YOUR_ENDPOINT_HERE" method="POST">
+            
+            <!-- Student Metadata Context -->
+            <div class="grid-metadata">
+                <div>
+                    <label for="student-name">Student Full Name:</label>
+                    <input type="text" id="student-name" name="Student Name" placeholder="First and Last Name" required>
+                </div>
+                <div>
+                    <label for="parent-email">Parent Email Address:</label>
+                    <input type="text" id="parent-email" name="Parent Email" placeholder="email@example.com" required>
+                </div>
+            </div>
+            <div class="grid-metadata">
+                <div>
+                    <label for="school-system">Current School Curriculum:</label>
+                    <select id="school-system" name="Curriculum System" required>
+                        <option value="" disabled selected>Select school type...</option>
+                        <option value="US Common Core">US Curriculum (Common Core)</option>
+                        <option value="UK National Curriculum">UK Curriculum (National / Primary)</option>
+                        <option value="IB PYP">International Baccalaureate (IB PYP)</option>
+                        <option value="Cambridge IGCSE Baseline">Cambridge / IGCSE Baseline path</option>
+                        <option value="Other">Other / Not Listed</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- SECTION A: MULTIPLE CHOICE -->
+            <div class="section-break">Section A: Multiple Choice (10 Marks)</div>
+
+            <label>1. What is the standard numerical form of the number: "Four thousand, two hundred and seven"? (2 Marks)</label>
+            <div class="grid-mcq">
+                <label class="mcq-option"><input type="radio" name="Q1_Answer" value="A" required> A) 4,027</label>
+                <label class="mcq-option"><input type="radio" name="Q1_Answer" value="B"> B) 4,207</label>
+                <label class="mcq-option"><input type="radio" name="Q1_Answer" value="C"> C) 4,270</label>
+                <label class="mcq-option"><input type="radio" name="Q1_Answer" value="D"> D) 42,007</label>
+            </div>
+
+            <label>2. Which of these numbers is completely ODD? (2 Marks)</label>
+            <div class="grid-mcq">
+                <label class="mcq-option"><input type="radio" name="Q2_Answer" value="A" required> A) 246</label>
+                <label class="mcq-option"><input type="radio" name="Q2_Answer" value="B"> B) 1,000</label>
+                <label class="mcq-option"><input type="radio" name="Q2_Answer" value="C"> C) 583</label>
+                <label class="mcq-option"><input type="radio" name="Q2_Answer" value="D"> D) 74</label>
+            </div>
+
+            <label>3. What value does the underlined digit represent in 6,<u>7</u>42? (2 Marks)</label>
+            <div class="grid-mcq">
+                <label class="mcq-option"><input type="radio" name="Q3_Answer" value="A" required> A) 7 ones</label>
+                <label class="mcq-option"><input type="radio" name="Q3_Answer" value="B"> B) 7 tens</label>
+                <label class="mcq-option"><input type="radio" name="Q3_Answer" value="C"> C) 7 hundreds</label>
+                <label class="mcq-option"><input type="radio" name="Q3_Answer" value="D"> D) 7 thousands</label>
+            </div>
+
+            <label>4. If 6 &times; 8 = 48, which related inverse equation must also be true? (2 Marks)</label>
+            <div class="grid-mcq">
+                <label class="mcq-option"><input type="radio" name="Q4_Answer" value="A" required> A) 48 &divide; 6 = 8</label>
+                <label class="mcq-option"><input type="radio" name="Q4_Answer" value="B"> B) 8 &divide; 6 = 48</label>
+                <label class="mcq-option"><input type="radio" name="Q4_Answer" value="C"> C) 48 &divide; 4 = 12</label>
+                <label class="mcq-option"><input type="radio" name="Q4_Answer" value="D"> D) 6 &divide; 8 = 48</label>
+            </div>
+
+            <label>5. Round the number 184 to the nearest TEN. (2 Marks)</label>
+            <div class="grid-mcq">
+                <label class="mcq-option"><input type="radio" name="Q5_Answer" value="A" required> A) 100</label>
+                <label class="mcq-option"><input type="radio" name="Q5_Answer" value="B"> B) 180</label>
+                <label class="mcq-option"><input type="radio" name="Q5_Answer" value="C"> C) 190</label>
+                <label class="mcq-option"><input type="radio" name="Q5_Answer" value="D"> D) 200</label>
+            </div>
+
+
+            <!-- SECTION B: FILL-IN-THE-BLANKS -->
+            <div class="section-break">Section B: Fill-In-The-Blanks (10 Marks)</div>
+
+            <label>6. Complete the missing values in this arithmetic pattern: (2 Marks)</label>
+            <div class="pattern-grid">
+                <span>32 ,</span>
+                <span>36 ,</span>
+                <span>40 ,</span>
+                <input type="text" name="Q6_Pattern_1" placeholder="?" required>
+                <span>, 48 ,</span>
+                <input type="text" name="Q6_Pattern_2" placeholder="?" required>
+            </div>
+
+            <label for="q7-ans">7. Calculate the multiplication fact: 9 &times; 6 = ___ (2 Marks)</label>
+            <input type="text" id="q7-ans" name="Q7_Arithmetic_Fact" placeholder="Enter your answer" required>
+
+            <label for="q8-ans">8. If you have a group of 20 items, how many items make up exactly 1/4 of the group? (2 Marks)</label>
+            <input type="text" id="q8-ans" name="Q8_Fraction_Operator" placeholder="Number of items" required>
+
+            <label for="q9-ans">9. Turn this addition into a multiplication model: 7 + 7 + 7 + 7 + 7. (2 Marks)</label>
+            <input type="text" id="q9-ans" name="Q9_Multiplication_Sentence" placeholder="e.g. 5 x 7" required>
+
+            <label for="q10-ans">10. A square tile has a side length of 5 cm. What is its total perimeter? (2 Marks)</label>
+            <input type="text" id="q10-ans" name="Q10_Perimeter_Calculation" placeholder="Perimeter in cm" required>
+
+
+            <!-- SECTION C: MATCHING CHALLENGE -->
+            <div class="section-break">Section C: Matching Challenge (10 Marks)</div>
+            <div class="instruction">Select the correct matching letter response options from Column B for each problem item in Column A.</div>
+            
+            <table class="matching-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">Column A (Concept Question)</th>
+                        <th style="width: 25%;">Select Answer</th>
+                        <th style="width: 30%;">Column B (Options list)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>11. Double the number 16</td>
+                        <td>
+                            <select name="Q11_Match" required>
+                                <option value="" disabled selected>-</option>
+                                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                            </select>
+                        </td>
+                        <td><strong>A:</strong> The value 9</td>
+                    </tr>
+                    <tr>
+                        <td>12. The top number (numerator) in 3/8</td>
+                        <td>
+                            <select name="Q12_Match" required>
+                                <option value="" disabled selected>-</option>
+                                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                            </select>
+                        </td>
+                        <td><strong>B:</strong> The value 32</td>
+                    </tr>
+                    <tr>
+                        <td>13. The solution to 63 &divide; 7</td>
+                        <td>
+                            <select name="Q13_Match" required>
+                                <option value="" disabled selected>-</option>
+                                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                            </select>
+                        </td>
+                        <td><strong>C:</strong> The value 0</td>
+                    </tr>
+                    <tr>
+                        <td>14. The product of any number multiplied by 0</td>
+                        <td>
+                            <select name="Q14_Match" required>
+                                <option value="" disabled selected>-</option>
+                                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                            </select>
+                        </td>
+                        <td><strong>D:</strong> The value 3</td>
+                    </tr>
+                    <tr>
+                        <td>15. The number of minutes in half an hour</td>
+                        <td>
+                            <select name="Q15_Match" required>
+                                <option value="" disabled selected>-</option>
+                                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                            </select>
+                        </td>
+                        <td><strong>E:</strong> The value 30</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+            <!-- SECTION D: SHORT ANSWERS & ALGORITHMS -->
+            <div class="section-break">Section D: Short Answers & Algorithms (10 Marks)</div>
+
+            <label for="q16-work">16. Addition Algorithm: Calculate the total sum of 583 + 264 (2.5 Marks)</label>
+            <textarea id="q16-work" name="Q16_Addition_Workspace" rows="3" placeholder="Show your steps or final calculation here..." required></textarea>
+
+            <label for="q17-work">17. Subtraction Regrouping: Find the difference of 704 - 348 (2.5 Marks)</label>
+            <textarea id="q17-work" name="Q17_Subtraction_Workspace" rows="3" placeholder="Show your column borrowing steps here..." required></textarea>
+
+            <label for="q18-ans">18. Factor Target: Find FOUR different whole numbers that divide into 18 perfectly. (2.5 Marks)</label>
+            <div class="instruction">(Do not use 1 or 18, list four other separate factors).</div>
+            <input type="text" id="q18-ans" name="Q18_Factors_of_18" placeholder="Separate numbers with commas..." required>
+
+            <label for="q19-ans">19. Divisibility Concept: Is the number 450 perfectly divisible by 10? State the exact rule you used. (2.5 Marks)</label>
+            <input type="text" id="q19-ans" name="Q19_Divisibility_Rule" placeholder="Yes/No, because..." required>
+
+
+            <!-- SECTION E: PERFORMANCE WORD PROBLEMS -->
+            <div class="section-break">Section E: Performance Word Problems (10 Marks)</div>
+
+            <label for="q20-work">20. The Multi-Step Bakery Order (5 Marks)</label>
+            <div class="instruction">Leo buys 3 boxes of pastries. Each box contains exactly 6 pastries. On his walk home, he eats 2 pastries. How many pastries does Leo arrive home with?</div>
+            <textarea id="q20-work" name="Q20_Bakery_Problem_Workspace" rows="3" placeholder="Write out your step-by-step logic equation and final answer..." required></textarea>
+
+            <label for="q21-work">21. The Team Lineup Problem (5 Marks)</label>
+            <div class="instruction">Coach Maya has 36 children signed up for sports day. She needs to separate them into equal-sized teams with 9 players on each team. How many teams can the coach set up?</div>
+            <textarea id="q21-work" name="Q21_Team_Problem_Workspace" rows="3" placeholder="Write down the operational format and final answer..." required></textarea>
+
+            <!-- Submit Button Trigger -->
+            <button type="submit">Submit Completed Diagnostic Form</button>
+            <p class="note">Data submission protocol active. Evaluation profiles are compiled instantly via the MyMasteryLab verification backend.</p>
+            
+            <!-- Copyright Footer -->
+            <div class="footer-copyright">
+                &copy; 2026 MyMasteryLab. All Rights Reserved.
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
+
