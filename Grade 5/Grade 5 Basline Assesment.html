@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyMasteryLab - Question-Timed Grade 5 Entry Math Diagnostic</title>
+    <title>MyMasteryLab - Graded Grade 5 Entry Math Diagnostic</title>
     <style>
         body { 
             font-family: 'Segoe UI', sans-serif; 
@@ -28,7 +28,7 @@
             border-bottom: 4px solid #00a5ba; /* Bright Teal */
         }
         .brand-logo {
-            max-width: 220px;
+            max-width: 300px;
             height: auto;
             display: block;
         }
@@ -42,7 +42,7 @@
         }
         
         .welcome-brief {
-            background-color: #e6f6f8; /* Light Teal Tint */
+            background-color: #e6f6f8; 
             border-left: 4px solid #00a5ba; 
             padding: 15px;
             border-radius: 4px;
@@ -65,13 +65,33 @@
 
         .question-block {
             margin-bottom: 25px;
-            padding: 10px 0;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
         }
+        
+        /* Dynamic Grading States */
+        .status-correct {
+            border-color: #28a745 !important;
+            background-color: #f4fbf6;
+        }
+        .status-incorrect {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5;
+        }
+        .feedback-text {
+            display: none;
+            font-size: 10pt;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        .status-correct .feedback-text { display: block; color: #28a745; }
+        .status-incorrect .feedback-text { display: block; color: #dc3545; }
 
         label { font-weight: bold; display: block; color: #252b31; margin-top: 10px; }
         .instruction { font-size: 10pt; color: #627281; margin-top: 2px; margin-bottom: 8px; font-style: italic; }
         
-        /* Time Tracker HUD Styling */
         .question-timer-hud {
             display: inline-flex;
             align-items: center;
@@ -87,7 +107,7 @@
             border-left: 3px solid #f39f24; /* Marigold Orange */
         }
 
-        input[type="text"], select, textarea { 
+        input[type="text"], input[type="email"], select, textarea { 
             width: 100%; 
             padding: 12px; 
             margin-top: 5px; 
@@ -99,7 +119,7 @@
             font-family: inherit; 
             color: #252b31;
         }
-        input[type="text"]:focus, select:focus, textarea:focus { 
+        input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus { 
             border-color: #00a5ba; 
             outline: none; 
             box-shadow: 0 0 0 3px rgba(0, 165, 186, 0.15);
@@ -124,22 +144,31 @@
         .grid-metadata { display: flex; gap: 15px; margin-bottom: 15px; }
         .grid-metadata div { flex: 1; }
         
-        .pattern-grid { display: flex; gap: 10px; align-items: center; margin-top: 5px; font-size: 12pt; font-weight: bold; color: #252b31; }
-        .pattern-grid input { width: 70px; text-align: center; }
-
         .matching-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .matching-table th, .matching-table td { border: 1px solid #e1e7ec; padding: 12px; text-align: left; font-size: 10.5pt; }
         .matching-table th { background-color: #f8fafb; color: #252b31; }
         .matching-table select { width: 100%; padding: 6px; margin: 0; }
 
         .reasoning-box {
-            background-color: #fef6ec; /* Light Marigold Tint */
-            border-left: 4px solid #f39f24; /* Marigold Orange */
+            background-color: #fef6ec; 
+            border-left: 4px solid #f39f24; 
             padding: 12px; 
             border-radius: 6px; 
             font-size: 10.5pt; 
             margin-top: 5px; 
             color: #794a07;
+        }
+
+        .summary-box {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12pt;
+            border: 2px solid #00a5ba;
+            background-color: #e6f6f8;
+            text-align: center;
         }
 
         button { 
@@ -172,9 +201,8 @@
 </head>
 <body>
 
-    <!-- Top Branding Header Bar -->
     <div class="brand-header">
-                <h1> MyMasteryLab   </h1>
+        <h1> MyMasteryLab       </h1>
         <img src="mymasteryLab_logo_CTC - Round.png" alt="MyMasteryLab Logo" class="brand-logo">
     </div>
 
@@ -182,29 +210,29 @@
         <h1>Grade 5 Entry Baseline Math Diagnostic</h1>
         
         <div class="welcome-brief">
-            <h2>Grade 5 Mastery Bridge Analysis (Total: 50 Marks)</h2>
-            <p>Welcome to your baseline evaluation. This interactive form monitors multi-digit fluency, algebraic factor systems, fraction building blocks, and multi-step deduction frameworks to establish target growth vectors.</p>
+            <h2>📊 Live Automated Grading Engine Active (Total: 50 Marks)</h2>
+            <p>Complete the evaluation. Upon clicking submit, your profile metadata and question answers will be checked instantly, providing immediate verification metrics alongside time records.</p>
         </div>
         
-        <!-- REPLACE THE ACTION URL BELOW WITH YOUR FORMSPREE OR WEB3FORMS ENDPOINT LINK -->
-        <form id="diagnosticForm" action="https://formspree.io/f/YOUR_ENDPOINT_HERE" method="POST">
+        <form id="diagnosticForm" action="https://formspree.io/f/mvzepyyj" method="POST" onsubmit="return validateAndGradeForm(event)">
             
-            <!-- Student Metadata Profile -->
+            <input type="hidden" id="final-score-field" name="Calculated Diagnostic Score" value="">
+            
+            <!-- Mandatory Profile Metadata Context -->
             <div class="grid-metadata">
                 <div>
-                    <label for="student-name">Student Full Name:</label>
+                    <label for="student-name">Student Full Name: <span style="color: #dc3545;">*</span></label>
                     <input type="text" id="student-name" name="Student Name" placeholder="First and Last Name" required>
                 </div>
                 <div>
-                    <label for="parent-email">Parent Email Address:</label>
-                    <input type="text" id="parent-email" name="Parent Email" placeholder="email@example.com" required>
+                    <label for="parent-email">Parent Email Address: <span style="color: #dc3545;">*</span></label>
+                    <input type="email" id="parent-email" name="Parent Email" placeholder="email@example.com" required>
                 </div>
             </div>
 
-            <!-- SECTION 1 -->
             <div class="section-break">1. Numbers & Place Value Fluency (10 Marks)</div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-1">
                 <label>Q1. What is the standard numerical form of the number: "Sixty-four thousand, two hundred and five"? (2 Marks)</label>
                 <div class="grid-mcq">
                     <label class="mcq-option"><input type="radio" name="Q1_Answer" value="A" onfocus="startTimer(1)" required> A) 64,250</label>
@@ -212,11 +240,12 @@
                     <label class="mcq-option"><input type="radio" name="Q1_Answer" value="C" onfocus="startTimer(1)"> C) 64,205</label>
                     <label class="mcq-option"><input type="radio" name="Q1_Answer" value="D" onfocus="startTimer(1)"> D) 604,205</label>
                 </div>
+                <div class="feedback-text" id="fb-1"></div>
                 <div class="question-timer-hud">⏱️ Q1 Time: <span id="timer-display-1">00:00</span></div>
                 <input type="hidden" id="time-spent-1" name="Time Taken Q1" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-2">
                 <label>Q2. What is the true value of the underlined digit in the number 5,<u>8</u>21? (2 Marks)</label>
                 <div class="grid-mcq">
                     <label class="mcq-option"><input type="radio" name="Q2_Answer" value="A" onfocus="startTimer(2)" required> A) 8 ones</label>
@@ -224,70 +253,74 @@
                     <label class="mcq-option"><input type="radio" name="Q2_Answer" value="C" onfocus="startTimer(2)"> C) 8 hundreds</label>
                     <label class="mcq-option"><input type="radio" name="Q2_Answer" value="D" onfocus="startTimer(2)"> D) 8 thousands</label>
                 </div>
+                <div class="feedback-text" id="fb-2"></div>
                 <div class="question-timer-hud">⏱️ Q2 Time: <span id="timer-display-2">00:00</span></div>
                 <input type="hidden" id="time-spent-2" name="Time Taken Q2" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-3">
                 <label for="q3-ans">Q3. Complete this number pattern by filling in the missing steps: (2 Marks)</label>
-                <div class="instruction">24 , 28 , 32 , _______________ , 40 , _______________</div>
-                <input type="text" id="q3-ans" name="Q3_Pattern_Flow" placeholder="Enter the two missing numbers" onfocus="startTimer(3)" onblur="stopTimer(3)" required>
+                <div class="instruction">24 , 28 , 32 , _______________ , 40 , _______________ (Format answer as: number, number)</div>
+                <input type="text" id="q3-ans" name="Q3_Pattern_Flow" placeholder="e.g., 36, 44" onfocus="startTimer(3)" onblur="stopTimer(3)" required>
+                <div class="feedback-text" id="fb-3"></div>
                 <div class="question-timer-hud">⏱️ Q3 Time: <span id="timer-display-3">00:00</span></div>
                 <input type="hidden" id="time-spent-3" name="Time Taken Q3" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-4">
                 <label for="q4-ans">Q4. Round the number 3,748 to the nearest HUNDRED. (2 Marks)</label>
                 <input type="text" id="q4-ans" name="Q4_Rounding" placeholder="Your rounded answer" onfocus="startTimer(4)" onblur="stopTimer(4)" required>
+                <div class="feedback-text" id="fb-4"></div>
                 <div class="question-timer-hud">⏱️ Q4 Time: <span id="timer-display-4">00:00</span></div>
                 <input type="hidden" id="time-spent-4" name="Time Taken Q4" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-5">
                 <label for="q5-ans">Q5. List all the factors of the number 16. (2 Marks)</label>
-                <input type="text" id="q5-ans" name="Q5_Factors" placeholder="Separate factors with commas..." onfocus="startTimer(5)" onblur="stopTimer(5)" required>
+                <div class="instruction">Write factors separated by commas in ascending order.</div>
+                <input type="text" id="q5-ans" name="Q5_Factors" placeholder="e.g., 1, 2, 4, 8, 16" onfocus="startTimer(5)" onblur="stopTimer(5)" required>
+                <div class="feedback-text" id="fb-5"></div>
                 <div class="question-timer-hud">⏱️ Q5 Time: <span id="timer-display-5">00:00</span></div>
                 <input type="hidden" id="time-spent-5" name="Time Taken Q5" value="0s">
             </div>
 
-
-            <!-- SECTION 2 -->
             <div class="section-break">2. Operations & Advanced Algorithms (10 Marks)</div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-6">
                 <label for="q6-work">Q6. Multi-Digit Column Addition: Calculate 5,483 + 2,764. (2.5 Marks)</label>
-                <textarea id="q6-work" name="Q6_Column_Addition" rows="3" placeholder="Show carrying and working..." onfocus="startTimer(6)" onblur="stopTimer(6)" required></textarea>
+                <textarea id="q6-work" name="Q6_Column_Addition" rows="3" placeholder="Enter your numerical final answer..." onfocus="startTimer(6)" onblur="stopTimer(6)" required></textarea>
+                <div class="feedback-text" id="fb-6"></div>
                 <div class="question-timer-hud">⏱️ Q6 Time: <span id="timer-display-6">00:00</span></div>
                 <input type="hidden" id="time-spent-6" name="Time Taken Q6" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-7">
                 <label for="q7-work">Q7. Regrouping Column Subtraction: Find the difference of 6,003 - 2,457. (2.5 Marks)</label>
-                <textarea id="q7-work" name="Q7_Column_Subtraction" rows="3" placeholder="Show borrowing steps across zeros..." onfocus="startTimer(7)" onblur="stopTimer(7)" required></textarea>
+                <textarea id="q7-work" name="Q7_Column_Subtraction" rows="3" placeholder="Enter your numerical final answer..." onfocus="startTimer(7)" onblur="stopTimer(7)" required></textarea>
+                <div class="feedback-text" id="fb-7"></div>
                 <div class="question-timer-hud">⏱️ Q7 Time: <span id="timer-display-7">00:00</span></div>
                 <input type="hidden" id="time-spent-7" name="Time Taken Q7" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-8">
                 <label for="q8-work">Q8. Standard Multiplication: Compute 43 &times; 6. (2.5 Marks)</label>
-                <textarea id="q8-work" name="Q8_Multiplication" rows="3" placeholder="Show work layout..." onfocus="startTimer(8)" onblur="stopTimer(8)" required></textarea>
+                <textarea id="q8-work" name="Q8_Multiplication" rows="3" placeholder="Enter your numerical final answer..." onfocus="startTimer(8)" onblur="stopTimer(8)" required></textarea>
+                <div class="feedback-text" id="fb-8"></div>
                 <div class="question-timer-hud">⏱️ Q8 Time: <span id="timer-display-8">00:00</span></div>
                 <input type="hidden" id="time-spent-8" name="Time Taken Q8" value="0s">
             </div>
 
-            <div class="question-block">
-                <label style="color: #00a5ba;">⚙️ Grade 5 Bridge Target:</label>
+            <div class="question-block" id="block-9">
                 <label for="q9-work">Q9. Division Mechanics: Calculate 156 &divide; 4. (2.5 Marks)</label>
-                <textarea id="q9-work" name="Q9_Division" rows="3" placeholder="Show division processing..." onfocus="startTimer(9)" onblur="stopTimer(9)" required></textarea>
+                <textarea id="q9-work" name="Q9_Division" rows="3" placeholder="Enter your numerical final answer..." onfocus="startTimer(9)" onblur="stopTimer(9)" required></textarea>
+                <div class="feedback-text" id="fb-9"></div>
                 <div class="question-timer-hud">⏱️ Q9 Time: <span id="timer-display-9">00:00</span></div>
                 <input type="hidden" id="time-spent-9" name="Time Taken Q9" value="0s">
             </div>
 
-
-            <!-- SECTION 3 -->
             <div class="section-break">3. Fractions & Decimals Foundations (10 Marks)</div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-10">
                 <label>Q10. Which of these fractions is equivalent (equal) to 1/2? (2 Marks)</label>
                 <div class="grid-mcq">
                     <label class="mcq-option"><input type="radio" name="Q10_Equivalent" value="A" onfocus="startTimer(10)" required> A) 2/3</label>
@@ -295,59 +328,63 @@
                     <label class="mcq-option"><input type="radio" name="Q10_Equivalent" value="C" onfocus="startTimer(10)"> C) 3/5</label>
                     <label class="mcq-option"><input type="radio" name="Q10_Equivalent" value="D" onfocus="startTimer(10)"> D) 2/6</label>
                 </div>
+                <div class="feedback-text" id="fb-10"></div>
                 <div class="question-timer-hud">⏱️ Q10 Time: <span id="timer-display-10">00:00</span></div>
                 <input type="hidden" id="time-spent-10" name="Time Taken Q10" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-11">
                 <label for="q11-ans">Q11. Calculate the fractional quantity: 1/3 of 18 stars = ___ (2 Marks)</label>
-                <input type="text" id="q11-ans" name="Q11_Fraction_Quantity" placeholder="Answer in stars" onfocus="startTimer(11)" onblur="stopTimer(11)" required>
+                <input type="text" id="q11-ans" name="Q11_Fraction_Quantity" placeholder="Just type the number" onfocus="startTimer(11)" onblur="stopTimer(11)" required>
+                <div class="feedback-text" id="fb-11"></div>
                 <div class="question-timer-hud">⏱️ Q11 Time: <span id="timer-display-11">00:00</span></div>
                 <input type="hidden" id="time-spent-11" name="Time Taken Q11" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-12">
                 <label for="q12-ans">Q12. Add the like fractions together: 2/7 + 3/7 = ___ (2 Marks)</label>
-                <input type="text" id="q12-ans" name="Q12_Fraction_Addition" placeholder="Fraction answer" onfocus="startTimer(12)" onblur="stopTimer(12)" required>
+                <input type="text" id="q12-ans" name="Q12_Fraction_Addition" placeholder="e.g., 5/7" onfocus="startTimer(12)" onblur="stopTimer(12)" required>
+                <div class="feedback-text" id="fb-12"></div>
                 <div class="question-timer-hud">⏱️ Q12 Time: <span id="timer-display-12">00:00</span></div>
                 <input type="hidden" id="time-spent-12" name="Time Taken Q12" value="0s">
             </div>
 
-            <div class="question-block">
-                <label style="color: #00a5ba;">⚙️ Grade 5 Bridge Target:</label>
+            <div class="question-block" id="block-13">
                 <label for="q13-ans">Q13. Convert the decimal value 0.75 into its matching simple fraction form. (2 Marks)</label>
-                <input type="text" id="q13-ans" name="Q13_Decimal_To_Fraction" placeholder="e.g., 1/4" onfocus="startTimer(13)" onblur="stopTimer(13)" required>
+                <input type="text" id="q13-ans" name="Q13_Decimal_To_Fraction" placeholder="e.g., 3/4" onfocus="startTimer(13)" onblur="stopTimer(13)" required>
+                <div class="feedback-text" id="fb-13"></div>
                 <div class="question-timer-hud">⏱️ Q13 Time: <span id="timer-display-13">00:00</span></div>
                 <input type="hidden" id="time-spent-13" name="Time Taken Q13" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-14">
                 <label for="q14-ans">Q14. Solve the basic decimal addition: 4.3 + 2.8 = ___ (2 Marks)</label>
                 <input type="text" id="q14-ans" name="Q14_Decimal_Addition" placeholder="Enter decimal sum" onfocus="startTimer(14)" onblur="stopTimer(14)" required>
+                <div class="feedback-text" id="fb-14"></div>
                 <div class="question-timer-hud">⏱️ Q14 Time: <span id="timer-display-14">00:00</span></div>
                 <input type="hidden" id="time-spent-14" name="Time Taken Q14" value="0s">
             </div>
 
-
-            <!-- SECTION 4 -->
             <div class="section-break">4. Geometry & Applied Measurement (10 Marks)</div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-15">
                 <label for="q15-ans">Q15. Measurement Conversions: Fill in the missing quantities. (2 Marks)</label>
-                <div class="instruction">a) 4 meters = ___________ cm &nbsp;&nbsp;&nbsp;&nbsp; b) 2 Liters = ___________ ml</div>
-                <input type="text" id="q15-ans" name="Q15_Unit_Conversions" placeholder="e.g., a) 400cm, b) 2000ml" onfocus="startTimer(15)" onblur="stopTimer(15)" required>
+                <div class="instruction">a) 4 meters = 400 cm &nbsp;&nbsp;&nbsp;&nbsp; b) 2 Liters = 2000 ml. Type exactly: 400, 2000</div>
+                <input type="text" id="q15-ans" name="Q15_Unit_Conversions" placeholder="e.g., 400, 2000" onfocus="startTimer(15)" onblur="stopTimer(15)" required>
+                <div class="feedback-text" id="fb-15"></div>
                 <div class="question-timer-hud">⏱️ Q15 Time: <span id="timer-display-15">00:00</span></div>
                 <input type="hidden" id="time-spent-15" name="Time Taken Q15" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-16">
                 <label for="q16-work">Q16. Perimeter Calculations: A rectangle measures 8 meters long and 5 meters wide. Calculate its total perimeter. (3 Marks)</label>
-                <textarea id="q16-work" name="Q16_Perimeter_Calculation" rows="3" placeholder="Show addition steps for all four sides..." onfocus="startTimer(16)" onblur="stopTimer(16)" required></textarea>
+                <textarea id="q16-work" name="Q16_Perimeter_Calculation" rows="3" placeholder="Enter the numeric perimeter value..." onfocus="startTimer(16)" onblur="stopTimer(16)" required></textarea>
+                <div class="feedback-text" id="fb-16"></div>
                 <div class="question-timer-hud">⏱️ Q16 Time: <span id="timer-display-16">00:00</span></div>
                 <input type="hidden" id="time-spent-16" name="Time Taken Q16" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-17">
                 <table class="matching-table">
                     <thead>
                         <tr>
@@ -360,7 +397,7 @@
                         <tr>
                             <td>i) A 2D polygon with exactly 3 straight sides</td>
                             <td>
-                                <select name="Q17_Shape_1" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                <select id="match-1" name="Q17_Shape_1" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
                                     <option value="" disabled selected>-</option>
                                     <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
                                 </select>
@@ -370,7 +407,7 @@
                         <tr>
                             <td>ii) Any closed four-sided geometric flat shape</td>
                             <td>
-                                <select name="Q17_Shape_2" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                <select id="match-2" name="Q17_Shape_2" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
                                     <option value="" disabled selected>-</option>
                                     <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
                                 </select>
@@ -380,7 +417,7 @@
                         <tr>
                             <td>iii) A shape with 2 sets of parallel sides and 4 right angles</td>
                             <td>
-                                <select name="Q17_Shape_3" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
+                                <select id="match-3" name="Q17_Shape_3" onfocus="startTimer(17)" onblur="stopTimer(17)" required>
                                     <option value="" disabled selected>-</option>
                                     <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
                                 </select>
@@ -389,70 +426,74 @@
                         </tr>
                     </tbody>
                 </table>
-                <div class="instruction" style="margin-top: 5px; text-align: right;"><strong>Option D:</strong> Pentagon</div>
+                <div class="feedback-text" id="fb-17"></div>
                 <div class="question-timer-hud">⏱️ Q17 Time: <span id="timer-display-17">00:00</span></div>
                 <input type="hidden" id="time-spent-17" name="Time Taken Q17" value="0s">
             </div>
 
-            <div class="question-block">
-                <label style="color: #00a5ba;">⚙️ Grade 5 Bridge Target:</label>
+            <div class="question-block" id="block-18">
                 <label for="q18-ans">Q18. Rectilinear Area: A rectangle has a length of 7 cm and a width of 4 cm. Calculate its grid area space. (2 Marks)</label>
-                <input type="text" id="q18-ans" name="Q18_Area" placeholder="Answer in cm² (Area = length x width)" onfocus="startTimer(18)" onblur="stopTimer(18)" required>
+                <input type="text" id="q18-ans" name="Q18_Area" placeholder="Enter numeric value only" onfocus="startTimer(18)" onblur="stopTimer(18)" required>
+                <div class="feedback-text" id="fb-18"></div>
                 <div class="question-timer-hud">⏱️ Q18 Time: <span id="timer-display-18">00:00</span></div>
                 <input type="hidden" id="time-spent-18" name="Time Taken Q18" value="0s">
             </div>
 
-
-            <!-- SECTION 5 -->
             <div class="section-break">5. Integrated Reasoning & Problem Solving (10 Marks)</div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-19">
                 <label for="q19-work">Q19. The Toy Purchase Word Problem: (5 Marks)</label>
                 <div class="instruction">Liam buys 4 packs of trading cards. Each pack costs exactly $6. He hands the cashier a $50 bill. How much currency change should Liam receive back?</div>
-                <textarea id="q19-work" name="Q19_Multi_Step_Problem" rows="4" placeholder="Show your cost calculation first, then subtract to find the change..." onfocus="startTimer(19)" onblur="stopTimer(19)" required></textarea>
+                <textarea id="q19-work" name="Q19_Multi_Step_Problem" rows="4" placeholder="Enter final numeric answer..." onfocus="startTimer(19)" onblur="stopTimer(19)" required></textarea>
+                <div class="feedback-text" id="fb-19"></div>
                 <div class="question-timer-hud">⏱️ Q19 Time: <span id="timer-display-19">00:00</span></div>
                 <input type="hidden" id="time-spent-19" name="Time Taken Q19" value="0s">
             </div>
 
-            <div class="question-block">
+            <div class="question-block" id="block-20">
                 <label for="q20-work">Q20. Logic Deduction Code Riddle: (5 Marks)</label>
                 <div class="reasoning-box">
                     • I am an <strong>even number</strong>.<br>
                     • I am greater than 10 but strictly less than 20.<br>
                     • If you count upward skip-counting by <strong>4s</strong>, you will say my name out loud!
                 </div>
-                <textarea id="q20-work" name="Q20_Mathematical_Reasoning" rows="3" placeholder="Deduce the properties step-by-step..." onfocus="startTimer(20)" onblur="stopTimer(20)" required></textarea>
+                <textarea id="q20-work" name="Q20_Mathematical_Reasoning" rows="3" placeholder="Enter final numeric answer..." onfocus="startTimer(20)" onblur="stopTimer(20)" required></textarea>
+                <div class="feedback-text" id="fb-20"></div>
                 <div class="question-timer-hud">⏱️ Q20 Time: <span id="timer-display-20">00:00</span></div>
                 <input type="hidden" id="time-spent-20" name="Time Taken Q20" value="0s">
             </div>
 
-            <!-- Submit Button Trigger -->
+            <div class="summary-box" id="diagnostic-summary"></div>
+
             <button type="submit" id="submitBtn">Submit Completed Diagnostic Form</button>
-            <p class="note">Data collection protocol active. Question-specific execution intervals will compile into your MyMasteryLab report profiles.</p>
+            <p class="note">Data collection active. Instantly runs structural verification loops on submission.</p>
             
-            <!-- Copyright Footer -->
             <div class="footer-copyright">
                 &copy; 2026 MyMasteryLab. All Rights Reserved. Private Diagnostic Assessment Tool.
             </div>
         </form>
     </div>
 
-    <!-- Question-Wise Stopwatch Engine -->
     <script>
         let timers = {};
         let activeQuestionId = null;
+        let isGraded = false;
+
+        const answerKey = {
+            q1: "C", q2: "C", q3: ["36, 44", "36,44"], q4: "3700", q5: ["1, 2, 4, 8, 16", "1,2,4,8,16"],
+            q6: "8247", q7: "3546", q8: "258", q9: "39", q10: "B", q11: "6", q12: "5/7", q13: "3/4", q14: "7.1",
+            q15: ["400, 2000", "400,2000"], q16: "26", q17: {m1: "B", m2: "A", m3: "C"}, q18: "28", q19: "26", q20: "12"
+        };
 
         function startTimer(questionId) {
+            if (isGraded) return;
             if (activeQuestionId !== null && activeQuestionId !== questionId) {
                 stopTimer(activeQuestionId);
             }
-            
             activeQuestionId = questionId;
-
             if (!timers[questionId]) {
                 timers[questionId] = { timeSeconds: 0, interval: null };
             }
-
             if (!timers[questionId].interval) {
                 timers[questionId].interval = setInterval(() => {
                     timers[questionId].timeSeconds++;
@@ -465,7 +506,6 @@
             if (timers[questionId] && timers[questionId].interval) {
                 clearInterval(timers[questionId].interval);
                 timers[questionId].interval = null;
-                
                 const min = Math.floor(timers[questionId].timeSeconds / 60);
                 const sec = timers[questionId].timeSeconds % 60;
                 document.getElementById(`time-spent-${questionId}`).value = `${min}m ${sec}s`;
@@ -474,20 +514,88 @@
 
         function updateDisplay(questionId) {
             const time = timers[questionId].timeSeconds;
-            let minutes = Math.floor(time / 60);
-            let seconds = time % 60;
-
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            seconds = seconds < 10 ? '0' + seconds : seconds;
-
-            document.getElementById(`timer-display-${questionId}`).textContent = `${minutes}:${seconds}`;
+            let min = Math.floor(time / 60);
+            let sec = time % 60;
+            document.getElementById(`timer-display-${questionId}`).textContent = 
+                `${min < 10 ? '0' + min : min}:${sec < 10 ? '0' + sec : sec}`;
         }
-        
-        document.getElementById('diagnosticForm').addEventListener('submit', function() {
-            if (activeQuestionId !== null) {
-                stopTimer(activeQuestionId);
+
+        function cleanVal(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function evaluateQuestion(blockId, isCorrect, correctStr) {
+            const el = document.getElementById(`block-${blockId}`);
+            const fb = document.getElementById(`fb-${blockId}`);
+            if (isCorrect) {
+                el.className = "question-block status-correct";
+                fb.textContent = "🏆 Correct!";
+                return true;
+            } else {
+                el.className = "question-block status-incorrect";
+                fb.textContent = `❌ Incorrect. (Expected: ${correctStr})`;
+                return false;
             }
-        });
+        }
+
+        function validateAndGradeForm(e) {
+            if (activeQuestionId !== null) stopTimer(activeQuestionId);
+            
+            let marks = 0;
+
+            // Section 1
+            const r1 = document.querySelector('input[name="Q1_Answer"]:checked');
+            if (evaluateQuestion(1, r1 && r1.value === answerKey.q1, "C")) marks += 2;
+            
+            const r2 = document.querySelector('input[name="Q2_Answer"]:checked');
+            if (evaluateQuestion(2, r2 && r2.value === answerKey.q2, "C")) marks += 2;
+
+            if (evaluateQuestion(3, answerKey.q3.includes(cleanVal('q3-ans')), "36, 44")) marks += 2;
+            if (evaluateQuestion(4, cleanVal('q4-ans') === answerKey.q4, "3700")) marks += 2;
+            if (evaluateQuestion(5, answerKey.q5.includes(cleanVal('q5-ans')), "1, 2, 4, 8, 16")) marks += 2;
+
+            // Section 2
+            if (evaluateQuestion(6, cleanVal('q6-work').includes(answerKey.q6), "8247")) marks += 2.5;
+            if (evaluateQuestion(7, cleanVal('q7-work').includes(answerKey.q7), "3546")) marks += 2.5;
+            if (evaluateQuestion(8, cleanVal('q8-work').includes(answerKey.q8), "258")) marks += 2.5;
+            if (evaluateQuestion(9, cleanVal('q9-work').includes(answerKey.q9), "39")) marks += 2.5;
+
+            // Section 3
+            const r10 = document.querySelector('input[name="Q10_Equivalent"]:checked');
+            if (evaluateQuestion(10, r10 && r10.value === answerKey.q10, "B")) marks += 2;
+            
+            if (evaluateQuestion(11, cleanVal('q11-ans') === answerKey.q11, "6")) marks += 2;
+            if (evaluateQuestion(12, cleanVal('q12-ans') === answerKey.q12, "5/7")) marks += 2;
+            if (evaluateQuestion(13, cleanVal('q13-ans') === answerKey.q13, "3/4")) marks += 2;
+            if (evaluateQuestion(14, cleanVal('q14-ans') === answerKey.q14, "7.1")) marks += 2;
+
+            // Section 4
+            if (evaluateQuestion(15, answerKey.q15.includes(cleanVal('q15-ans')), "400, 2000")) marks += 2;
+            if (evaluateQuestion(16, cleanVal('q16-work').includes(answerKey.q16), "26")) marks += 3;
+            
+            const m1 = cleanVal('match-1') === answerKey.q17.m1;
+            const m2 = cleanVal('match-2') === answerKey.q17.m2;
+            const m3 = cleanVal('match-3') === answerKey.q17.m3;
+            if (evaluateQuestion(17, m1 && m2 && m3, "i-B, ii-A, iii-C")) marks += 3;
+            
+            if (evaluateQuestion(18, cleanVal('q18-ans') === answerKey.q18, "28")) marks += 2;
+
+            // Section 5
+            if (evaluateQuestion(19, cleanVal('q19-work').includes(answerKey.q19), "26")) marks += 5;
+            if (evaluateQuestion(20, cleanVal('q20-work').includes(answerKey.q20), "12")) marks += 5;
+
+            // Display Score Summary
+            isGraded = true;
+            document.getElementById('final-score-field').value = `${marks} / 50 Marks`;
+            
+            const summary = document.getElementById('diagnostic-summary');
+            summary.style.display = "block";
+            summary.innerHTML = `🏁 Diagnostics Complete!<br>Total Score Achieved: ${marks} out of 50 Marks.<br><span style='font-size:10pt; font-weight:normal; color:#3a454f;'>Form package data containing individual time metrics generated for presentation.</span>`;
+            
+            window.scrollTo({ top: summary.offsetTop - 40, behavior: 'smooth' });
+
+            return true; 
+        }
     </script>
 </body>
 </html>

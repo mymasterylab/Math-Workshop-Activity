@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyMasteryLab - Graded Grade 4 Entry Math Diagnostic</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #f4f8f9; 
+            color: #252b31; /* Deep Slate Gray */
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+        
+        /* Branding Header */
+        .brand-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 4px solid #00a5ba; /* Bright Teal */
+        }
+        .brand-logo {
+            max-width: 220px;
+            height: auto;
+            display: block;
+        }
+
+        .card { 
+            background: white; 
+            padding: 35px; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); 
+            border-top: 6px solid #00a5ba; 
+        }
+        
+        .welcome-brief {
+            background-color: #e6f6f8; 
+            border-left: 4px solid #00a5ba; 
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+        .welcome-brief h2 { margin: 0 0 5px 0; color: #252b31; font-size: 14pt; }
+        .welcome-brief p { margin: 0; font-size: 10.5pt; color: #3a454f; }
+
+        h1 { margin-top: 0; color: #252b31; text-transform: uppercase; font-size: 18pt; text-align: center; letter-spacing: 1px; }
+        
+        .section-break {
+            margin: 35px 0 15px 0;
+            font-size: 12pt;
+            font-weight: bold;
+            color: #00a5ba; 
+            text-transform: uppercase;
+            border-bottom: 2px solid #e6f6f8;
+            padding-bottom: 5px;
+        }
+
+        .question-block {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        /* Dynamic Grading States */
+        .status-correct {
+            border-color: #28a745 !important;
+            background-color: #f4fbf6;
+        }
+        .status-incorrect {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5;
+        }
+        .feedback-text {
+            display: none;
+            font-size: 10pt;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        .status-correct .feedback-text { display: block; color: #28a745; }
+        .status-incorrect .feedback-text { display: block; color: #dc3545; }
+
+        label { font-weight: bold; display: block; color: #252b31; margin-top: 10px; }
+        .instruction { font-size: 10pt; color: #627281; margin-top: 2px; margin-bottom: 8px; font-style: italic; }
+        
+        .question-timer-hud {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9pt;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #252b31;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+            font-family: monospace;
+            border-left: 3px solid #f39f24; /* Marigold Orange */
+        }
+
+        input[type="text"], input[type="email"], select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 2px solid #e1e7ec; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 11pt; 
+            transition: all 0.2s; 
+            font-family: inherit; 
+            color: #252b31;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus { 
+            border-color: #00a5ba; 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(0, 165, 186, 0.15);
+        }
+        
+        .grid-mcq { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+        .mcq-option { 
+            background: #f8fafb; 
+            padding: 10px 15px; 
+            border: 2px solid #e1e7ec; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 10.5pt;
+            transition: all 0.2s;
+        }
+        .mcq-option:hover { border-color: #00a5ba; background-color: #f0f9fa; }
+        .mcq-option input { cursor: pointer; accent-color: #00a5ba; }
+        
+        .grid-metadata { display: flex; gap: 15px; margin-bottom: 15px; }
+        .grid-metadata div { flex: 1; }
+        
+        .matching-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .matching-table th, .matching-table td { border: 1px solid #e1e7ec; padding: 12px; text-align: left; font-size: 10.5pt; }
+        .matching-table th { background-color: #f8fafb; color: #252b31; }
+        .matching-table select { width: 100%; padding: 6px; margin: 0; }
+
+        .reasoning-box {
+            background-color: #fef6ec; 
+            border-left: 4px solid #f39f24; 
+            padding: 12px; 
+            border-radius: 6px; 
+            font-size: 10.5pt; 
+            margin-top: 5px; 
+            color: #794a07;
+        }
+
+        .summary-box {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12pt;
+            border: 2px solid #00a5ba;
+            background-color: #e6f6f8;
+            text-align: center;
+        }
+
+        button { 
+            background-color: #00a5ba; 
+            color: white; 
+            border: none; 
+            padding: 16px 20px; 
+            font-size: 13pt; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 40px; 
+            box-shadow: 0 4px 6px rgba(0, 165, 186, 0.2); 
+            transition: all 0.2s; 
+        }
+        button:hover { background-color: #008799; transform: translateY(-1px); }
+        .note { font-size: 9.5pt; color: #627281; text-align: center; margin-top: 15px; }
+        
+        .footer-copyright {
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e7ec;
+            text-align: center;
+            font-size: 9pt;
+            color: #8c9ba5;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="brand-header">
+        <h1> MyMasteryLab </h1>
+        <img src="mymasteryLab_logo_CTC - Round.png" alt="MyMasteryLab Logo" class="brand-logo">
+    </div>
+
+    <div class="card">
+        <h1>Grade 4 Entry Baseline Math Diagnostic</h1>
+        
+        <div class="welcome-brief">
+            <h2> Live Automated Grading Engine Active (Total: 50 Marks)</h2>
+            <p>Complete the evaluation. Upon clicking submit, your profile metadata and question answers will be checked instantly, providing immediate verification metrics alongside time records.</p>
+        </div>
+        
+        <form id="diagnosticForm" action="https://formspree.io/f/xdaqnjjz" method="POST" onsubmit="return validateAndGradeForm(event)">
+            
+            <input type="hidden" id="final-score-field" name="Calculated Diagnostic Score" value="">
+            
+            <!-- Mandatory Profile Metadata Context -->
+            <div class="grid-metadata">
+                <div>
+                    <label for="student-name">Student Full Name: <span style="color: #dc3545;">*</span></label>
+                    <input type="text" id="student-name" name="Student Name" placeholder="First and Last Name" required>
+                </div>
+                <div>
+                    <label for="parent-email">Parent Email Address: <span style="color: #dc3545;">*</span></label>
+                    <input type="email" id="parent-email" name="Parent Email" placeholder="email@example.com" required>
+                </div>
+            </div>
+
+            <div class="section-break">1. Place Value & Number Sense (10 Marks)</div>
+
+            <div class="question-block" id="block-1">
+                <label>Q1. What is the standard numerical form of the number: "Four thousand, two hundred and seven"? (2 Marks)</label>
+                <div class="grid-mcq">
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="A" onfocus="startTimer(1)" required> A) 4,027</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="B" onfocus="startTimer(1)"> B) 4,270</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="C" onfocus="startTimer(1)"> C) 4,207</label>
+                    <label class="mcq-option"><input type="radio" name="Q1_Answer" value="D" onfocus="startTimer(1)"> D) 4,007</label>
+                </div>
+                <div class="feedback-text" id="fb-1"></div>
+                <div class="question-timer-hud">⏱专 Q1 Time: <span id="timer-display-1">00:00</span></div>
+                <input type="hidden" id="time-spent-1" name="Time Taken Q1" value="0s">
+            </div>
+
+            <div class="question-block" id="block-2">
+                <label>Q2. Which of the following numbers is an ODD number? (2 Marks)</label>
+                <div class="grid-mcq">
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="A" onfocus="startTimer(2)" required> A) 246</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="B" onfocus="startTimer(2)"> B) 583</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="C" onfocus="startTimer(2)"> C) 1,000</label>
+                    <label class="mcq-option"><input type="radio" name="Q2_Answer" value="D" onfocus="startTimer(2)"> D) 74</label>
+                </div>
+                <div class="feedback-text" id="fb-2"></div>
+                <div class="question-timer-hud">⏱专 Q2 Time: <span id="timer-display-2">00:00</span></div>
+                <input type="hidden" id="time-spent-2" name="Time Taken Q2" value="0s">
+            </div>
+
+            <div class="question-block" id="block-3">
+                <label for="q3-ans">Q3. What is the value of the underlined digit in the number 6,<u>7</u>42? (2 Marks)</label>
+                <input type="text" id="q3-ans" name="Q3_Place_Value" placeholder="e.g., 700 or 7 hundreds" onfocus="startTimer(3)" onblur="stopTimer(3)" required>
+                <div class="feedback-text" id="fb-3"></div>
+                <div class="question-timer-hud">⏱专 Q3 Time: <span id="timer-display-3">00:00</span></div>
+                <input type="hidden" id="time-spent-3" name="Time Taken Q3" value="0s">
+            </div>
+
+            <div class="question-block" id="block-4">
+                <label for="q4-ans">Q4. Round the number 184 to the nearest TEN. (2 Marks)</label>
+                <input type="text" id="q4-ans" name="Q4_Rounding" placeholder="Your rounded answer" onfocus="startTimer(4)" onblur="stopTimer(4)" required>
+                <div class="feedback-text" id="fb-4"></div>
+                <div class="question-timer-hud">⏱专 Q4 Time: <span id="timer-display-4">00:00</span></div>
+                <input type="hidden" id="time-spent-4" name="Time Taken Q4" value="0s">
+            </div>
+
+            <div class="question-block" id="block-5">
+                <label for="q5-ans">Q5. Complete the missing numbers in this skip-counting sequence: (2 Marks)</label>
+                <div class="instruction">32 , 36 , 40 , _______________ , 48 , _______________ (Format answer as: number, number)</div>
+                <input type="text" id="q5-ans" name="Q5_Counting_Pattern" placeholder="e.g., 44, 52" onfocus="startTimer(5)" onblur="stopTimer(5)" required>
+                <div class="feedback-text" id="fb-5"></div>
+                <div class="question-timer-hud">⏱专 Q5 Time: <span id="timer-display-5">00:00</span></div>
+                <input type="hidden" id="time-spent-5" name="Time Taken Q5" value="0s">
+            </div>
+
+            <div class="section-break">2. Computation & Operations Fluency (10 Marks)</div>
+
+            <div class="question-block" id="block-6">
+                <label for="q6-work">Q6. Column Addition: Calculate 583 + 264. (2.5 Marks)</label>
+                <textarea id="q6-work" name="Q6_Addition" rows="3" placeholder="Enter final numeric answer..." onfocus="startTimer(6)" onblur="stopTimer(6)" required></textarea>
+                <div class="feedback-text" id="fb-6"></div>
+                <div class="question-timer-hud">⏱专 Q6 Time: <span id="timer-display-6">00:00</span></div>
+                <input type="hidden" id="time-spent-6" name="Time Taken Q6" value="0s">
+            </div>
+
+            <div class="question-block" id="block-7">
+                <label for="q7-work">Q7. Regrouping Column Subtraction: Find the difference of 704 - 348. (2.5 Marks)</label>
+                <textarea id="q7-work" name="Q7_Subtraction" rows="3" placeholder="Enter final numeric answer..." onfocus="startTimer(7)" onblur="stopTimer(7)" required></textarea>
+                <div class="feedback-text" id="fb-7"></div>
+                <div class="question-timer-hud">⏱专 Q7 Time: <span id="timer-display-7">00:00</span></div>
+                <input type="hidden" id="time-spent-7" name="Time Taken Q7" value="0s">
+            </div>
+
+            <div class="question-block" id="block-8">
+                <label for="q8-work">Q8. Fast Operations: Calculate 9 &times; 6. (2.5 Marks)</label>
+                <textarea id="q8-work" name="Q8_Multiplication" rows="3" placeholder="Enter final numeric answer..." onfocus="startTimer(8)" onblur="stopTimer(8)" required></textarea>
+                <div class="feedback-text" id="fb-8"></div>
+                <div class="question-timer-hud">⏱专 Q8 Time: <span id="timer-display-8">00:00</span></div>
+                <input type="hidden" id="time-spent-8" name="Time Taken Q8" value="0s">
+            </div>
+
+            <div class="question-block" id="block-9">
+                <label for="q9-work">Q9. Division Recall: Solve 63 &divide; 7. (2.5 Marks)</label>
+                <textarea id="q9-work" name="Q9_Division" rows="3" placeholder="Enter final numeric answer..." onfocus="startTimer(9)" onblur="stopTimer(9)" required></textarea>
+                <div class="feedback-text" id="fb-9"></div>
+                <div class="question-timer-hud">⏱专 Q9 Time: <span id="timer-display-9">00:00</span></div>
+                <input type="hidden" id="time-spent-9" name="Time Taken Q9" value="0s">
+            </div>
+
+            <div class="section-break">3. Fractions & Foundations Vocabulary (10 Marks)</div>
+
+            <div class="question-block" id="block-10">
+                <label for="q10-ans">Q10. Calculate the fractional quantity: 1/4 of 20 apples = ___ apples. (2 Marks)</label>
+                <input type="text" id="q10-ans" name="Q10_Fraction_Quantity" placeholder="Just type the number" onfocus="startTimer(10)" onblur="stopTimer(10)" required>
+                <div class="feedback-text" id="fb-10"></div>
+                <div class="question-timer-hud">⏱专 Q10 Time: <span id="timer-display-10">00:00</span></div>
+                <input type="hidden" id="time-spent-10" name="Time Taken Q10" value="0s">
+            </div>
+
+            <div class="question-block" id="block-11">
+                <label for="q11-ans">Q11. Look at this sentence: 7 + 7 + 7 + 7 + 7. Written as a multiplication statement, it is 5 &times; ___ (2 Marks)</label>
+                <input type="text" id="q11-ans" name="Q11_Repeated_Addition" placeholder="Just type the missing number" onfocus="startTimer(11)" onblur="stopTimer(11)" required>
+                <div class="feedback-text" id="fb-11"></div>
+                <div class="question-timer-hud">⏱专 Q11 Time: <span id="timer-display-11">00:00</span></div>
+                <input type="hidden" id="time-spent-11" name="Time Taken Q11" value="0s">
+            </div>
+
+            <div class="question-block" id="block-12">
+                <table class="matching-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Q12. Math Terms Match (6 Marks)</th>
+                            <th style="width: 20%;">Select Letter</th>
+                            <th style="width: 30%;">Options List</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>i) Double the number 16</td>
+                            <td>
+                                <select id="match-1" name="Q12_Match_1" onfocus="startTimer(12)" onblur="stopTimer(12)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                                </select>
+                            </td>
+                            <td><strong>A:</strong> The value 3</td>
+                        </tr>
+                        <tr>
+                            <td>ii) The top number (numerator) in 3/8</td>
+                            <td>
+                                <select id="match-2" name="Q12_Match_2" onfocus="startTimer(12)" onblur="stopTimer(12)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                                </select>
+                            </td>
+                            <td><strong>B:</strong> The value 32</td>
+                        </tr>
+                        <tr>
+                            <td>iii) The product of any number multiplied by 0</td>
+                            <td>
+                                <select id="match-3" name="Q12_Match_3" onfocus="startTimer(12)" onblur="stopTimer(12)" required>
+                                    <option value="" disabled selected>-</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                                </select>
+                            </td>
+                            <td><strong>C:</strong> The value 0</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="feedback-text" id="fb-12"></div>
+                <div class="question-timer-hud">⏱专 Q12 Time: <span id="timer-display-12">00:00</span></div>
+                <input type="hidden" id="time-spent-12" name="Time Taken Q12" value="0s">
+            </div>
+
+            <div class="section-break">4. Geometry & Early Grade 4 Bridge (10 Marks)</div>
+
+            <div class="question-block" id="block-13">
+                <label for="q13-ans">Q13. A square tile has a side length of 5 cm. What is its total perimeter? (2 Marks)</label>
+                <input type="text" id="q13-ans" name="Q13_Perimeter" placeholder="Answer in cm" onfocus="startTimer(13)" onblur="stopTimer(13)" required>
+                <div class="feedback-text" id="fb-13"></div>
+                <div class="question-timer-hud">⏱专 Q13 Time: <span id="timer-display-13">00:00</span></div>
+                <input type="hidden" id="time-spent-13" name="Time Taken Q13" value="0s">
+            </div>
+
+            <div class="question-block" id="block-14">
+                <label style="color: #00a5ba;">⚙️ Grade 4 Factor Bridge:</label>
+                <label for="q14-ans">Q14. List **four** separate factors of 12 (excluding 1 and 12). (4 Marks)</label>
+                <div class="instruction">Write numbers separated by commas in ascending order.</div>
+                <input type="text" id="q14-ans" name="Q14_Factors_12" placeholder="e.g., 2, 3, 4, 6" onfocus="startTimer(14)" onblur="stopTimer(14)" required>
+                <div class="feedback-text" id="fb-14"></div>
+                <div class="question-timer-hud">⏱专 Q14 Time: <span id="timer-display-14">00:00</span></div>
+                <input type="hidden" id="time-spent-14" name="Time Taken Q14" value="0s">
+            </div>
+
+            <div class="question-block" id="block-15">
+                <label style="color: #00a5ba;">⚙️ Grade 4 Divisibility Bridge:</label>
+                <label for="q15-ans">Q15. Is the number 450 perfectly divisible by 10? Write Yes or No. (4 Marks)</label>
+                <input type="text" id="q15-ans" name="Q15_Divisibility" placeholder="Yes / No" onfocus="startTimer(15)" onblur="stopTimer(15)" required>
+                <div class="feedback-text" id="fb-15"></div>
+                <div class="question-timer-hud">⏱专 Q15 Time: <span id="timer-display-15">00:00</span></div>
+                <input type="hidden" id="time-spent-15" name="Time Taken Q15" value="0s">
+            </div>
+
+            <div class="section-break">5. Multi-Step Logic Reasoning (10 Marks)</div>
+
+            <div class="question-block" id="block-16">
+                <label for="q16-work">Q16. The Bakery Multi-Step Order: (5 Marks)</label>
+                <div class="instruction">Leo buys 3 boxes of pastries. Each box contains exactly 6 pastries. On his walk home, he eats 2 pastries. How many pastries does Leo arrive home with?</div>
+                <textarea id="q16-work" name="Q16_Bakery_Word_Problem" rows="4" placeholder="Enter final numeric answer..." onfocus="startTimer(16)" onblur="stopTimer(16)" required></textarea>
+                <div class="feedback-text" id="fb-16"></div>
+                <div class="question-timer-hud">⏱专 Q16 Time: <span id="timer-display-16">00:00</span></div>
+                <input type="hidden" id="time-spent-16" name="Time Taken Q16" value="0s">
+            </div>
+
+            <div class="question-block" id="block-17">
+                <label for="q17-work">Q17. The Spy House Code Riddle: (5 Marks)</label>
+                <div class="reasoning-box">
+                    • I am an <strong>even number</strong>.<br>
+                    • I am greater than 10 but strictly less than 20.<br>
+                    • If you count upward skip-counting by <strong>4s</strong>, you will say my name out loud!
+                </div>
+                <textarea id="q17-work" name="Q17_Deduction_Riddle" rows="3" placeholder="Enter final numeric answer..." onfocus="startTimer(17)" onblur="stopTimer(17)" required></textarea>
+                <div class="feedback-text" id="fb-17"></div>
+                <div class="question-timer-hud">⏱专 Q17 Time: <span id="timer-display-17">00:00</span></div>
+                <input type="hidden" id="time-spent-17" name="Time Taken Q17" value="0s">
+            </div>
+
+            <div class="summary-box" id="diagnostic-summary"></div>
+
+            <button type="submit" id="submitBtn">Submit Completed Diagnostic Form</button>
+            <p class="note">Data collection active. Instantly runs structural verification loops on submission.</p>
+            
+            <div class="footer-copyright">
+                &copy; 2026 MyMasteryLab. All Rights Reserved. Private Diagnostic Assessment Tool.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let timers = {};
+        let activeQuestionId = null;
+        let isGraded = false;
+
+        const answerKey = {
+            q1: "C", q2: "B", q3: ["700", "7 hundreds", "7 hundred"], q4: "180", q5: ["44, 52", "44,52"],
+            q6: "847", q7: "356", q8: "54", q9: "9", q10: "5", q11: "7", 
+            q12: {m1: "B", m2: "A", m3: "C"}, q13: "20", q14: ["2, 3, 4, 6", "2,3,4,6"], 
+            q15: ["Yes", "yes", "YES"], q16: "16", q17: "12"
+        };
+
+        function startTimer(questionId) {
+            if (isGraded) return;
+            if (activeQuestionId !== null && activeQuestionId !== questionId) {
+                stopTimer(activeQuestionId);
+            }
+            activeQuestionId = questionId;
+            if (!timers[questionId]) {
+                timers[questionId] = { timeSeconds: 0, interval: null };
+            }
+            if (!timers[questionId].interval) {
+                timers[questionId].interval = setInterval(() => {
+                    timers[questionId].timeSeconds++;
+                    updateDisplay(questionId);
+                }, 1000);
+            }
+        }
+
+        function stopTimer(questionId) {
+            if (timers[questionId] && timers[questionId].interval) {
+                clearInterval(timers[questionId].interval);
+                timers[questionId].interval = null;
+                const min = Math.floor(timers[questionId].timeSeconds / 60);
+                const sec = timers[questionId].timeSeconds % 60;
+                document.getElementById(`time-spent-${questionId}`).value = `${min}m ${sec}s`;
+            }
+        }
+
+        function updateDisplay(questionId) {
+            const time = timers[questionId].timeSeconds;
+            let min = Math.floor(time / 60);
+            let sec = time % 60;
+            document.getElementById(`timer-display-${questionId}`).textContent = 
+                `${min < 10 ? '0' + min : min}:${sec < 10 ? '0' + sec : sec}`;
+        }
+
+        function cleanVal(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function evaluateQuestion(blockId, isCorrect, correctStr) {
+            const el = document.getElementById(`block-${blockId}`);
+            const fb = document.getElementById(`fb-${blockId}`);
+            if (isCorrect) {
+                el.className = "question-block status-correct";
+                fb.textContent = "🏆 Correct!";
+                return true;
+            } else {
+                el.className = "question-block status-incorrect";
+                fb.textContent = `❌ Incorrect. (Expected: ${correctStr})`;
+                return false;
+            }
+        }
+
+        function validateAndGradeForm(e) {
+            if (activeQuestionId !== null) stopTimer(activeQuestionId);
+            
+            let marks = 0;
+
+            // Section 1
+            const r1 = document.querySelector('input[name="Q1_Answer"]:checked');
+            if (evaluateQuestion(1, r1 && r1.value === answerKey.q1, "4,207")) marks += 2;
+            
+            const r2 = document.querySelector('input[name="Q2_Answer"]:checked');
+            if (evaluateQuestion(2, r2 && r2.value === answerKey.q2, "583")) marks += 2;
+
+            if (evaluateQuestion(3, answerKey.q3.includes(cleanVal('q3-ans')), "700")) marks += 2;
+            if (evaluateQuestion(4, cleanVal('q4-ans') === answerKey.q4, "180")) marks += 2;
+            if (evaluateQuestion(5, answerKey.q5.includes(cleanVal('q5-ans')), "44, 52")) marks += 2;
+
+            // Section 2
+            if (evaluateQuestion(6, cleanVal('q6-work').includes(answerKey.q6), "847")) marks += 2.5;
+            if (evaluateQuestion(7, cleanVal('q7-work').includes(answerKey.q7), "356")) marks += 2.5;
+            if (evaluateQuestion(8, cleanVal('q8-work').includes(answerKey.q8), "54")) marks += 2.5;
+            if (evaluateQuestion(9, cleanVal('q9-work').includes(answerKey.q9), "9")) marks += 2.5;
+
+            // Section 3
+            if (evaluateQuestion(10, cleanVal('q10-ans') === answerKey.q10, "5")) marks += 2;
+            if (evaluateQuestion(11, cleanVal('q11-ans') === answerKey.q11, "7")) marks += 2;
+            
+            const m1 = cleanVal('match-1') === answerKey.q12.m1;
+            const m2 = cleanVal('match-2') === answerKey.q12.m2;
+            const m3 = cleanVal('match-3') === answerKey.q12.m3;
+            if (evaluateQuestion(12, m1 && m2 && m3, "i-B, ii-A, iii-C")) marks += 6;
+
+            // Section 4
+            if (evaluateQuestion(13, cleanVal('q13-ans').includes(answerKey.q13), "20")) marks += 2;
+            if (evaluateQuestion(14, answerKey.q14.includes(cleanVal('q14-ans')), "2, 3, 4, 6")) marks += 4;
+            if (evaluateQuestion(15, answerKey.q15.includes(cleanVal('q15-ans')), "Yes")) marks += 4;
+
+            // Section 5
+            if (evaluateQuestion(16, cleanVal('q16-work').includes(answerKey.q16), "16")) marks += 5;
+            if (evaluateQuestion(17, cleanVal('q17-work').includes(answerKey.q17), "12")) marks += 5;
+
+            // Summary UI compilation
+            isGraded = true;
+            document.getElementById('final-score-field').value = `${marks} / 50 Marks`;
+            
+            const summary = document.getElementById('diagnostic-summary');
+            summary.style.display = "block";
+            summary.innerHTML = `🏁 Diagnostics Complete!<br>Total Score Achieved: ${marks} out of 50 Marks.<br><span style='font-size:10pt; font-weight:normal; color:#3a454f;'>Form package data containing structural question-wise processing timestamps successfully generated for tracking parameters.</span>`;
+            
+            window.scrollTo({ top: summary.offsetTop - 40, behavior: 'smooth' });
+
+            return true; 
+        }
+    </script>
+</body>
+</html>
