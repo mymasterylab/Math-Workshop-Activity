@@ -202,7 +202,7 @@
 <body>
 
     <div class="brand-header">
-        <h1>MyMasteryLab</h1>
+        <h1>My Mastery Lab</h1>
         <img src="mymasteryLab_logo_CTC - Round.png" alt="MyMasteryLab Logo" class="brand-logo">
     </div>
 
@@ -210,11 +210,11 @@
         <h1>Grade 6 Entry Baseline Math Diagnostic</h1>
         
         <div class="welcome-brief">
-            <h2>📊 Live Automated Grading Engine Active (Total: 50 Marks)</h2>
+            <h2>Live Automated Grading Engine Active (Total: 50 Marks)</h2>
             <p>Complete the evaluation. Upon clicking submit, your profile metadata and question answers will be checked instantly, providing immediate verification metrics alongside time records.</p>
         </div>
         
-        <form id="diagnosticForm" action="https://formspree.io/f/mlgqegnb" method="POST" onsubmit="return validateAndGradeForm(event)">
+        <form id="diagnosticForm" action="https://formspree.io/f/YOUR_ENDPOINT_HERE" method="POST" onsubmit="return validateAndGradeForm(event)">
             
             <input type="hidden" id="final-score-field" name="Calculated Diagnostic Score" value="">
             
@@ -544,6 +544,11 @@
         }
 
         function validateAndGradeForm(e) {
+            // Prevent default direct submit loop before checking inputs
+            if (!document.getElementById('student-name').value || !document.getElementById('parent-email').value) {
+                return false;
+            }
+
             if (activeQuestionId !== null) stopTimer(activeQuestionId);
             
             let marks = 0;
@@ -596,7 +601,7 @@
             
             const summary = document.getElementById('diagnostic-summary');
             summary.style.display = "block";
-            summary.innerHTML = `🏁 Diagnostics Complete!<br>Total Score Achieved: ${marks} out of 50 Marks.<br><span style='font-size:10pt; font-weight:normal; color:#3a454f;'>Form package data containing individual question-wise processing timestamps successfully generated for analysis.</span>`;
+            summary.innerHTML = `🏁 Diagnostics Complete!<br>Total Score Achieved: ${marks} out of 50 Marks.<br><span style='font-size:10pt; font-weight:normal; color:#3a454f;'>Form package data containing individual student names successfully bundled for registration submission.</span>`;
             
             window.scrollTo({ top: summary.offsetTop - 40, behavior: 'smooth' });
 
