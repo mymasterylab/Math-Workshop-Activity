@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Butterfly Magic — Comparing Fractions | MyMasteryLab</title>
+<style>
+/* ============================================================
+   MyMasteryLab — Butterfly Magic (Day 2, Fraction Fun Factory)
+   Self-contained: no external fonts, libraries or images.
+   ============================================================ */
+
+:root{
+  --ink:#23204a;
+  --ink-soft:#5f5a84;
+  --paper:#ffffff;
+  --wingL:#d97400;        /* left wing / left fraction  */
+  --wingL-soft:#fff2df;
+  --wingR:#7038e8;        /* right wing / right fraction */
+  --wingR-soft:#f0e9ff;
+  --good:#0d8f6c;
+  --good-soft:#e2f6ef;
+  --nudge:#c9372e;
+  --nudge-soft:#fdeceb;
+  --line:#e3ddf2;
+  --lock:#f4f2f9;
+  --display: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, -apple-system, "Trebuchet MS", sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--display);
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 520px at 12% -10%, #e7f7ef 0%, transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, #f3ecfd 0%, transparent 55%),
+    linear-gradient(175deg,#f7fbf9 0%,#f6f2fd 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+
+/* ---------- Header ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  flex-wrap:wrap;
+  max-width:960px;margin:0 auto;padding:18px 20px 6px;
+}
+/* >>> LOGO: swap this inline SVG for the official file if you prefer:
+       <img src="mymasterylab-logo.png" alt="MyMasteryLab" class="logo-img"> <<< */
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:38px;height:38px;flex:none}
+.logo-text{font-size:19px;font-weight:800;letter-spacing:-.4px;color:var(--ink)}
+.logo-text .lab{color:var(--wingR)}
+.logo-img{height:38px;width:auto}
+.crumb{
+  font-size:13px;font-weight:700;color:var(--ink-soft);
+  background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;
+}
+
+/* ---------- Shell ---------- */
+.wrap{max-width:960px;margin:0 auto;padding:8px 20px 64px}
+.card{
+  background:var(--paper);border:1px solid var(--line);border-radius:26px;
+  box-shadow:0 18px 40px -28px rgba(35,32,74,.45);
+  padding:26px 24px 28px;
+}
+h1{font-size:clamp(26px,5.4vw,40px);line-height:1.12;margin:0 0 8px;letter-spacing:-.6px}
+h2{font-size:clamp(19px,3.6vw,24px);margin:0 0 6px;letter-spacing:-.3px}
+p{margin:0 0 14px}
+.lede{color:var(--ink-soft);font-size:clamp(15px,2.6vw,17px);margin-bottom:20px}
+
+/* ---------- Buttons ---------- */
+.btn{
+  font-family:inherit;font-size:17px;font-weight:800;
+  border:none;border-radius:14px;padding:14px 24px;cursor:pointer;
+  background:var(--ink);color:#fff;transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  box-shadow:0 4px 0 #16143a;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #16143a}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none;font-size:15px;padding:10px 18px}
+.btn.ghost:hover{border-color:var(--wingR)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+:focus-visible{outline:3px solid var(--wingR);outline-offset:3px;border-radius:6px}
+
+/* ---------- Intro demo ---------- */
+.rulebox{
+  background:linear-gradient(180deg,#fbf8ff,#fff);
+  border:2px dashed var(--line);border-radius:20px;padding:18px 18px 6px;margin:18px 0 22px;
+}
+.rulesteps{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:0;padding:0;list-style:none}
+.rulesteps li{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--ink-soft)}
+.rulesteps b{color:var(--ink)}
+.num{
+  flex:none;width:26px;height:26px;border-radius:9px;background:var(--ink);color:#fff;
+  font-size:14px;font-weight:800;display:grid;place-items:center;margin-top:1px;
+}
+
+/* ---------- Progress ---------- */
+.progress{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.pips{display:flex;gap:7px}
+.pip{width:30px;height:9px;border-radius:99px;background:var(--line);transition:background .3s}
+.pip.on{background:var(--wingR)}
+.pip.done{background:var(--good)}
+.qmeta{margin-left:auto;font-size:13px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.7px}
+
+/* ---------- Story card ---------- */
+.story{
+  display:flex;gap:16px;align-items:flex-start;
+  background:linear-gradient(180deg,#fdfbff,#f8f5ff);
+  border:1px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:18px;
+}
+.story-emoji{font-size:38px;line-height:1;flex:none}
+.story h2{margin-bottom:2px}
+.story p{margin:0;font-size:16px;color:var(--ink-soft)}
+.story b{color:var(--ink)}
+.tagL{color:var(--wingL);font-weight:800}
+.tagR{color:var(--wingR);font-weight:800}
+
+/* ---------- Butterfly stage ---------- */
+.stage{max-width:620px;margin:0 auto 6px}
+.stage svg{width:100%;height:auto;display:block;overflow:visible}
+.fr{font-family:var(--display);font-weight:800;font-size:60px;fill:var(--ink);text-anchor:middle;dominant-baseline:middle}
+.fr.lit-L{fill:var(--wingL)}
+.fr.lit-R{fill:var(--wingR)}
+.bar{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+#wings{transform-box:fill-box;transform-origin:center}
+.wing{fill:none;stroke-width:4;stroke-linecap:round;opacity:.30;transition:opacity .25s}
+.wing.lit{opacity:1}
+.wingA{stroke:var(--wingL)}
+.wingB{stroke:var(--wingR)}
+.antenna{fill:none;stroke:var(--ink);stroke-width:3.5;stroke-linecap:round}
+.bodycirc{fill:#fff;stroke:var(--ink);stroke-width:3.5}
+.sign{font-family:var(--display);font-weight:800;font-size:34px;text-anchor:middle;dominant-baseline:middle;fill:var(--ink)}
+.slotbox{width:100%;height:100%;display:block}
+.wingslot input{
+  display:block;width:100%;height:100%;font-family:var(--mono);font-weight:700;font-size:34px;text-align:center;
+  border:3px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);
+  padding:0;margin:0;-moz-appearance:textfield;
+}
+.wingslot input::-webkit-outer-spin-button,
+.wingslot input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.wingslot.L input{border-color:var(--wingL);background:var(--wingL-soft)}
+.wingslot.R input{border-color:var(--wingR);background:var(--wingR-soft)}
+.wingslot input.ok{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.wingslot input.bad{border-color:var(--nudge);background:var(--nudge-soft);color:var(--nudge)}
+.wingslot input:disabled{opacity:1}
+.slotcap{font-size:12px;font-weight:800;text-align:center;letter-spacing:.5px;text-transform:uppercase}
+.slotcap.L{color:var(--wingL)}
+.slotcap.R{color:var(--wingR)}
+
+/* ---------- Steps ---------- */
+.step{
+  border:2px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:12px;
+  transition:border-color .2s, background .2s;
+}
+.step.active{border-color:var(--ink)}
+.step.locked{background:var(--lock);opacity:.55}
+.step.locked .steprow{pointer-events:none}
+.step.cleared{border-color:var(--good);background:var(--good-soft)}
+.stephead{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:800;margin-bottom:4px}
+.stephead .num{border-radius:8px}
+.step.cleared .num{background:var(--good)}
+.stepnote{font-size:14px;color:var(--ink-soft);margin:0 0 10px}
+.steprow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.opt{
+  font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;
+  background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 18px;color:var(--ink);
+  transition:border-color .15s, background .15s, transform .1s;
+}
+.opt:hover{border-color:var(--wingR);transform:translateY(-1px)}
+.opt.big{font-size:26px;min-width:70px;font-family:var(--mono)}
+.opt.picked-ok{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.opt.picked-bad{border-color:var(--nudge);background:var(--nudge-soft);color:var(--nudge)}
+.opt:disabled{cursor:not-allowed}
+
+/* ---------- Feedback ---------- */
+.feedback{
+  font-size:15px;font-weight:700;border-radius:14px;padding:12px 14px;margin:4px 0 0;
+  border:2px solid transparent;
+}
+.feedback:empty{display:none}
+.feedback.good{background:var(--good-soft);border-color:var(--good);color:#0a6e53}
+.feedback.bad{background:var(--nudge-soft);border-color:var(--nudge);color:var(--nudge)}
+.feedback.hint{background:#fff8e8;border-color:#e8b23a;color:#8a5d00}
+
+/* ---------- Proof bars ---------- */
+.proof{margin-top:14px;padding:16px;border:2px solid var(--good);background:var(--good-soft);border-radius:18px}
+.proof h3{margin:0 0 10px;font-size:16px}
+.barwrap{margin-bottom:10px}
+.barlabel{font-size:13px;font-weight:800;margin-bottom:4px;display:flex;justify-content:space-between}
+.barline{display:flex;gap:2px;height:26px;background:#fff;border-radius:8px;overflow:hidden;border:2px solid var(--ink)}
+.seg{flex:1;background:#fff}
+.seg.fill-L{background:var(--wingL)}
+.seg.fill-R{background:var(--wingR)}
+.proofnote{font-size:14px;margin:8px 0 0;color:#0a6e53;font-weight:700}
+
+/* ---------- Build step (Q5) ---------- */
+.buildrow{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+.buildfr{display:flex;flex-direction:column;align-items:center;gap:4px}
+.buildfr input{
+  width:74px;font-family:var(--mono);font-weight:700;font-size:26px;text-align:center;
+  border:3px solid var(--line);border-radius:12px;padding:6px 0;background:#fff;color:var(--ink);
+  -moz-appearance:textfield;
+}
+.buildfr input::-webkit-outer-spin-button,.buildfr input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.buildfr .fbar{width:74px;height:4px;background:var(--ink);border-radius:9px}
+.buildfr .who{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.6px}
+.buildfr.L input{border-color:var(--wingL)} .buildfr.L .who{color:var(--wingL)}
+.buildfr.R input{border-color:var(--wingR)} .buildfr.R .who{color:var(--wingR)}
+.buildfr input.ok{border-color:var(--good);background:var(--good-soft)}
+
+/* ---------- Footer nav ---------- */
+.navrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.navrow .spacer{margin-left:auto}
+.helpbox{
+  margin-top:14px;border:2px solid var(--line);border-radius:16px;padding:0 16px;overflow:hidden;
+}
+.helpbox summary{cursor:pointer;font-weight:800;font-size:15px;padding:12px 0;list-style:none}
+.helpbox summary::-webkit-details-marker{display:none}
+.helpbox summary::before{content:"🦋 ";}
+.helpbox p{font-size:14px;color:var(--ink-soft);margin:0 0 12px}
+
+/* ---------- Results ---------- */
+.scorebig{font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1}
+.badge{
+  display:inline-flex;align-items:center;gap:10px;background:var(--wingR-soft);
+  border:2px solid var(--wingR);color:var(--wingR);border-radius:999px;padding:10px 20px;
+  font-weight:800;font-size:17px;margin:12px 0 18px;
+}
+.recap{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:8px}
+.recap li{
+  display:flex;gap:10px;align-items:center;font-size:15px;font-weight:700;
+  border:1px solid var(--line);border-radius:12px;padding:10px 14px;
+}
+.recap .tick{font-size:18px}
+
+@media (max-width:560px){
+  .card{padding:20px 16px 22px;border-radius:20px}
+  .story{gap:12px;padding:14px}
+  .story-emoji{font-size:30px}
+  .btn{width:100%;justify-content:center}
+  .navrow .spacer{margin-left:0;width:100%}
+  .opt.big{flex:1}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+.pop{animation:pop .45s ease}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+.flap{animation:flap .7s ease}
+@keyframes flap{0%,100%{transform:scaleY(1)}30%{transform:scaleY(.72)}65%{transform:scaleY(1.06)}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="logo" href="https://www.mymasterylab.org/" target="_blank" rel="noopener">
+    <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="45" height="45" rx="13" fill="#23204a"/>
+      <path d="M11 34V15l7.5 10L26 15v19" fill="none" stroke="#fff" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="36" cy="18" r="3.4" fill="#7038e8"/>
+      <path d="M32 34c0-4 2-6.5 4-6.5s4 2.5 4 6.5" fill="none" stroke="#7038e8" stroke-width="3.2" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-text">MyMastery<span class="lab">Lab</span></span>
+  </a>
+  <span class="crumb">Grade 5 · Day 2 · Fraction Fun Factory</span>
+</header>
+
+<main class="wrap">
+
+<!-- ============ SCREEN 1: INTRO ============ -->
+<section class="card" id="screen-intro">
+  <h1>🦋 Butterfly Magic</h1>
+  <p class="lede">A quick trick for telling which fraction is bigger — without a number line, without a calculator, without guessing.</p>
+
+  <div class="rulebox">
+    <div class="stage">
+      <svg viewBox="0 88 700 246" role="img" aria-label="Butterfly method demonstration comparing two sixths and three quarters">
+        <path class="antenna" d="M350 190 Q322 140 300 112"/>
+        <path class="antenna" d="M350 190 Q378 140 400 112"/>
+        <circle cx="300" cy="110" r="5" fill="#23204a"/>
+        <circle cx="400" cy="110" r="5" fill="#23204a"/>
+        <ellipse class="wing wingA lit" cx="350" cy="249" rx="165" ry="50" transform="rotate(16 350 249)"/>
+        <ellipse class="wing wingB lit" cx="350" cy="249" rx="165" ry="50" transform="rotate(-16 350 249)"/>
+        <text class="fr" x="215" y="210">2</text>
+        <line class="bar" x1="178" y1="249" x2="252" y2="249"/>
+        <text class="fr" x="215" y="290">6</text>
+        <text class="fr" x="485" y="210">3</text>
+        <line class="bar" x1="448" y1="249" x2="522" y2="249"/>
+        <text class="fr" x="485" y="290">4</text>
+        <circle class="bodycirc" cx="350" cy="249" r="28"/>
+        <text class="sign" x="350" y="252">&lt;</text>
+        <text class="fr" x="180" y="128" style="fill:var(--wingL);font-size:44px">8</text>
+        <text class="fr" x="520" y="128" style="fill:var(--wingR);font-size:44px">18</text>
+      </svg>
+    </div>
+    <ol class="rulesteps">
+      <li><span class="num">1</span><span>Multiply <b>diagonally</b>. Left wing: <b class="tagL">2 × 4 = 8</b>. Write it above the left fraction.</span></li>
+      <li><span class="num">2</span><span>Other diagonal. Right wing: <b class="tagR">3 × 6 = 18</b>. Write it above the right fraction.</span></li>
+      <li><span class="num">3</span><span>Compare the wings: <b>8 &lt; 18</b>, so <b>2/6 &lt; 3/4</b>. The <b>bigger wing sits over the bigger fraction.</b></span></li>
+    </ol>
+  </div>
+
+  <p class="lede" style="margin-bottom:18px">You'll get <b>5 questions</b>, easy to tricky. Every question makes you draw both wings <i>before</i> you can answer — that's how the magic sticks.</p>
+  <button class="btn" id="btn-start">Start the 5 questions →</button>
+</section>
+
+<!-- ============ SCREEN 2: QUESTIONS ============ -->
+<section class="card" id="screen-quiz" hidden>
+  <div class="progress">
+    <div class="pips" id="pips" aria-hidden="true"></div>
+    <span class="qmeta" id="qmeta"></span>
+  </div>
+
+  <div class="story">
+    <span class="story-emoji" id="q-emoji"></span>
+    <div>
+      <h2 id="q-title"></h2>
+      <p id="q-story"></p>
+    </div>
+  </div>
+
+  <!-- Step 0: build the fractions (only for the last question) -->
+  <div class="step" id="step0" hidden>
+    <div class="stephead"><span class="num" id="s0num">1</span> Build the two fractions</div>
+    <p class="stepnote" id="s0note"></p>
+    <div class="buildrow">
+      <div class="buildfr L">
+        <span class="who" id="b-whoL">—</span>
+        <input type="number" id="b-Ln" inputmode="numeric" aria-label="Left numerator" placeholder="?">
+        <span class="fbar"></span>
+        <input type="number" id="b-Ld" inputmode="numeric" aria-label="Left denominator" placeholder="?">
+      </div>
+      <div class="buildfr R">
+        <span class="who" id="b-whoR">—</span>
+        <input type="number" id="b-Rn" inputmode="numeric" aria-label="Right numerator" placeholder="?">
+        <span class="fbar"></span>
+        <input type="number" id="b-Rd" inputmode="numeric" aria-label="Right denominator" placeholder="?">
+      </div>
+      <button class="btn ghost" id="b-check">Check the fractions</button>
+    </div>
+    <p class="feedback" id="fb0" role="status"></p>
+  </div>
+
+  <!-- Butterfly stage -->
+  <div class="stage" id="stage">
+    <svg viewBox="0 8 700 328" id="bfly" aria-label="Butterfly method working area">
+      <path class="antenna" d="M350 190 Q322 140 300 112"/>
+      <path class="antenna" d="M350 190 Q378 140 400 112"/>
+      <circle cx="300" cy="110" r="5" fill="#23204a"/>
+      <circle cx="400" cy="110" r="5" fill="#23204a"/>
+      <g id="wings">
+        <ellipse class="wing wingA" id="wA" cx="350" cy="249" rx="165" ry="50" transform="rotate(16 350 249)"/>
+        <ellipse class="wing wingB" id="wB" cx="350" cy="249" rx="165" ry="50" transform="rotate(-16 350 249)"/>
+      </g>
+      <text class="fr" id="Ln" x="215" y="210">?</text>
+      <line class="bar" x1="178" y1="249" x2="252" y2="249"/>
+      <text class="fr" id="Ld" x="215" y="290">?</text>
+      <text class="fr" id="Rn" x="485" y="210">?</text>
+      <line class="bar" x1="448" y1="249" x2="522" y2="249"/>
+      <text class="fr" id="Rd" x="485" y="290">?</text>
+      <circle class="bodycirc" cx="350" cy="249" r="28"/>
+      <text class="sign" id="signtext" x="350" y="252"></text>
+
+      <foreignObject x="112" y="70" width="136" height="74" class="wingslot L">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="slotbox">
+          <input type="number" id="inL" inputmode="numeric" placeholder="?" aria-label="Left wing product">
+        </div>
+      </foreignObject>
+      <foreignObject x="452" y="70" width="136" height="74" class="wingslot R">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="slotbox">
+          <input type="number" id="inR" inputmode="numeric" placeholder="?" aria-label="Right wing product">
+        </div>
+      </foreignObject>
+      <text class="slotcap L" x="180" y="30" text-anchor="middle" style="font-size:15px;fill:var(--wingL)">LEFT WING</text>
+      <text class="slotcap R" x="520" y="30" text-anchor="middle" style="font-size:15px;fill:var(--wingR)">RIGHT WING</text>
+    </svg>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="step active" id="step1">
+    <div class="stephead"><span class="num" id="s1num">1</span> Draw the wings</div>
+    <p class="stepnote" id="s1note">Multiply along each diagonal and type each answer in its wing box above.</p>
+    <div class="steprow">
+      <button class="btn ghost" id="w-check">Check the wings</button>
+      <button class="btn ghost" id="w-hint">Show me which numbers to multiply</button>
+    </div>
+    <p class="feedback" id="fb1" role="status"></p>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step locked" id="step2">
+    <div class="stephead"><span class="num" id="s2num">2</span> Compare the two wing numbers</div>
+    <p class="stepnote" id="s2note">Finish step 1 first. 🔒</p>
+    <div class="steprow" id="signrow"></div>
+    <p class="feedback" id="fb2" role="status"></p>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step locked" id="step3">
+    <div class="stephead"><span class="num" id="s3num">3</span> So which fraction is bigger?</div>
+    <p class="stepnote" id="s3note">Finish step 2 first. 🔒</p>
+    <div class="steprow" id="ansrow"></div>
+    <p class="feedback" id="fb3" role="status"></p>
+    <div id="proof"></div>
+  </div>
+
+  <details class="helpbox">
+    <summary>Remind me of the rule</summary>
+    <p>Multiply <b>diagonally</b>: left numerator × right denominator goes above the <b class="tagL">left</b> fraction, right numerator × left denominator goes above the <b class="tagR">right</b> fraction. The <b>bigger wing number sits over the bigger fraction</b>. Equal wings mean the fractions are equal.</p>
+  </details>
+
+  <div class="navrow">
+    <span class="spacer"></span>
+    <button class="btn" id="btn-next" disabled>Next question →</button>
+  </div>
+</section>
+
+<!-- ============ SCREEN 3: RESULTS ============ -->
+<section class="card" id="screen-done" hidden>
+  <h1>Butterfly badge unlocked</h1>
+  <p class="scorebig" id="finalscore">0 / 15</p>
+  <div class="badge" id="finalbadge">🦋 Butterfly Master</div>
+  <p class="lede" id="finalline"></p>
+  <ul class="recap" id="recap"></ul>
+  <div class="navrow">
+    <button class="btn" id="btn-again">Try the whole set again</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ============================================================
+   Question bank — easy → tricky
+   Wing rule:  left wing  = Ln × Rd   (sits above the LEFT fraction)
+               right wing = Rn × Ld   (sits above the RIGHT fraction)
+   ============================================================ */
+const QUESTIONS = [
+  {
+    level:"Warm-up", emoji:"🍫",
+    title:"Chocolate bar showdown",
+    story:"Riya and Dev get <b>identical</b> chocolate bars. Riya eats <b>1/2</b> of hers. Dev eats <b>2/5</b> of his. Who ate more chocolate?",
+    L:{n:1,d:2,who:"Riya"}, R:{n:2,d:5,who:"Dev"},
+    proofNote:"Half a bar beats two little fifths — and the wings said so before you ate a single square."
+  },
+  {
+    level:"Easy", emoji:"🍕",
+    title:"Pizza night",
+    story:"One pizza is cut into 4 big slices and Aarav takes <b>3/4</b>. Another same-size pizza is cut into 8 small slices and Meera takes <b>5/8</b>. Who has more pizza?",
+    L:{n:3,d:4,who:"Aarav"}, R:{n:5,d:8,who:"Meera"},
+    proofNote:"More slices doesn't mean more pizza — 8 slices are smaller than 4 slices."
+  },
+  {
+    level:"Medium", emoji:"🏏",
+    title:"Cricket nets practice",
+    story:"Kabir hits the stumps <b>5 out of 6</b> throws. Nia hits them <b>7 out of 9</b> throws. These are close! Who has the better hit rate?",
+    L:{n:5,d:6,who:"Kabir"}, R:{n:7,d:9,who:"Nia"},
+    proofNote:"Too close to eyeball — 45 vs 42 is exactly why we use the butterfly."
+  },
+  {
+    level:"Tricky", emoji:"🧩",
+    title:"Puzzle trap",
+    story:"Om finished <b>5 of 8</b> puzzle levels. Sara finished <b>4 of 6</b> levels. Om solved more levels — but did he finish a bigger <i>fraction</i> of his puzzle?",
+    L:{n:5,d:8,who:"Om"}, R:{n:4,d:6,who:"Sara"},
+    proofNote:"The bigger numerator lost! 5 is more than 4, but 4/6 is a bigger share than 5/8."
+  },
+  {
+    level:"Challenge", emoji:"🎂",
+    title:"Two birthday cakes",
+    story:"Two <b>same-size</b> cakes. Priya's cake is cut into <b>8</b> slices and she eats <b>6</b> of them. Arjun's cake is cut into <b>12</b> slices and he eats <b>9</b>. Build both fractions first, then compare.",
+    L:{n:6,d:8,who:"Priya"}, R:{n:9,d:12,who:"Arjun"},
+    build:true,
+    buildNote:"Slices eaten go on top (numerator). Total slices go on the bottom (denominator).",
+    proofNote:"Equal wings = equivalent fractions. 6/8 and 9/12 are the same amount of cake, just cut differently."
+  }
+];
+
+/* ---------- State ---------- */
+let qi = 0, score = 0, attempts = 0, results = [];
+let cur = null, wingL = 0, wingR = 0, built = false;
+
+const $ = id => document.getElementById(id);
+const screens = { intro:$("screen-intro"), quiz:$("screen-quiz"), done:$("screen-done") };
+
+function show(name){
+  for (const k in screens) screens[k].hidden = (k !== name);
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* ---------- Progress pips ---------- */
+function drawPips(){
+  $("pips").innerHTML = QUESTIONS.map((_,i)=>
+    `<span class="pip ${i<qi?'done':i===qi?'on':''}"></span>`).join("");
+  $("qmeta").textContent = `Question ${qi+1} of ${QUESTIONS.length} · ${cur.level}`;
+}
+
+/* ---------- Step lock helpers ---------- */
+function setStep(el, state, note){
+  el.className = "step " + state;
+  if (note !== undefined) el.querySelector(".stepnote").innerHTML = note;
+}
+function say(el, kind, msg){
+  el.className = "feedback " + kind;
+  el.innerHTML = msg;
+}
+function clear(el){ el.className = "feedback"; el.innerHTML = ""; }
+
+/* ---------- Load a question ---------- */
+function loadQuestion(){
+  cur = QUESTIONS[qi];
+  attempts = 0;
+  built = !cur.build;
+  wingL = cur.L.n * cur.R.d;
+  wingR = cur.R.n * cur.L.d;
+
+  drawPips();
+  $("q-emoji").textContent = cur.emoji;
+  $("q-title").textContent = cur.title;
+  $("q-story").innerHTML = cur.story;
+
+  // step numbering shifts when there is a build step
+  const off = cur.build ? 1 : 0;
+  $("s1num").textContent = 1 + off;
+  $("s2num").textContent = 2 + off;
+  $("s3num").textContent = 3 + off;
+
+  // build step
+  $("step0").hidden = !cur.build;
+  if (cur.build){
+    $("s0note").textContent = cur.buildNote;
+    $("b-whoL").textContent = cur.L.who;
+    $("b-whoR").textContent = cur.R.who;
+    ["b-Ln","b-Ld","b-Rn","b-Rd"].forEach(id=>{
+      const i = $(id); i.value=""; i.disabled=false; i.classList.remove("ok");
+    });
+    $("b-check").disabled = false;
+    clear($("fb0"));
+    setStep($("step0"), "active");
+  }
+
+  // butterfly numbers
+  $("Ln").textContent = cur.build ? "?" : cur.L.n;
+  $("Ld").textContent = cur.build ? "?" : cur.L.d;
+  $("Rn").textContent = cur.build ? "?" : cur.R.n;
+  $("Rd").textContent = cur.build ? "?" : cur.R.d;
+  $("signtext").textContent = "?";
+  ["Ln","Ld","Rn","Rd"].forEach(id=>$(id).className="fr");
+  $("wA").classList.remove("lit"); $("wB").classList.remove("lit");
+
+  // wing inputs
+  ["inL","inR"].forEach(id=>{
+    const i = $(id);
+    i.value = ""; i.className = ""; i.disabled = !built;
+  });
+
+  // steps
+  setStep($("step1"), cur.build ? "locked" : "active",
+    cur.build ? "Build the fractions first. 🔒"
+              : "Multiply along each diagonal and type each answer in its wing box above.");
+  $("w-check").disabled = !built;
+  $("w-hint").disabled = !built;
+  setStep($("step2"), "locked", "Finish the wings first. 🔒");
+  setStep($("step3"), "locked", "Compare the wings first. 🔒");
+  $("signrow").innerHTML = "";
+  $("ansrow").innerHTML = "";
+  $("proof").innerHTML = "";
+  clear($("fb1")); clear($("fb2")); clear($("fb3"));
+  $("btn-next").disabled = true;
+  $("btn-next").textContent = (qi === QUESTIONS.length-1) ? "See my badge →" : "Next question →";
+}
+
+/* ---------- Highlight diagonals on focus ---------- */
+function litDiagonal(side){
+  ["Ln","Ld","Rn","Rd"].forEach(id=>$(id).className="fr");
+  $("wA").classList.remove("lit"); $("wB").classList.remove("lit");
+  if (!side) return;
+  if (side === "L"){ $("Ln").className="fr lit-L"; $("Rd").className="fr lit-L"; $("wA").classList.add("lit"); }
+  else { $("Rn").className="fr lit-R"; $("Ld").className="fr lit-R"; $("wB").classList.add("lit"); }
+}
+$("inL").addEventListener("focus", ()=>litDiagonal("L"));
+$("inR").addEventListener("focus", ()=>litDiagonal("R"));
+$("inL").addEventListener("blur", ()=>litDiagonal(null));
+$("inR").addEventListener("blur", ()=>litDiagonal(null));
+
+/* ---------- Step 0: build the fractions ---------- */
+$("b-check").addEventListener("click", ()=>{
+  const vals = { Ln:+$("b-Ln").value, Ld:+$("b-Ld").value, Rn:+$("b-Rn").value, Rd:+$("b-Rd").value };
+  if (["b-Ln","b-Ld","b-Rn","b-Rd"].some(id => $(id).value === "")){
+    say($("fb0"), "hint", "Fill in all four boxes — a top number and a bottom number for each person.");
+    return;
+  }
+  const want = { Ln:cur.L.n, Ld:cur.L.d, Rn:cur.R.n, Rd:cur.R.d };
+  const wrong = Object.keys(want).filter(k => vals[k] !== want[k]);
+  if (wrong.length){
+    attempts++;
+    const upsideDown = vals.Ln === want.Ld && vals.Ld === want.Ln;
+    say($("fb0"), "bad", upsideDown
+      ? "Close — but it's flipped. The part eaten goes on <b>top</b>, the total number of slices goes on the <b>bottom</b>."
+      : `Not yet. ${cur.L.who} ate <b>${cur.L.n}</b> slices out of <b>${cur.L.d}</b>, and ${cur.R.who} ate <b>${cur.R.n}</b> out of <b>${cur.R.d}</b>. Read the story again carefully.`);
+    return;
+  }
+  ["b-Ln","b-Ld","b-Rn","b-Rd"].forEach(id=>{ $(id).classList.add("ok"); $(id).disabled = true; });
+  $("b-check").disabled = true;
+  say($("fb0"), "good", `Both fractions built: <b>${cur.L.n}/${cur.L.d}</b> and <b>${cur.R.n}/${cur.R.d}</b>. Now send in the butterfly.`);
+  setStep($("step0"), "cleared");
+  built = true;
+  $("Ln").textContent = cur.L.n; $("Ld").textContent = cur.L.d;
+  $("Rn").textContent = cur.R.n; $("Rd").textContent = cur.R.d;
+  $("stage").classList.add("pop");
+  setTimeout(()=>$("stage").classList.remove("pop"), 500);
+  $("inL").disabled = false; $("inR").disabled = false;
+  $("w-check").disabled = false; $("w-hint").disabled = false;
+  setStep($("step1"), "active", "Multiply along each diagonal and type each answer in its wing box above.");
+  $("inL").focus();
+});
+
+/* ---------- Step 1: check the wings ---------- */
+$("w-hint").addEventListener("click", ()=>{
+  say($("fb1"), "hint",
+    `Left wing: multiply <b class="tagL">${cur.L.n} × ${cur.R.d}</b> (top-left number × bottom-right number).<br>
+     Right wing: multiply <b class="tagR">${cur.R.n} × ${cur.L.d}</b> (top-right number × bottom-left number).`);
+});
+
+$("w-check").addEventListener("click", ()=>{
+  const a = $("inL"), b = $("inR");
+  if (a.value === "" || b.value === ""){
+    say($("fb1"), "hint", "Both wings need a number before the butterfly can fly.");
+    return;
+  }
+  const okA = +a.value === wingL, okB = +b.value === wingR;
+  a.className = okA ? "ok" : "bad";
+  b.className = okB ? "ok" : "bad";
+
+  if (okA && okB){
+    a.disabled = true; b.disabled = true;
+    $("w-check").disabled = true; $("w-hint").disabled = true;
+    $("wA").classList.add("lit"); $("wB").classList.add("lit");
+    $("wings").classList.add("flap");
+    setTimeout(()=>$("wings").classList.remove("flap"), 750);
+    say($("fb1"), "good", `Wings drawn: <b class="tagL">${cur.L.n} × ${cur.R.d} = ${wingL}</b> and <b class="tagR">${cur.R.n} × ${cur.L.d} = ${wingR}</b>.`);
+    setStep($("step1"), "cleared");
+    openStep2();
+    return;
+  }
+
+  attempts++;
+  const swapped = +a.value === wingR && +b.value === wingL;
+  let msg;
+  if (swapped){
+    msg = "You've got the right two numbers, but they've swapped sides. Each wing number is written <b>above the fraction it started from</b>.";
+  } else {
+    const parts = [];
+    if (!okA) parts.push(`the <b class="tagL">left wing</b> joins <b>${cur.L.n}</b> (top left) with <b>${cur.R.d}</b> (bottom right)`);
+    if (!okB) parts.push(`the <b class="tagR">right wing</b> joins <b>${cur.R.n}</b> (top right) with <b>${cur.L.d}</b> (bottom left)`);
+    msg = "Not quite — " + parts.join(", and ") + ". Multiply, don't add!";
+  }
+  say($("fb1"), "bad", msg);
+});
+
+/* ---------- Step 2: compare the wings ---------- */
+function openStep2(){
+  setStep($("step2"), "active",
+    `Read your wings: <b class="tagL">${wingL}</b> &nbsp;?&nbsp; <b class="tagR">${wingR}</b>. Which sign belongs in the middle?`);
+  const signs = [">", "=", "<"];
+  const correct = wingL > wingR ? ">" : wingL < wingR ? "<" : "=";
+  $("signrow").innerHTML = signs.map(s=>
+    `<button class="opt big" data-sign="${s}">${s === ">" ? "&gt;" : s === "<" ? "&lt;" : "="}</button>`).join("");
+  $("signrow").querySelectorAll("button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const picked = btn.dataset.sign;
+      if (picked === correct){
+        btn.classList.add("picked-ok");
+        $("signrow").querySelectorAll("button").forEach(b=>b.disabled = true);
+        $("signtext").textContent = correct;
+        say($("fb2"), "good", `Correct — <b>${wingL} ${correct === ">" ? "&gt;" : correct === "<" ? "&lt;" : "="} ${wingR}</b>. Now let the wings tell you about the fractions.`);
+        setStep($("step2"), "cleared");
+        openStep3();
+      } else {
+        attempts++;
+        btn.classList.add("picked-bad");
+        setTimeout(()=>btn.classList.remove("picked-bad"), 900);
+        say($("fb2"), "bad", `Look again at the two wing numbers: <b>${wingL}</b> and <b>${wingR}</b>. Which one is worth more?`);
+      }
+    });
+  });
+}
+
+/* ---------- Step 3: which fraction is bigger ---------- */
+function openStep3(){
+  setStep($("step3"), "active", "The bigger wing always sits above the bigger fraction.");
+  const correct = wingL > wingR ? "L" : wingL < wingR ? "R" : "E";
+  const opts = [
+    {k:"L", t:`${cur.L.who}'s ${cur.L.n}/${cur.L.d} is bigger`},
+    {k:"R", t:`${cur.R.who}'s ${cur.R.n}/${cur.R.d} is bigger`},
+    {k:"E", t:`They are exactly equal`}
+  ];
+  $("ansrow").innerHTML = opts.map(o=>`<button class="opt" data-k="${o.k}">${o.t}</button>`).join("");
+  $("ansrow").querySelectorAll("button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if (btn.dataset.k === correct){
+        btn.classList.add("picked-ok");
+        $("ansrow").querySelectorAll("button").forEach(b=>b.disabled = true);
+        finishQuestion(correct);
+      } else {
+        attempts++;
+        btn.classList.add("picked-bad");
+        setTimeout(()=>btn.classList.remove("picked-bad"), 900);
+        say($("fb3"), "bad", `Check the wings once more: <b class="tagL">${wingL}</b> sits above <b>${cur.L.n}/${cur.L.d}</b> and <b class="tagR">${wingR}</b> sits above <b>${cur.R.n}/${cur.R.d}</b>. Bigger wing wins.`);
+      }
+    });
+  });
+}
+
+/* ---------- Proof bars + scoring ---------- */
+function barHTML(fr, side, who){
+  const segs = Array.from({length:fr.d}, (_,i)=>
+    `<span class="seg ${i < fr.n ? 'fill-'+side : ''}"></span>`).join("");
+  return `<div class="barwrap">
+      <span class="barlabel"><span>${who} — ${fr.n}/${fr.d}</span><span>${(fr.n/fr.d*100).toFixed(0)}%</span></span>
+      <span class="barline">${segs}</span>
+    </div>`;
+}
+
+function finishQuestion(correct){
+  const stars = attempts === 0 ? 3 : attempts <= 2 ? 2 : 1;
+  score += stars;
+  results.push({title:cur.title, stars});
+
+  const verdict = correct === "E"
+    ? `Both fractions are worth exactly the same.`
+    : `${correct==="L"?cur.L.who:cur.R.who}'s fraction is bigger.`;
+  say($("fb3"), "good", `${verdict} You earned ${"🦋".repeat(stars)}`);
+  setStep($("step3"), "cleared");
+
+  $("proof").innerHTML = `<div class="proof">
+      <h3>Proof — same bar, different cuts</h3>
+      ${barHTML(cur.L, "L", cur.L.who)}
+      ${barHTML(cur.R, "R", cur.R.who)}
+      <p class="proofnote">${cur.proofNote}</p>
+    </div>`;
+  $("btn-next").disabled = false;
+  $("btn-next").focus();
+}
+
+/* ---------- Navigation ---------- */
+$("btn-start").addEventListener("click", ()=>{
+  qi = 0; score = 0; results = [];
+  show("quiz"); loadQuestion();
+});
+
+$("btn-next").addEventListener("click", ()=>{
+  qi++;
+  if (qi < QUESTIONS.length){ loadQuestion(); window.scrollTo({top:0, behavior:"smooth"}); }
+  else finishAll();
+});
+
+function finishAll(){
+  const max = QUESTIONS.length * 3;
+  $("finalscore").textContent = `${score} / ${max} 🦋`;
+  let badge, line;
+  if (score >= max - 1){
+    badge = "🦋 Butterfly Master"; line = "Perfect wings, every time. You can compare any two fractions in your head now — try it on the worksheet.";
+  } else if (score >= max * 0.7){
+    badge = "🍕 Fraction Chef"; line = "Strong work. You used the trick properly even when the numbers tried to fool you.";
+  } else {
+    badge = "🐛 Caterpillar — nearly there"; line = "Good effort. Run it again and watch the two diagonals carefully — that's the whole trick.";
+  }
+  $("finalbadge").textContent = badge;
+  $("finalline").textContent = line;
+  $("recap").innerHTML = results.map((r,i)=>
+    `<li><span class="tick">${r.stars===3?"🌟":r.stars===2?"👍":"💪"}</span>
+     <span>${i+1}. ${r.title}</span>
+     <span style="margin-left:auto">${"🦋".repeat(r.stars)}</span></li>`).join("");
+  show("done");
+}
+
+$("btn-again").addEventListener("click", ()=>{
+  qi = 0; score = 0; results = [];
+  show("quiz"); loadQuestion();
+});
+
+/* Enter key moves the flow along inside step 1 */
+["inL","inR"].forEach(id=>{
+  $(id).addEventListener("keydown", e=>{
+    if (e.key === "Enter"){ e.preventDefault(); $("w-check").click(); }
+  });
+});
+["b-Ln","b-Ld","b-Rn","b-Rd"].forEach(id=>{
+  $(id).addEventListener("keydown", e=>{
+    if (e.key === "Enter"){ e.preventDefault(); $("b-check").click(); }
+  });
+});
+</script>
+</body>
+</html>
