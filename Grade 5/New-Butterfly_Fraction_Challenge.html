@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Butterfly Fraction Challenge | MyMasteryLab</title>
+<style>
+:root{
+  --teal:#0d9488;
+  --teal-dark:#0f766e;
+  --teal-light:#5eead4;
+  --burnt:#c2410c;
+  --orange:#f97316;
+  --orange-light:#fdba74;
+  --gold:#fbbf24;
+  --ink:#1e293b;
+  --card:#ffffff;
+  --shadow:0 10px 30px rgba(15,45,40,0.16);
+  --radius:22px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Baloo 2','Trebuchet MS','Segoe UI',sans-serif;
+  background:linear-gradient(180deg,#e9fbf3 0%,#d3f3e6 35%,#bfe9d8 70%,#a9dfc9 100%);
+  color:var(--ink);
+  overflow-x:hidden;
+  min-height:100vh;
+  position:relative;
+  text-align:center;
+}
+#app{position:relative;width:100%;min-height:100vh;z-index:2;}
+.screen{display:none;min-height:100vh;width:100%;position:relative;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 16px 40px;}
+.screen.active{display:flex;}
+
+/* ---------- Jungle Backdrop (subtle, stays out of the way of the math) ---------- */
+#jungleBackdrop{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.sunray{position:absolute;top:-10%;left:50%;width:5px;height:70vh;background:linear-gradient(180deg,rgba(255,247,214,.55),transparent);
+  transform-origin:top center;animation:raySway 7s ease-in-out infinite;}
+@keyframes raySway{0%,100%{opacity:.25;}50%{opacity:.5;}}
+.leaf-decor{position:absolute;font-size:64px;opacity:.22;filter:drop-shadow(0 6px 10px rgba(0,60,40,.15));animation:leafSway 5s ease-in-out infinite;}
+@keyframes leafSway{0%,100%{transform:rotate(-6deg) translateY(0);}50%{transform:rotate(4deg) translateY(-10px);}}
+.vine-decor{position:absolute;font-size:46px;opacity:.2;animation:leafSway 6.5s ease-in-out infinite;}
+.firefly{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff6c8;
+  box-shadow:0 0 10px 4px rgba(255,246,180,.8);animation:fireflyFloat 6s ease-in-out infinite;}
+@keyframes fireflyFloat{0%,100%{transform:translate(0,0);opacity:.25;}50%{transform:translate(16px,-26px);opacity:1;}}
+.sparkle-decor{position:absolute;font-size:16px;opacity:.5;animation:sparkleTwinkle 2.4s ease-in-out infinite;}
+@keyframes sparkleTwinkle{0%,100%{opacity:.15;transform:scale(.8);}50%{opacity:.9;transform:scale(1.15);}}
+.mist-layer{position:absolute;bottom:0;left:0;right:0;height:160px;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.55));}
+.bg-butterfly-drift{position:absolute;font-size:30px;opacity:.28;animation:bflyDrift linear infinite;}
+@keyframes bflyDrift{from{transform:translate(-10vw,0) rotate(-6deg);}to{transform:translate(110vw,-40px) rotate(6deg);}}
+
+/* ---------- Top bar ---------- */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;pointer-events:none;}
+.brand-pill{pointer-events:auto;background:rgba(255,255,255,0.94);border-radius:999px;padding:6px 16px 6px 10px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow);font-weight:800;color:var(--teal-dark);font-size:13.5px;}
+.brand-pill .dot{width:10px;height:10px;border-radius:50%;background:var(--orange);}
+.sound-wrap{pointer-events:auto;position:relative;}
+.sound-btn{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.94);box-shadow:var(--shadow);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.sound-panel{position:absolute;top:52px;right:0;background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;width:210px;display:none;flex-direction:column;gap:10px;}
+.sound-panel.open{display:flex;}
+.sound-panel label{font-size:13px;font-weight:700;color:#555;display:flex;justify-content:space-between;align-items:center;}
+.toggle{width:46px;height:26px;border-radius:20px;background:#d1d5db;position:relative;cursor:pointer;transition:.2s;border:none;}
+.toggle.on{background:var(--teal);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;}
+.toggle.on::after{left:23px;}
+input[type=range]{width:100%;accent-color:var(--teal);}
+
+/* ---------- Buttons ---------- */
+.btn{border:none;border-radius:16px;padding:14px 28px;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,0.15);transition:transform .08s;font-family:inherit;}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,0.15);}
+.btn-primary{background:var(--orange);color:#fff;}
+.btn-secondary{background:#fff;color:var(--teal-dark);border:2px solid var(--teal);}
+.btn-small{padding:9px 18px;font-size:14px;border-radius:12px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn-grade{background:#fff;color:var(--teal-dark);border:3px solid var(--teal);padding:22px 40px;font-size:22px;border-radius:20px;min-width:180px;}
+.btn-grade:hover{background:var(--teal);color:#fff;}
+
+/* ---------- Start screen ---------- */
+#screen-start{justify-content:center;text-align:center;padding-top:70px;}
+.logo-badge{background:#fff;border-radius:20px;padding:10px 22px;display:inline-flex;align-items:center;gap:10px;box-shadow:var(--shadow);margin-bottom:18px;}
+.logo-badge b{color:var(--teal-dark);font-size:15px;}
+.logo-badge span{color:var(--burnt);font-size:12px;font-weight:700;}
+.title-hero h1{font-size:clamp(30px,7vw,52px);margin:6px 0 4px;color:var(--teal-dark);text-shadow:0 3px 0 rgba(255,255,255,.6);}
+.title-hero .tagline{font-size:clamp(15px,2.6vw,19px);color:var(--burnt);font-weight:800;margin-bottom:10px;}
+.title-hero p{font-size:clamp(14px,2.4vw,17px);color:#3a4a44;max-width:520px;margin:0 auto 22px;line-height:1.55;}
+.hero-butterfly{font-size:70px;margin-bottom:6px;display:inline-block;animation:heroFlap 2.2s ease-in-out infinite;}
+@keyframes heroFlap{0%,100%{transform:scaleX(1) rotate(-3deg);}50%{transform:scaleX(0.82) rotate(3deg);}}
+.instruction-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 24px;max-width:520px;margin:0 auto 22px;text-align:center;}
+.instruction-card b{color:var(--teal-dark);}
+.grade-row{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+
+/* ---------- Game screen ---------- */
+.game-wrap{width:100%;max-width:680px;margin-top:68px;}
+.score-panel{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:16px;
+  box-shadow:var(--shadow);padding:12px 20px;margin-bottom:18px;}
+.score-panel .score-val{font-weight:900;color:var(--teal-dark);font-size:16px;}
+.score-panel .q-count{font-weight:800;color:var(--burnt);font-size:14px;background:#fff1e6;padding:5px 12px;border-radius:999px;}
+
+.stage-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 16px 22px;position:relative;overflow:hidden;}
+.stage-clean-zone{background:linear-gradient(180deg,#fbfffd,#f3fbf8);border-radius:18px;padding:6px;}
+
+.butterfly-stage{position:relative;width:100%;aspect-ratio:16/10;max-width:620px;margin:0 auto;}
+.butterfly-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+
+.frac-num, .frac-den{
+  position:absolute;transform:translate(-50%,-50%);z-index:5;
+  font-size:clamp(22px,5.2vw,36px);font-weight:900;color:var(--ink);
+  text-shadow:0 0 10px rgba(255,255,255,.95),0 0 3px rgba(255,255,255,.9);
+}
+#fracNum1,#fracDen1{left:27%;}
+#fracNum2,#fracDen2{left:73%;}
+#fracNum1,#fracNum2{top:32%;}
+#fracDen1,#fracDen2{top:66%;}
+
+.answer-box{position:absolute;top:6%;width:18%;transform:translateX(-50%);z-index:6;}
+.answer-box.left{left:27%;}
+.answer-box.right{left:73%;}
+.answer-box label{display:block;font-size:10.5px;font-weight:800;color:var(--teal-dark);margin-bottom:3px;}
+.answer-box input{
+  width:100%;text-align:center;font-size:clamp(16px,3.4vw,22px);font-weight:900;color:var(--ink);
+  border:2.5px solid var(--teal-light);border-radius:12px;padding:6px 2px;background:#fff;font-family:inherit;
+}
+.answer-box input:focus{outline:none;border-color:var(--teal);}
+.answer-box input.correct-flash{border-color:#22c55e;background:#f0fdf4;}
+.answer-box input.wrong-flash{border-color:var(--orange);background:#fff7ed;}
+
+.wing-flap{transform-box:fill-box;transform-origin:50% 50%;animation:wingFlapAnim .6s ease 2;}
+@keyframes wingFlapAnim{0%,100%{transform:scaleY(1);}50%{transform:scaleY(0.82);}}
+
+.symbol-row{display:flex;justify-content:center;gap:16px;margin:20px 0 8px;}
+.symbol-btn{width:64px;height:64px;border-radius:18px;border:3px solid #e2e8f0;background:#fff;
+  font-size:30px;font-weight:900;color:var(--ink);cursor:pointer;font-family:inherit;transition:.12s;}
+.symbol-btn:hover{border-color:var(--orange);}
+.symbol-btn.selected{border-color:var(--teal);background:#f0fdfa;color:var(--teal-dark);transform:scale(1.08);}
+.symbol-btn.reveal-correct{border-color:#22c55e;background:#f0fdf4;color:#166534;}
+
+.hint-box{margin-top:12px;background:#fff7ed;border:2px dashed var(--orange);border-radius:14px;
+  padding:12px 16px;font-size:14px;color:#7c2d12;display:none;text-align:center;}
+.hint-box.show{display:block;}
+.reveal-box{margin-top:12px;background:#f0fdfa;border:2px solid var(--teal);border-radius:14px;
+  padding:14px 16px;font-size:14px;color:#0f766e;display:none;text-align:center;line-height:1.6;}
+.reveal-box.show{display:block;}
+.success-box{margin-top:12px;background:#f0fdf4;border:2px solid #22c55e;border-radius:14px;
+  padding:12px 16px;font-size:15px;font-weight:800;color:#166534;display:none;text-align:center;}
+.success-box.show{display:block;animation:successPop .4s ease;}
+@keyframes successPop{0%{transform:scale(.85);opacity:0;}100%{transform:scale(1);opacity:1;}}
+
+.action-row{display:flex;justify-content:center;gap:14px;margin-top:18px;}
+
+/* diagonal cross-multiplication lines */
+/* diagonal cross-multiplication lines — thin, no ovals, so the butterfly art shows through */
+.cross-line{fill:none;stroke-width:1.6;stroke-linecap:round;stroke-dasharray:5 4;}
+.cross-line.a{stroke:var(--teal-dark);}
+.cross-line.b{stroke:var(--burnt);}
+.cross-line.pulse{animation:linePulse 1.1s ease-in-out infinite;}
+@keyframes linePulse{0%,100%{stroke-width:1.6;opacity:.8;}50%{stroke-width:2.6;opacity:1;}}
+
+/* wing flap + sparkle burst on correct */
+/* (wing flap now handled by .wing-flap, defined above) */
+.sparkle-pop{position:absolute;font-size:20px;pointer-events:none;animation:sparklePop .9s ease forwards;}
+@keyframes sparklePop{0%{opacity:0;transform:translateY(0) scale(.4);}30%{opacity:1;}100%{opacity:0;transform:translateY(-60px) scale(1.2);}}
+
+.wobble-gentle{animation:wobbleGentle .5s ease;}
+@keyframes wobbleGentle{0%,100%{transform:translateX(0) rotate(0);}30%{transform:translateX(-4px) rotate(-1.2deg);}60%{transform:translateX(4px) rotate(1.2deg);}}
+.glow-amber{animation:glowAmber .7s ease;}
+@keyframes glowAmber{0%{box-shadow:0 0 0 0 rgba(249,115,22,0);}30%{box-shadow:0 0 0 10px rgba(249,115,22,.25),0 0 40px 8px rgba(249,115,22,.3);}100%{box-shadow:0 0 0 0 rgba(249,115,22,0);}}
+.glow-green{animation:glowGreen .8s ease;}
+@keyframes glowGreen{0%{box-shadow:0 0 0 0 rgba(34,197,94,0);}30%{box-shadow:0 0 0 10px rgba(34,197,94,.22),0 0 46px 10px rgba(94,234,212,.4);}100%{box-shadow:0 0 0 0 rgba(34,197,94,0);}}
+
+/* ---------- Final screen ---------- */
+#screen-final{justify-content:center;}
+.final-card{max-width:560px;width:100%;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;margin-top:60px;position:relative;overflow:hidden;}
+.final-card h1{color:var(--burnt);margin:6px 0;}
+.mastery-badge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff;font-weight:900;padding:10px 24px;border-radius:999px;font-size:16px;margin:10px 0;box-shadow:0 6px 14px rgba(249,115,22,.4);}
+.mastery-msg{color:#3a4a44;font-size:15px;line-height:1.6;max-width:440px;margin:0 auto 14px;}
+.stat-row{display:flex;justify-content:space-around;margin:18px 0;flex-wrap:wrap;gap:10px;}
+.stat-row div{text-align:center;min-width:80px;}
+.stat-row .num{font-size:26px;font-weight:900;color:var(--teal-dark);}
+.stat-row .lbl{font-size:11px;color:#7a7069;text-transform:uppercase;letter-spacing:.5px;}
+.confetti{position:absolute;top:-10px;font-size:20px;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(650px) rotate(360deg);opacity:0;}}
+
+footer.brandfoot{color:rgba(30,50,45,.55);font-size:11px;margin-top:26px;text-align:center;}
+
+@media(max-width:480px){
+  .answer-box{top:4%;}
+}
+</style>
+</head>
+<body>
+<div id="jungleBackdrop">
+  <div id="rayField"></div>
+  <div id="leafField"></div>
+  <div id="fireflyField"></div>
+  <div id="sparkleField"></div>
+  <div id="bflyField"></div>
+  <div class="mist-layer"></div>
+</div>
+
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand-pill"><span class="dot"></span><b>MyMasteryLab</b> <span>Butterfly Fraction Challenge</span></div>
+    <div class="sound-wrap">
+      <button class="sound-btn" id="soundToggleBtn" onclick="toggleSoundPanel()">🔊</button>
+      <div class="sound-panel" id="soundPanel">
+        <label>Sound <button class="toggle on" id="soundToggle" onclick="toggleSound()"></button></label>
+        <label>Volume
+          <input type="range" id="volumeSlider" min="0" max="100" value="55" oninput="setVolume(this.value)">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- START SCREEN -->
+  <section class="screen active" id="screen-start">
+    <div class="logo-badge"><b>MyMasteryLab</b><span>FRACTION COMPARISON</span></div>
+    <div class="hero-butterfly">🦋</div>
+    <div class="title-hero">
+      <h1>Butterfly Fraction Challenge</h1>
+      <div class="tagline">"Spread Your Wings & Compare!"</div>
+      <p>Can you help the butterfly discover which fraction is greater? Multiply across the wings, compare the two products, and choose the correct symbol!</p>
+    </div>
+    <div class="instruction-card">
+      <b>How to play:</b> Each wing holds a fraction. Cross-multiply diagonally to find two products, type them into the boxes, then pick <b>&lt;</b>, <b>&gt;</b>, or <b>=</b> to compare. Choose your grade to begin!
+    </div>
+    <div class="grade-row">
+      <button class="btn-grade" onclick="startGame(4)">Grade 4</button>
+      <button class="btn-grade" onclick="startGame(5)">Grade 5</button>
+    </div>
+    <footer class="brandfoot">MyMasteryLab · Building Confident Problem Solvers</footer>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section class="screen" id="screen-game">
+    <div class="game-wrap">
+      <div class="score-panel">
+        <div class="score-val" id="scoreVal">🦋 Score: 0 / 100</div>
+        <div class="q-count" id="qCount">Question 1 / 8</div>
+      </div>
+
+      <div class="stage-card" id="stageCard">
+        <div class="stage-clean-zone">
+          <div class="butterfly-stage" id="butterflyStage">
+            <svg class="butterfly-svg" id="butterflySvg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+
+            <div class="frac-num" id="fracNum1">3</div>
+            <div class="frac-den" id="fracDen1">5</div>
+            <div class="frac-num" id="fracNum2">4</div>
+            <div class="frac-den" id="fracDen2">7</div>
+
+            <div class="answer-box left">
+              <label>Cross Product A</label>
+              <input type="number" id="inputA" inputmode="numeric" placeholder="?">
+            </div>
+            <div class="answer-box right">
+              <label>Cross Product B</label>
+              <input type="number" id="inputB" inputmode="numeric" placeholder="?">
+            </div>
+          </div>
+
+          <div class="symbol-row" id="symbolRow">
+            <button class="symbol-btn" data-sym="lt" onclick="selectSymbol(this)">&lt;</button>
+            <button class="symbol-btn" data-sym="gt" onclick="selectSymbol(this)">&gt;</button>
+            <button class="symbol-btn" data-sym="eq" onclick="selectSymbol(this)">=</button>
+          </div>
+
+          <div class="hint-box" id="hintBox"></div>
+          <div class="reveal-box" id="revealBox"></div>
+          <div class="success-box" id="successBox"></div>
+
+          <div class="action-row">
+            <button class="btn btn-secondary btn-small" onclick="quitToStart()">✕ Exit</button>
+            <button class="btn btn-primary" id="checkBtn" onclick="checkAnswer()">CHECK MY ANSWER</button>
+            <button class="btn btn-primary" id="continueBtn" style="display:none" onclick="continueAfterReveal()">Continue ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="brandfoot">MyMasteryLab · Building Confident Problem Solvers</footer>
+  </section>
+
+  <!-- FINAL SCREEN -->
+  <section class="screen" id="screen-final">
+    <div class="final-card" id="finalCard">
+      <div style="font-size:60px;">🏆🦋</div>
+      <h1>BUTTERFLY MASTER!</h1>
+      <div class="mastery-badge" id="masteryBadge">Butterfly Master</div>
+      <p class="mastery-msg" id="masteryMsg"></p>
+      <div class="stat-row">
+        <div><div class="num" id="finalScore">0</div><div class="lbl">Final Score</div></div>
+        <div><div class="num" id="finalCorrect">0</div><div class="lbl">Correct</div></div>
+        <div><div class="num" id="finalAcc">0%</div><div class="lbl">Accuracy</div></div>
+        <div><div class="num" id="finalTotal">8</div><div class="lbl">Questions</div></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
+        <button class="btn btn-secondary" onclick="goToStart()">↻ Change Grade</button>
+        <button class="btn btn-primary" onclick="restartSameGrade()">🔄 Play Again</button>
+      </div>
+    </div>
+    <footer class="brandfoot">MyMasteryLab · Building Confident Problem Solvers</footer>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   MyMasteryLab — Butterfly Fraction Challenge
+   Grade 4/5 Fraction Comparison via Cross Multiplication
+   All fraction comparisons are computed live via cross products
+   (n1*d2 vs n2*d1) so every answer key is mathematically guaranteed
+   correct — never hard-coded or guessed.
+========================================================= */
+
+/* ---------------- SOUND ENGINE (Web Audio API) ---------------- */
+let soundOn = true;
+let volume = 0.55;
+let audioCtx = null, masterGain = null;
+let ambientRunning = false;
+let ambientTimers = [];
+
+function initAudio(){
+  if(audioCtx) return;
+  try{
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = volume;
+    masterGain.connect(audioCtx.destination);
+  }catch(e){ soundOn = false; }
+}
+function playTone(freq, dur, type, vol){
+  if(!soundOn || !audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type || 'sine';
+  o.frequency.value = freq;
+  g.gain.value = (vol===undefined?0.18:vol);
+  o.connect(g); g.connect(masterGain);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+  o.stop(audioCtx.currentTime + dur);
+}
+function sfxClick(){ playTone(480,0.06,'sine',0.1); }
+// Cheerful short success chime (bright but soft major arpeggio)
+function sfxCorrect(){
+  playTone(523.25,0.16,'triangle',0.22);
+  setTimeout(()=>playTone(659.25,0.16,'triangle',0.22),110);
+  setTimeout(()=>playTone(783.99,0.26,'sine',0.22),220);
+}
+// Gentle, never-harsh "try again" tone
+function sfxTryAgain(){
+  playTone(415.30,0.2,'sine',0.14);
+  setTimeout(()=>playTone(349.23,0.28,'sine',0.13),150);
+}
+// Magical achievement fanfare for completion
+function sfxAchievement(){
+  const run=[523.25,587.33,659.25,783.99,880.00,1046.50];
+  run.forEach((f,i)=> setTimeout(()=>playTone(f,0.22,'triangle',0.2), i*100));
+  setTimeout(()=>playTone(1318.51,0.6,'sine',0.22), run.length*100+60);
+}
+function sfxWhoosh(){ playTone(300,0.2,'triangle',0.08); }
+
+/* Gentle jungle ambience: soft rotating chime pad + occasional bird chirp */
+const AMBIENT_SCALE = [392.00,440.00,523.25,587.33,659.25];
+let ambientStep = 0, ambientTimerId = null, chirpTimeoutId = null;
+function playAmbientStep(){
+  if(!soundOn) return;
+  const f = AMBIENT_SCALE[ambientStep % AMBIENT_SCALE.length];
+  playTone(f, 1.1, 'sine', 0.03);
+  playTone(f*2, 1.0, 'triangle', 0.015);
+  ambientStep++;
+}
+function scheduleBirdChirp(){
+  const delay = 4000 + Math.random()*5000;
+  chirpTimeoutId = setTimeout(()=>{
+    if(soundOn){
+      const base = 1800 + Math.random()*500;
+      playTone(base, 0.07, 'sine', 0.05);
+      setTimeout(()=>playTone(base*1.15, 0.08, 'sine', 0.045), 90);
+    }
+    scheduleBirdChirp();
+  }, delay);
+}
+function startAmbient(){
+  if(!soundOn || ambientRunning) return;
+  initAudio();
+  ambientStep = 0;
+  playAmbientStep();
+  ambientTimerId = setInterval(playAmbientStep, 900);
+  scheduleBirdChirp();
+  ambientRunning = true;
+}
+function stopAmbient(){
+  if(!ambientRunning) return;
+  if(ambientTimerId){ clearInterval(ambientTimerId); ambientTimerId = null; }
+  if(chirpTimeoutId){ clearTimeout(chirpTimeoutId); chirpTimeoutId = null; }
+  ambientRunning = false;
+}
+function toggleSoundPanel(){ document.getElementById('soundPanel').classList.toggle('open'); }
+function toggleSound(){
+  soundOn = !soundOn;
+  const btn = document.getElementById('soundToggle');
+  btn.classList.toggle('on', soundOn);
+  document.getElementById('soundToggleBtn').textContent = soundOn ? '🔊' : '🔇';
+  if(soundOn){ initAudio(); if(masterGain) masterGain.gain.value = volume; startAmbient(); }
+  else { stopAmbient(); if(masterGain) masterGain.gain.value = 0; }
+}
+function setVolume(v){ volume = v/100; if(masterGain) masterGain.gain.value = soundOn ? volume : 0; }
+
+/* ---------------- MATH ENGINE (single source of truth) ---------------- */
+function gcdCalc(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ const t=b; b=a%b; a=t; } return a||1; }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function randomProperFraction(dMin,dMax){
+  const d = randInt(dMin,dMax);
+  const n = randInt(1,d-1);
+  return [n,d];
+}
+function crossProducts(n1,d1,n2,d2){ return [n1*d2, n2*d1]; }
+function fractionPairSignature(n1,d1,n2,d2){
+  const a = n1+'/'+d1, b = n2+'/'+d2;
+  return [a,b].sort().join('_vs_');
+}
+function classifyDifficulty(p1,p2){
+  if(p1===p2) return 'hard';
+  const diff = Math.abs(p1-p2);
+  const rel = diff / Math.max(p1,p2);
+  return rel < 0.12 ? 'hard' : 'moderate';
+}
+function genRandomPair(cfg){
+  const [n1,d1] = randomProperFraction(cfg.dMin, cfg.dMax);
+  const [n2,d2] = randomProperFraction(cfg.dMin, cfg.dMax);
+  return {n1,d1,n2,d2};
+}
+function genEquivalentPair(cfg){
+  const maxD = cfg.dMax;
+  let d, k, n, tries=0;
+  const dCeiling = Math.max(cfg.dMin, Math.floor(maxD/2)); // ensures room for at least k=2 without exceeding maxD
+  do{
+    d = randInt(cfg.dMin, dCeiling);
+    const maxK = Math.max(2, Math.floor(maxD/d));
+    k = randInt(2, Math.min(maxK, cfg.equivKMax));
+    n = randInt(1, d-1);
+    tries++;
+  } while(gcdCalc(n,d)!==1 && tries<60);
+  return {n1:n, d1:d, n2:n*k, d2:d*k};
+}
+const GRADE_CONFIG = {
+  4: { dMin:2,  dMax:12, equivKMax:3 },
+  5: { dMin:6,  dMax:20, equivKMax:4 }
+};
+function generateQuestionSet(grade, total){
+  const cfg = GRADE_CONFIG[grade];
+  const numHard = Math.round(total*0.4);
+  const numModerate = total - numHard;
+  let tags = [];
+  for(let i=0;i<numModerate;i++) tags.push('moderate');
+  for(let i=0;i<numHard;i++) tags.push('hard');
+  tags = shuffle(tags);
+
+  const seen = new Set();
+  const questions = [];
+  tags.forEach((tag)=>{
+    let pair, sig, actualTag, tries=0;
+    do{
+      if(tag==='hard' && Math.random()<0.35){
+        pair = genEquivalentPair(cfg);
+      } else {
+        pair = genRandomPair(cfg);
+      }
+      sig = fractionPairSignature(pair.n1,pair.d1,pair.n2,pair.d2);
+      const [p1,p2] = crossProducts(pair.n1,pair.d1,pair.n2,pair.d2);
+      actualTag = classifyDifficulty(p1,p2);
+      tries++;
+    } while(
+      tries < 150 &&
+      (seen.has(sig) || (pair.n1===pair.n2 && pair.d1===pair.d2) || actualTag !== tag)
+    );
+    seen.add(sig);
+    const [p1,p2] = crossProducts(pair.n1,pair.d1,pair.n2,pair.d2);
+    const symbol = p1>p2 ? '>' : (p1<p2 ? '<' : '=');
+    questions.push({ n1:pair.n1, d1:pair.d1, n2:pair.n2, d2:pair.d2, p1, p2, symbol, difficulty: actualTag });
+  });
+  return questions;
+}
+
+/* ---------------- GAME STATE ---------------- */
+const TOTAL_QUESTIONS = 8;
+const POINTS_ATTEMPT1 = 15;
+const POINTS_ATTEMPT2 = 10;
+const POINTS_REVEAL   = 5;
+const MAX_POINTS = TOTAL_QUESTIONS * POINTS_ATTEMPT1;
+const SYM_TOKEN_MAP = { lt:'<', gt:'>', eq:'=' };
+function symbolToToken(sym){ return sym==='<'?'lt':(sym==='>'?'gt':'eq'); }
+
+let state = {
+  grade: 4,
+  questions: [],
+  qIdx: 0,
+  attempt: 0,
+  selectedSymbol: null,
+  pointsEarned: 0,
+  selfCorrectCount: 0,
+  revealed: false
+};
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ---------------- JUNGLE BACKDROP ---------------- */
+function buildBackdrop(){
+  const rayField = document.getElementById('rayField');
+  const leafField = document.getElementById('leafField');
+  const fireflyField = document.getElementById('fireflyField');
+  const sparkleField = document.getElementById('sparkleField');
+  const bflyField = document.getElementById('bflyField');
+  if(rayField){
+    let html='';
+    for(let i=0;i<5;i++) html += `<div class="sunray" style="left:${15+i*18}%;transform:rotate(${-12+i*5}deg);animation-delay:${(i*0.7).toFixed(2)}s;"></div>`;
+    rayField.innerHTML = html;
+  }
+  if(leafField){
+    const leaves=['🌿','🍃','🌴'];
+    let html='';
+    const positions=[[2,8],[92,14],[4,72],[90,68],[48,4]];
+    positions.forEach((p,i)=>{ html += `<div class="leaf-decor" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i*0.5).toFixed(2)}s;">${leaves[i%leaves.length]}</div>`; });
+    leafField.innerHTML = html;
+  }
+  if(fireflyField){
+    let html='';
+    for(let i=0;i<12;i++) html += `<div class="firefly" style="left:${Math.random()*100}%;top:${20+Math.random()*60}%;animation-delay:${(Math.random()*4).toFixed(2)}s;animation-duration:${(5+Math.random()*3).toFixed(1)}s;"></div>`;
+    fireflyField.innerHTML = html;
+  }
+  if(sparkleField){
+    let html='';
+    for(let i=0;i<10;i++) html += `<div class="sparkle-decor" style="left:${Math.random()*100}%;top:${Math.random()*80}%;animation-delay:${(Math.random()*2).toFixed(2)}s;">✨</div>`;
+    sparkleField.innerHTML = html;
+  }
+  if(bflyField){
+    let html='';
+    for(let i=0;i<3;i++) html += `<div class="bg-butterfly-drift" style="top:${15+i*25}%;animation-duration:${(20+i*6).toFixed(1)}s;animation-delay:${(i*4).toFixed(1)}s;">🦋</div>`;
+    bflyField.innerHTML = html;
+  }
+}
+
+/* ---------------- GAME FLOW ---------------- */
+function startGame(grade){
+  initAudio();
+  soundOn = true;
+  if(masterGain) masterGain.gain.value = volume;
+  startAmbient();
+  sfxWhoosh();
+  state.grade = grade;
+  state.questions = generateQuestionSet(grade, TOTAL_QUESTIONS);
+  state.qIdx = 0;
+  state.pointsEarned = 0;
+  state.selfCorrectCount = 0;
+  showScreen('screen-game');
+  renderQuestion();
+}
+function goToStart(){ showScreen('screen-start'); }
+function quitToStart(){ showScreen('screen-start'); }
+function restartSameGrade(){ startGame(state.grade); }
+
+function currentScoreNormalized(){
+  return Math.round(state.pointsEarned / MAX_POINTS * 100);
+}
+function updateScorePanel(){
+  document.getElementById('scoreVal').textContent = `🦋 Score: ${currentScoreNormalized()} / 100`;
+  document.getElementById('qCount').textContent = `Question ${state.qIdx+1} / ${TOTAL_QUESTIONS}`;
+}
+
+/* ---------------- BUTTERFLY WING ARTWORK (SVG, per-question colors) ---------------- */
+const WING_PALETTES = [
+  {name:'Violet Dream',  light:'#fdf4ff', mid:'#c084fc', vivid:'#7c3aed'},
+  {name:'Sunset Coral',  light:'#fff1f2', mid:'#fb7185', vivid:'#e11d48'},
+  {name:'Ocean Teal',    light:'#ecfeff', mid:'#22d3ee', vivid:'#0e7490'},
+  {name:'Golden Meadow', light:'#fffbeb', mid:'#fbbf24', vivid:'#d97706'},
+  {name:'Emerald Leaf',  light:'#ecfdf5', mid:'#34d399', vivid:'#059669'},
+  {name:'Sky Blue',      light:'#eff6ff', mid:'#60a5fa', vivid:'#2563eb'},
+  {name:'Berry Pink',    light:'#fdf2f8', mid:'#f472b6', vivid:'#db2777'}
+];
+let lastPaletteIdx = -1;
+function pickWingPalette(){
+  let idx;
+  do{ idx = randInt(0, WING_PALETTES.length-1); } while(idx===lastPaletteIdx && WING_PALETTES.length>1);
+  lastPaletteIdx = idx;
+  return WING_PALETTES[idx];
+}
+// Fixed coordinate constants (0-100 viewBox units) — MUST match the CSS percentage
+// positions of #fracNum1/#fracDen1/#fracNum2/#fracDen2 exactly, since the SVG uses
+// preserveAspectRatio="none" so viewBox units map 1:1 onto container percentages.
+const STAGE = { leftX:27, rightX:73, numY:32, denY:66 };
+
+function renderButterflySvg(){
+  const svg = document.getElementById('butterflySvg');
+  const palette = pickWingPalette();
+  const midY = (STAGE.numY + STAGE.denY) / 2;
+  const INK = '#1e293b';
+
+  svg.innerHTML = `
+    <defs>
+      <radialGradient id="wingGrad" cx="50%" cy="50%" r="75%">
+        <stop offset="0%" stop-color="${palette.light}"/>
+        <stop offset="55%" stop-color="${palette.mid}"/>
+        <stop offset="100%" stop-color="${palette.vivid}"/>
+      </radialGradient>
+    </defs>
+
+    <g id="wingGroupLeft">
+      <path d="M 46,30 C 34,12 14,6 8,20 C 2,34 4,46 10,52 C 4,64 6,80 18,88 C 30,94 42,78 46,68 C 44,56 44,42 46,30 Z"
+        fill="url(#wingGrad)" stroke="${palette.vivid}" stroke-width="1" opacity="0.92"/>
+      <path d="M46,38 Q20,30 10,22" fill="none" stroke="${palette.vivid}" stroke-width="0.6" opacity="0.45"/>
+      <path d="M46,50 Q15,50 5,50" fill="none" stroke="${palette.vivid}" stroke-width="0.6" opacity="0.45"/>
+      <path d="M46,62 Q20,70 14,80" fill="none" stroke="${palette.vivid}" stroke-width="0.6" opacity="0.45"/>
+      <circle cx="10" cy="22" r="3" fill="${palette.vivid}" opacity="0.4"/>
+      <circle cx="6" cy="50" r="2.3" fill="${palette.vivid}" opacity="0.4"/>
+      <circle cx="16" cy="80" r="3" fill="${palette.vivid}" opacity="0.4"/>
+    </g>
+    <g id="wingGroupRight">
+      <path d="M 54,30 C 66,12 86,6 92,20 C 98,34 96,46 90,52 C 96,64 94,80 82,88 C 70,94 58,78 54,68 C 56,56 56,42 54,30 Z"
+        fill="url(#wingGrad)" stroke="${palette.vivid}" stroke-width="1" opacity="0.92"/>
+      <path d="M54,38 Q80,30 90,22" fill="none" stroke="${palette.vivid}" stroke-width="0.6" opacity="0.45"/>
+      <path d="M54,50 Q85,50 95,50" fill="none" stroke="${palette.vivid}" stroke-width="0.6" opacity="0.45"/>
+      <path d="M54,62 Q80,70 86,80" fill="none" stroke="${palette.vivid}" stroke-width="0.6" opacity="0.45"/>
+      <circle cx="90" cy="22" r="3" fill="${palette.vivid}" opacity="0.4"/>
+      <circle cx="94" cy="50" r="2.3" fill="${palette.vivid}" opacity="0.4"/>
+      <circle cx="84" cy="80" r="3" fill="${palette.vivid}" opacity="0.4"/>
+    </g>
+
+    <path d="M48,27 Q42,16 38,10" fill="none" stroke="#0f766e" stroke-width="1.1"/>
+    <circle cx="38" cy="10" r="1.6" fill="#0f766e"/>
+    <path d="M52,27 Q58,16 62,10" fill="none" stroke="#0f766e" stroke-width="1.1"/>
+    <circle cx="62" cy="10" r="1.6" fill="#0f766e"/>
+    <ellipse cx="50" cy="50" rx="2.4" ry="22" fill="#0f766e"/>
+    <circle cx="50" cy="27" r="3" fill="#0f766e"/>
+
+    <line x1="${STAGE.leftX-9}" y1="${midY}" x2="${STAGE.leftX+9}" y2="${midY}" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="${STAGE.rightX-9}" y1="${midY}" x2="${STAGE.rightX+9}" y2="${midY}" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>
+
+    <path class="cross-line a pulse" id="lineA" d="M ${STAGE.leftX} ${STAGE.numY} L ${STAGE.rightX} ${STAGE.denY}"></path>
+    <path class="cross-line b pulse" id="lineB" d="M ${STAGE.leftX} ${STAGE.denY} L ${STAGE.rightX} ${STAGE.numY}"></path>
+  `;
+}
+
+function renderQuestion(){
+  const q = state.questions[state.qIdx];
+  state.attempt = 0;
+  state.selectedSymbol = null;
+  state.revealed = false;
+
+  document.getElementById('fracNum1').textContent = q.n1;
+  document.getElementById('fracDen1').textContent = q.d1;
+  document.getElementById('fracNum2').textContent = q.n2;
+  document.getElementById('fracDen2').textContent = q.d2;
+
+  renderButterflySvg();
+
+  const inputA = document.getElementById('inputA');
+  const inputB = document.getElementById('inputB');
+  inputA.value = ''; inputB.value = '';
+  inputA.disabled = false; inputB.disabled = false;
+  inputA.classList.remove('correct-flash','wrong-flash');
+  inputB.classList.remove('correct-flash','wrong-flash');
+
+  document.querySelectorAll('.symbol-btn').forEach(b=>{
+    b.classList.remove('selected','reveal-correct');
+    b.disabled = false;
+  });
+
+  document.getElementById('hintBox').classList.remove('show');
+  document.getElementById('revealBox').classList.remove('show');
+  document.getElementById('successBox').classList.remove('show');
+  document.getElementById('checkBtn').style.display = 'inline-block';
+  document.getElementById('checkBtn').disabled = false;
+  document.getElementById('continueBtn').style.display = 'none';
+
+  updateScorePanel();
+}
+
+function selectSymbol(btnEl){
+  if(document.getElementById('checkBtn').disabled) return;
+  const sym = SYM_TOKEN_MAP[btnEl.getAttribute('data-sym')];
+  state.selectedSymbol = sym;
+  document.querySelectorAll('.symbol-btn').forEach(b=>{
+    b.classList.toggle('selected', b===btnEl);
+  });
+  sfxClick();
+}
+
+function spawnSparkles(){
+  const stage = document.getElementById('butterflyStage');
+  const emojis=['✨','🦋','⭐'];
+  for(let i=0;i<8;i++){
+    const s = document.createElement('div');
+    s.className = 'sparkle-pop';
+    s.textContent = emojis[randInt(0,emojis.length-1)];
+    s.style.left = (20+Math.random()*60)+'%';
+    s.style.top = (30+Math.random()*40)+'%';
+    s.style.animationDelay = (Math.random()*0.3)+'s';
+    stage.appendChild(s);
+    setTimeout(()=>s.remove(), 1100);
+  }
+}
+
+function checkAnswer(){
+  const q = state.questions[state.qIdx];
+  const inputA = document.getElementById('inputA');
+  const inputB = document.getElementById('inputB');
+  const valA = inputA.value.trim();
+  const valB = inputB.value.trim();
+
+  if(valA==='' || valB==='' || !state.selectedSymbol){
+    document.getElementById('hintBox').classList.add('show');
+    document.getElementById('hintBox').textContent = '🦋 Please fill in both cross-products and choose a symbol before checking!';
+    return;
+  }
+
+  const aCorrect = Number(valA) === q.p1;
+  const bCorrect = Number(valB) === q.p2;
+  const symCorrect = state.selectedSymbol === q.symbol;
+  const allCorrect = aCorrect && bCorrect && symCorrect;
+
+  sfxClick();
+
+  if(allCorrect){
+    handleCorrect(q);
+    return;
+  }
+
+  state.attempt++;
+  inputA.classList.toggle('wrong-flash', !aCorrect);
+  inputA.classList.toggle('correct-flash', aCorrect);
+  inputB.classList.toggle('wrong-flash', !bCorrect);
+  inputB.classList.toggle('correct-flash', bCorrect);
+  document.querySelectorAll('.symbol-btn').forEach(b=>{
+    if(SYM_TOKEN_MAP[b.getAttribute('data-sym')]===state.selectedSymbol && !symCorrect) b.classList.add('wobble-gentle');
+    setTimeout(()=>b.classList.remove('wobble-gentle'), 500);
+  });
+
+  const stage = document.getElementById('stageCard');
+  stage.classList.remove('glow-amber'); void stage.offsetWidth; stage.classList.add('glow-amber');
+  sfxTryAgain();
+
+  const lineA = document.getElementById('lineA');
+  const lineB = document.getElementById('lineB');
+  if(lineA) lineA.classList.toggle('pulse', !aCorrect);
+  if(lineB) lineB.classList.toggle('pulse', !bCorrect);
+
+  if(state.attempt === 1){
+    const hint = document.getElementById('hintBox');
+    hint.classList.add('show');
+    hint.textContent = '🦋 Follow the butterfly wings! Check the two cross-products again — and make sure your symbol matches which product is bigger.';
+  } else {
+    revealSolution(q);
+  }
+}
+
+function handleCorrect(q){
+  let pts;
+  if(state.attempt === 0){ pts = POINTS_ATTEMPT1; }
+  else { pts = POINTS_ATTEMPT2; }
+  state.pointsEarned += pts;
+  state.selfCorrectCount++;
+
+  document.getElementById('inputA').classList.add('correct-flash');
+  document.getElementById('inputB').classList.add('correct-flash');
+  document.querySelectorAll('.symbol-btn').forEach(b=>{
+    if(SYM_TOKEN_MAP[b.getAttribute('data-sym')]===state.selectedSymbol) b.classList.add('reveal-correct');
+    b.disabled = true;
+  });
+  document.getElementById('inputA').disabled = true;
+  document.getElementById('inputB').disabled = true;
+  document.getElementById('checkBtn').disabled = true;
+
+  const successBox = document.getElementById('successBox');
+  successBox.classList.add('show');
+  if(q.symbol === '='){
+    successBox.textContent = `✨ Excellent! ${q.n1}×${q.d2}=${q.p1} and ${q.d1}×${q.n2}=${q.p2} — the fractions are equal, just like ${q.n1}/${q.d1} = ${q.n2}/${q.d2}!`;
+  } else {
+    successBox.textContent = '✨ Excellent! The butterfly agrees!';
+  }
+
+  document.getElementById('wingGroupLeft').classList.add('wing-flap');
+  document.getElementById('wingGroupRight').classList.add('wing-flap');
+  const stage = document.getElementById('stageCard');
+  stage.classList.remove('glow-green'); void stage.offsetWidth; stage.classList.add('glow-green');
+  spawnSparkles();
+  sfxCorrect();
+
+  updateScorePanel();
+
+  setTimeout(()=>{
+    document.getElementById('wingGroupLeft').classList.remove('wing-flap');
+    document.getElementById('wingGroupRight').classList.remove('wing-flap');
+    advanceQuestion();
+  }, 1400);
+}
+
+function revealSolution(q){
+  state.revealed = true;
+  const reveal = document.getElementById('revealBox');
+  reveal.classList.add('show');
+  reveal.innerHTML = `Here's how it works: <b>${q.n1} × ${q.d2} = ${q.p1}</b> and <b>${q.d1} × ${q.n2} = ${q.p2}</b>.
+    Since ${q.p1} ${q.symbol} ${q.p2}, that means <b>${q.n1}/${q.d1} ${q.symbol} ${q.n2}/${q.d2}</b>.`;
+  document.getElementById('hintBox').classList.remove('show');
+
+  document.getElementById('inputA').value = q.p1;
+  document.getElementById('inputB').value = q.p2;
+  document.getElementById('inputA').disabled = true;
+  document.getElementById('inputB').disabled = true;
+  document.getElementById('inputA').classList.remove('wrong-flash'); document.getElementById('inputA').classList.add('correct-flash');
+  document.getElementById('inputB').classList.remove('wrong-flash'); document.getElementById('inputB').classList.add('correct-flash');
+
+  document.querySelectorAll('.symbol-btn').forEach(b=>{
+    b.classList.remove('selected');
+    if(SYM_TOKEN_MAP[b.getAttribute('data-sym')]===q.symbol) b.classList.add('reveal-correct');
+    b.disabled = true;
+  });
+
+  document.getElementById('checkBtn').style.display = 'none';
+  document.getElementById('continueBtn').style.display = 'inline-block';
+}
+
+function continueAfterReveal(){
+  state.pointsEarned += POINTS_REVEAL;
+  updateScorePanel();
+  sfxClick();
+  advanceQuestion();
+}
+
+function advanceQuestion(){
+  state.qIdx++;
+  if(state.qIdx >= state.questions.length){
+    finishGame();
+  } else {
+    renderQuestion();
+  }
+}
+
+function finishGame(){
+  const finalScore = currentScoreNormalized();
+  const accuracy = Math.round(state.selfCorrectCount / TOTAL_QUESTIONS * 100);
+
+  document.getElementById('finalScore').textContent = finalScore;
+  document.getElementById('finalCorrect').textContent = state.selfCorrectCount + '/' + TOTAL_QUESTIONS;
+  document.getElementById('finalAcc').textContent = accuracy + '%';
+  document.getElementById('finalTotal').textContent = TOTAL_QUESTIONS;
+
+  let badge, msg;
+  if(finalScore >= 90){ badge = '🦋 Butterfly Master'; msg = 'Fantastic! You confidently compared fractions using cross multiplication.'; }
+  else if(finalScore >= 75){ badge = '🌿 Jungle Explorer'; msg = 'Great work! Your butterfly technique is getting stronger.'; }
+  else if(finalScore >= 60){ badge = '🌱 Growing Mathematician'; msg = "You're on the right path. Keep practicing your cross-products."; }
+  else { badge = '✨ Keep Exploring'; msg = "Let's practice multiplying across the butterfly wings one more time."; }
+
+  document.getElementById('masteryBadge').textContent = badge;
+  document.getElementById('masteryMsg').textContent = msg;
+
+  spawnConfetti();
+  sfxAchievement();
+  showScreen('screen-final');
+}
+
+function spawnConfetti(){
+  const card = document.getElementById('finalCard');
+  const emojis = ['🦋','✨','🌿','⭐','🏆'];
+  for(let i=0;i<24;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.textContent = emojis[randInt(0,emojis.length-1)];
+    c.style.left = randInt(0,100)+'%';
+    c.style.animationDuration = (1.5+Math.random()*1.5)+'s';
+    c.style.animationDelay = (Math.random()*0.6)+'s';
+    card.appendChild(c);
+    setTimeout(()=>c.remove(), 3500);
+  }
+}
+
+document.addEventListener('click', function(e){
+  const panel = document.getElementById('soundPanel');
+  const btn = document.getElementById('soundToggleBtn');
+  if(panel.classList.contains('open') && !panel.contains(e.target) && e.target!==btn){
+    panel.classList.remove('open');
+  }
+});
+
+try{ buildBackdrop(); }catch(e){ console.error('Backdrop init failed (non-fatal):', e); }
+</script>
+</body>
+</html>
