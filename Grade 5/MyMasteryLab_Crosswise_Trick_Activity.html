@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Crosswise Trick — MyMasteryLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#FFFFFF;
+  --teal:#00A7B2; --teal-deep:#00928E; --teal-wash:#E4F7F8; --teal-line:#8FD8DB;
+  --amber:#FAA71C; --amber-wash:#FFF4DE; --burnt:#D77F28;
+  --crimson:#C92426; --crimson-wash:#FCEAEA; --crimson-line:#F0A9AA;
+  --black:#000000; --muted:#5C6467; --rule:#E2E8E9;
+  --ease:cubic-bezier(.34,1.42,.5,1);
+  --ease2:cubic-bezier(.22,.68,.32,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--white); color:var(--black);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  display:flex; justify-content:center;
+}
+.stage{width:100%;max-width:960px;padding:20px 18px 70px;text-align:center;position:relative}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-bottom:12px;border-bottom:1px solid var(--rule);text-align:left}
+.brand{font-family:'Baloo 2',cursive;font-weight:700;font-size:17px;line-height:1.1}
+.brand span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:11.5px;color:var(--muted)}
+.hud{display:flex;gap:8px;align-items:center}
+.pts{font-family:'Baloo 2',cursive;font-weight:700;font-size:15px;color:var(--burnt);
+  background:var(--amber-wash);border:1px solid var(--amber);border-radius:999px;padding:3px 14px;white-space:nowrap}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--rule);background:#fff;
+  cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.18s}
+.icon-btn:hover{border-color:var(--teal)}
+.icon-btn[aria-pressed="true"]{background:var(--teal-wash);border-color:var(--teal)}
+.icon-btn.off{opacity:.5;color:var(--muted)}
+
+h1{font-family:'Baloo 2',cursive;font-weight:800;font-size:clamp(28px,5.6vw,46px);
+  line-height:1.1;margin:0;letter-spacing:-.01em}
+.sub{max-width:54ch;margin:12px auto 0;color:var(--muted);font-size:15.5px}
+.eyebrow{font-family:'Baloo 2',cursive;font-weight:700;font-size:14px;color:var(--teal-deep);margin:0 0 8px}
+.hero{padding:30px 0 6px}
+
+/* buttons */
+.btn{font-family:'Baloo 2',cursive;font-weight:700;font-size:16px;padding:12px 28px;
+  border-radius:999px;border:0;cursor:pointer;background:var(--teal);color:#fff;
+  box-shadow:0 3px 0 var(--teal-deep);transition:transform .12s,box-shadow .12s,background .2s}
+.btn:hover{background:var(--teal-deep);box-shadow:0 3px 0 #00706D}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--teal-deep)}
+.btn.amber{background:var(--amber);color:#3A2400;box-shadow:0 3px 0 var(--burnt)}
+.btn.amber:hover{background:#f7b743}
+.btn.ghost{background:#fff;color:var(--muted);border:1px solid var(--rule);box-shadow:none}
+.btn.ghost:hover{color:#000;border-color:#000;background:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+:focus-visible{outline:3px solid var(--amber);outline-offset:3px;border-radius:6px}
+
+.panel{display:none}
+.panel.active{display:block;animation:pop .45s var(--ease) both}
+@keyframes pop{from{opacity:0;transform:scale(.97) translateY(12px)}to{opacity:1;transform:none}}
+
+/* ---------- the three panels ---------- */
+.board{display:flex;justify-content:center;align-items:flex-start;gap:clamp(6px,1.6vw,18px);
+  margin:26px auto 0;flex-wrap:nowrap}
+.slot{flex:1 1 0;max-width:290px;min-width:0;padding:14px 8px 16px;border-radius:18px;
+  border:2px solid var(--rule);background:#fff;opacity:.32;filter:saturate(.25);
+  transition:opacity .45s var(--ease2),filter .45s,border-color .35s,transform .45s var(--ease),background .35s}
+.slot.live{opacity:1;filter:none;transform:translateY(-4px)}
+.slot.done{opacity:1;filter:none}
+.slot.s1.live,.slot.s1.done{border-color:var(--teal);background:var(--teal-wash)}
+.slot.s2.live,.slot.s2.done{border-color:var(--amber);background:var(--amber-wash)}
+.slot.s3.live,.slot.s3.done{border-color:var(--crimson);background:var(--crimson-wash)}
+.slot-name{font-family:'Baloo 2',cursive;font-weight:700;font-size:clamp(12px,2.4vw,15px);margin-bottom:8px}
+.slot.s1 .slot-name{color:var(--teal-deep)}
+.slot.s2 .slot-name{color:var(--burnt)}
+.slot.s3 .slot-name{color:var(--crimson)}
+
+/* the sum card with digits */
+.pair{position:relative;width:130px;height:116px;margin:0 auto;
+  display:grid;grid-template-columns:34px 48px 48px;grid-template-rows:58px 58px}
+.pair .d{font-family:'Baloo 2',cursive;font-weight:800;font-size:38px;display:grid;place-items:center;
+  color:#B9C3C5;transition:color .3s,transform .3s var(--ease)}
+.pair .op{font-family:'Baloo 2',cursive;font-weight:700;font-size:26px;display:grid;place-items:center;color:var(--muted)}
+.pair .d.hot{transform:scale(1.1)}
+.slot.s1 .pair .d.hot{color:var(--teal)}
+.slot.s2 .pair .d.hot{color:var(--burnt)}
+.slot.s3 .pair .d.hot{color:var(--crimson)}
+.pair svg{position:absolute;inset:0;width:130px;height:116px;overflow:visible;pointer-events:none}
+.brk{fill:none;stroke-width:3;rx:10;stroke-dasharray:320;stroke-dashoffset:320;
+  animation:draw .55s var(--ease2) .15s forwards}
+.slot.s1 .brk{stroke:var(--teal)}
+.slot.s3 .brk{stroke:var(--crimson)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.xline{fill:none;stroke:var(--burnt);stroke-width:3.5;stroke-linecap:round;
+  stroke-dasharray:90;stroke-dashoffset:90;animation:draw .5s var(--ease2) forwards}
+.xline.b{animation-delay:.22s}
+.xhead{fill:var(--burnt);opacity:0;animation:fadeIn .3s .5s forwards}
+@keyframes fadeIn{to{opacity:1}}
+
+/* answer box inside a slot */
+.formula{font-size:clamp(11px,2.3vw,13.5px);color:var(--muted);font-weight:600;
+  font-family:'Baloo 2',cursive;min-height:20px;margin-top:4px}
+.box{width:clamp(64px,15vw,92px);height:clamp(52px,12vw,64px);margin:8px auto 0;border-radius:14px;
+  border:3px dashed var(--rule);background:#fff;display:grid;place-items:center;position:relative;
+  transition:border-color .25s,background .25s,transform .2s}
+.slot.live .box{border-color:#C9D3D4}
+.box input{width:100%;height:100%;border:0;background:transparent;text-align:center;
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:clamp(22px,5vw,30px);color:var(--black);border-radius:12px}
+.box input:focus{outline:none}
+.box.ok{border-style:solid;background:#fff}
+.slot.s1 .box.ok{border-color:var(--teal)} .slot.s1 .box.ok input{color:var(--teal-deep)}
+.slot.s2 .box.ok{border-color:var(--amber)} .slot.s2 .box.ok input{color:var(--burnt)}
+.slot.s3 .box.ok{border-color:var(--crimson)} .slot.s3 .box.ok input{color:var(--crimson)}
+.box.bad{border-color:var(--crimson);border-style:solid;background:var(--crimson-wash);animation:shake .4s}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-7px)}60%{transform:translateX(7px)}}
+.box.ok{animation:bump .4s var(--ease)}
+@keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.16)}100%{transform:scale(1)}}
+
+/* ---------- combine strip ---------- */
+.combine{max-width:640px;margin:26px auto 0;padding:20px 16px;border:2px solid var(--rule);
+  border-radius:18px;display:none;position:relative}
+.combine.show{display:block;animation:pop .45s var(--ease) both}
+.combine h3{font-family:'Baloo 2',cursive;font-size:15px;margin:0 0 14px;color:var(--muted);font-weight:600}
+.digits{display:flex;justify-content:center;align-items:center;gap:10px;position:relative}
+.dbox{min-width:clamp(54px,13vw,76px);height:clamp(54px,13vw,76px);border-radius:14px;display:grid;place-items:center;
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:clamp(24px,5.6vw,34px);
+  border:3px solid;transition:all .35s var(--ease);padding:0 6px}
+.dbox.l{border-color:var(--teal);color:var(--teal-deep);background:var(--teal-wash)}
+.dbox.m{border-color:var(--amber);color:var(--burnt);background:var(--amber-wash)}
+.dbox.r{border-color:var(--crimson);color:var(--crimson);background:var(--crimson-wash)}
+.dbox.over{animation:wob .5s}
+@keyframes wob{0%,100%{transform:none}30%{transform:rotate(-4deg) scale(1.06)}65%{transform:rotate(4deg) scale(1.06)}}
+.flyer{position:absolute;font-family:'Baloo 2',cursive;font-weight:800;font-size:26px;
+  color:var(--burnt);background:#fff;border:3px solid var(--burnt);border-radius:12px;
+  width:44px;height:44px;display:grid;place-items:center;z-index:5;pointer-events:none}
+.carry-note{font-size:13.5px;color:var(--muted);margin-top:12px;min-height:22px;font-weight:500}
+.final{margin-top:18px;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap}
+.final .lab{font-family:'Baloo 2',cursive;font-weight:700;font-size:clamp(17px,4vw,22px)}
+.final input{width:150px;text-align:center;border:3px solid var(--teal);border-radius:14px;
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:clamp(22px,5vw,30px);padding:8px 6px;background:#fff}
+.final input:focus{outline:none;border-color:var(--amber)}
+.final.ok input{background:var(--teal-wash);color:var(--teal-deep)}
+.final.bad input{border-color:var(--crimson);background:var(--crimson-wash);animation:shake .4s}
+
+/* ---------- meta ---------- */
+.progress{display:flex;justify-content:center;gap:6px;margin:20px 0 0;flex-wrap:wrap}
+.dot{width:24px;height:7px;border-radius:99px;background:var(--rule);transition:.3s}
+.dot.n.done{background:var(--teal)}
+.dot.c.done{background:var(--crimson)}
+.dot.now{transform:scaleY(2)}
+.qmeta{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:12px;
+  font-size:12.5px;color:var(--muted);font-family:'Baloo 2',cursive;font-weight:600}
+.tag{padding:2px 12px;border-radius:99px;border:1.5px solid}
+.tag.n{color:var(--teal-deep);border-color:var(--teal);background:var(--teal-wash)}
+.tag.c{color:var(--crimson);border-color:var(--crimson);background:var(--crimson-wash)}
+.feedback{min-height:24px;margin:16px auto 0;font-size:15px;font-weight:500;max-width:54ch;color:var(--muted)}
+.feedback.good{color:var(--teal-deep)}
+.feedback.bad{color:var(--crimson)}
+.steps{display:flex;justify-content:center;gap:8px;margin:18px auto 0;max-width:560px;flex-wrap:wrap}
+.chipstep{font-family:'Baloo 2',cursive;font-weight:600;font-size:12.5px;padding:5px 14px;border-radius:999px;
+  border:1.5px solid var(--rule);color:var(--muted);transition:.3s}
+.chipstep.on{background:var(--black);color:#fff;border-color:var(--black)}
+.chipstep.fin{border-color:var(--teal);color:var(--teal-deep);background:var(--teal-wash)}
+
+/* confetti */
+.conf{position:fixed;width:10px;height:10px;border-radius:2px;pointer-events:none;z-index:99}
+
+/* results */
+.score{font-family:'Baloo 2',cursive;font-weight:800;font-size:clamp(48px,12vw,84px);line-height:1;margin:6px 0}
+.score small{font-size:.32em;color:var(--muted);font-weight:600}
+.breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;max-width:620px;margin:26px auto 0}
+.bd{border:2px solid var(--rule);border-radius:16px;padding:14px}
+.bd .n{font-family:'Baloo 2',cursive;font-weight:800;font-size:26px}
+.bd .l{font-size:12.5px;color:var(--muted)}
+.cta{margin:30px auto 0;max-width:620px;padding:22px;border:2px solid var(--teal-line);background:var(--teal-wash);border-radius:18px}
+.cta h3{font-family:'Baloo 2',cursive;margin:0 0 6px;font-size:19px}
+.cta p{margin:0 0 16px;font-size:14.5px;color:#00494D}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+
+@media (max-width:620px){
+  .pair{width:104px;height:94px;grid-template-columns:26px 39px 39px;grid-template-rows:47px 47px}
+  .pair .d{font-size:30px} .pair .op{font-size:21px}
+  .pair svg{width:104px;height:94px}
+  .slot{padding:10px 4px 12px;border-radius:14px}
+  .board{gap:5px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main class="stage">
+
+  <div class="top">
+    <div class="brand">MyMasteryLab
+      <span>Concept Clarity · Mental maths toolkit</span>
+    </div>
+    <div class="hud">
+      <div class="pts" id="pts">0 pts</div>
+      <button class="icon-btn" id="musicBtn" aria-pressed="false" aria-label="Toggle background music">♪</button>
+      <button class="icon-btn" id="sfxBtn" aria-pressed="true" aria-label="Toggle sound effects">🔊</button>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <section class="panel active" id="introPanel">
+    <div class="hero">
+      <p class="eyebrow">The crosswise trick</p>
+      <h1>Two digits times two digits,<br>in three quick looks.</h1>
+      <p class="sub">Down the left. Across the middle. Down the right. Three small answers, pushed together into one. Watch 12 × 34, then play ten rounds.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="startDemo">Show me 12 × 34</button>
+      <button class="btn ghost" id="skipDemo">Skip to the game</button>
+    </div>
+    <p class="feedback">Ten rounds: five land clean, five need a carry. Music is the ♪ button.</p>
+  </section>
+
+  <!-- DEMO -->
+  <section class="panel" id="demoPanel">
+    <div class="hero" style="padding-bottom:0">
+      <p class="eyebrow">Watch first</p>
+      <h1 style="font-size:clamp(26px,5vw,38px)">12 × 34</h1>
+    </div>
+    <div class="steps" id="demoSteps"></div>
+    <div class="board" id="demoBoard"></div>
+    <div class="combine" id="demoCombine"></div>
+    <div class="feedback" id="demoNarr"></div>
+    <div class="btn-row">
+      <button class="btn" id="demoNext">Look down the left</button>
+      <button class="btn ghost" id="demoSkip">Start the game</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section class="panel" id="gamePanel">
+    <div class="progress" id="progress"></div>
+    <div class="qmeta">
+      <span id="qCount">Round 1 of 10</span>
+      <span class="tag n" id="qTag">No carry</span>
+      <span id="streak"></span>
+    </div>
+    <div class="hero" style="padding:14px 0 0">
+      <h1 id="qTitle">11 × 23</h1>
+    </div>
+    <div class="steps" id="qSteps"></div>
+    <div class="board" id="qBoard"></div>
+    <div class="combine" id="qCombine"></div>
+    <div class="feedback" id="qFeedback"></div>
+    <div class="btn-row" id="qButtons"></div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="panel" id="resultPanel">
+    <div class="hero">
+      <p class="eyebrow">Game over</p>
+      <h1 id="resTitle">Ten rounds, crosswise.</h1>
+      <div class="score" id="resScore">0<small> pts</small></div>
+      <p class="sub" id="resLine"></p>
+    </div>
+    <div class="breakdown" id="resBreak"></div>
+    <div class="cta">
+      <h3>Why this works</h3>
+      <p>The three looks are the same four partial products the long method uses — left is tens × tens, the cross is both tens × ones pairs, right is ones × ones. The trick just adds them in place instead of writing two long rows.</p>
+      <button class="btn amber" id="againBtn">Play again</button>
+    </div>
+    <footer>MyMasteryLab · Concept Clarity Programme · Vertically and crosswise, part of the mental maths sequence</footer>
+  </section>
+
+</main>
+
+<script>
+/* ============ AUDIO ============ */
+const A={ctx:null,master:null,musicGain:null,timer:null,musicOn:false,sfxOn:true,step:0,
+ensure(){if(!this.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return false;
+  this.ctx=new C();this.master=this.ctx.createGain();this.master.gain.value=.9;this.master.connect(this.ctx.destination);
+  this.musicGain=this.ctx.createGain();this.musicGain.gain.value=0;this.musicGain.connect(this.master);}
+  if(this.ctx.state==='suspended')this.ctx.resume();return true;},
+tone(f,d,t='sine',dl=0,v=.16){if(!this.sfxOn||!this.ensure())return;const n=this.ctx.currentTime+dl;
+  const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=t;o.frequency.setValueAtTime(f,n);
+  g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(v,n+.012);g.gain.exponentialRampToValueAtTime(.0001,n+d);
+  o.connect(g);g.connect(this.master);o.start(n);o.stop(n+d+.05);},
+sweep(f1,f2,d,v=.12){if(!this.sfxOn||!this.ensure())return;const n=this.ctx.currentTime;
+  const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='triangle';
+  o.frequency.setValueAtTime(f1,n);o.frequency.exponentialRampToValueAtTime(f2,n+d);
+  g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.0001,n+d);
+  o.connect(g);g.connect(this.master);o.start(n);o.stop(n+d+.05);},
+ok(){this.tone(784,.14,'sine',0,.15);this.tone(1175,.24,'sine',.09,.12);},
+no(){this.tone(207,.18,'triangle',0,.12);this.tone(164,.24,'triangle',.08,.1);},
+unlock(){this.tone(523,.1,'sine',0,.1);this.tone(698,.14,'sine',.07,.09);},
+hop(){this.sweep(440,980,.28,.11);},
+win(){[523,659,784,1047,1319].forEach((f,i)=>this.tone(f,.4,'sine',i*.09,.13));},
+chord(fs,len){const t=this.ctx.currentTime;fs.forEach(f=>{const o=this.ctx.createOscillator(),g=this.ctx.createGain(),lp=this.ctx.createBiquadFilter();
+  lp.type='lowpass';lp.frequency.value=1100;o.type='triangle';o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.05,t+1.1);g.gain.linearRampToValueAtTime(.0001,t+len);
+  o.connect(lp);lp.connect(g);g.connect(this.musicGain);o.start(t);o.stop(t+len+.2);});},
+loop(){const p=[[261.63,392,523.25],[293.66,440,587.33],[329.63,493.88,659.25],[246.94,392,493.88]];
+  this.chord(p[this.step%4],4.2);this.step++;},
+musicToggle(){if(!this.ensure())return false;this.musicOn=!this.musicOn;
+  if(this.musicOn){this.musicGain.gain.setTargetAtTime(.6,this.ctx.currentTime,.7);this.loop();this.timer=setInterval(()=>this.loop(),4000);}
+  else{this.musicGain.gain.setTargetAtTime(0,this.ctx.currentTime,.4);clearInterval(this.timer);}
+  return this.musicOn;}};
+const musicBtn=document.getElementById('musicBtn'),sfxBtn=document.getElementById('sfxBtn');
+musicBtn.onclick=()=>{const on=A.musicToggle();musicBtn.setAttribute('aria-pressed',String(on));musicBtn.classList.toggle('off',!on);};
+sfxBtn.onclick=()=>{A.sfxOn=!A.sfxOn;sfxBtn.setAttribute('aria-pressed',String(A.sfxOn));
+  sfxBtn.classList.toggle('off',!A.sfxOn);sfxBtn.textContent=A.sfxOn?'🔊':'🔇';if(A.sfxOn)A.tone(700,.1);};
+
+/* ============ QUESTIONS ============ */
+const QS=[
+ {a:11,b:23,carry:false}, {a:21,b:13,carry:false}, {a:12,b:31,carry:false},
+ {a:14,b:21,carry:false}, {a:41,b:12,carry:false},
+ {a:17,b:21,carry:true},  {a:13,b:24,carry:true},  {a:27,b:13,carry:true},
+ {a:46,b:23,carry:true},  {a:68,b:47,carry:true}
+];
+/* everything below is computed, never stored */
+function parts(a,b){
+  const a1=Math.floor(a/10),a2=a%10,b1=Math.floor(b/10),b2=b%10;
+  const L=a1*b1, M=a1*b2+a2*b1, R=a2*b2;
+  const r=R%10, cr=Math.floor(R/10);
+  const m2=M+cr, md=m2%10, cm=Math.floor(m2/10);
+  const l2=L+cm;
+  return {a1,a2,b1,b2,L,M,R,r,cr,m2,md,cm,l2,answer:a*b,built:Number(''+l2+md+r)};
+}
+QS.forEach(q=>{const p=parts(q.a,q.b);
+  if(p.built!==p.answer) console.error('Trick mismatch',q,p);
+  if(q.carry!==(p.cr>0||p.cm>0)) console.error('Carry flag wrong',q,p);});
+
+const $=id=>document.getElementById(id);
+function show(p){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  $(p).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+
+/* ============ VISUAL BUILDERS ============ */
+/* one sum card: digits laid out exactly like the worked picture */
+function pairCard(q,mode){
+  const p=parts(q.a,q.b);
+  const hot = mode==='left'?['d1','d3']: mode==='cross'?['d1','d2','d3','d4']: mode==='right'?['d2','d4']:[];
+  const cls=k=>'d'+(hot.includes(k)?' hot':'');
+  let svg='';
+  if(mode==='left')  svg='<svg viewBox="0 0 130 116"><rect class="brk" x="36" y="4" width="44" height="108" rx="10"/></svg>';
+  if(mode==='right') svg='<svg viewBox="0 0 130 116"><rect class="brk" x="85" y="4" width="43" height="108" rx="10"/></svg>';
+  if(mode==='cross') svg='<svg viewBox="0 0 130 116">'+
+     '<line class="xline" x1="62" y1="36" x2="102" y2="80"/>'+
+     '<line class="xline b" x1="102" y1="36" x2="62" y2="80"/>'+
+     '<polygon class="xhead" points="102,82 94,74 104,72"/>'+
+     '<polygon class="xhead" points="62,82 60,72 70,74"/></svg>';
+  return '<div class="pair">'+
+    '<div></div>'+
+    '<div class="'+cls('d1')+'">'+p.a1+'</div><div class="'+cls('d2')+'">'+p.a2+'</div>'+
+    '<div class="op">×</div>'+
+    '<div class="'+cls('d3')+'">'+p.b1+'</div><div class="'+cls('d4')+'">'+p.b2+'</div>'+
+    svg+'</div>';
+}
+function slotHTML(q,n,mode,name,formula,interactive){
+  return '<div class="slot s'+n+'" data-n="'+n+'">'+
+    '<div class="slot-name">'+name+'</div>'+
+    pairCard(q,mode)+
+    '<div class="formula">'+formula+'</div>'+
+    '<div class="box">'+(interactive
+        ? '<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+name+' result" disabled>'
+        : '<input type="text" value="" disabled aria-hidden="true">')+
+    '</div></div>';
+}
+function buildBoard(el,q,interactive){
+  const p=parts(q.a,q.b);
+  el.innerHTML=
+    slotHTML(q,1,'left','1 · Down the left', p.a1+' × '+p.b1, interactive)+
+    slotHTML(q,2,'cross','2 · Across the middle', p.a1+' × '+p.b2+' + '+p.a2+' × '+p.b1, interactive)+
+    slotHTML(q,3,'right','3 · Down the right', p.a2+' × '+p.b2, interactive);
+  return [...el.querySelectorAll('.slot')];
+}
+function setSteps(el,i){
+  const names=['Left','Cross','Right','Combine'];
+  el.innerHTML=names.map((n,k)=>'<span class="chipstep'+(k===i?' on':'')+(k<i?' fin':'')+'">'+(k+1)+' · '+n+'</span>').join('');
+}
+function confetti(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const cols=['#00A7B2','#FAA71C','#D77F28','#C92426','#00DBD5'];
+  for(let i=0;i<26;i++){
+    const d=document.createElement('div');d.className='conf';
+    d.style.background=cols[i%cols.length];
+    d.style.left=(window.innerWidth/2)+'px';d.style.top=(window.innerHeight*0.42)+'px';
+    document.body.appendChild(d);
+    const ang=(Math.PI*2*i)/26+Math.random()*.3, dist=120+Math.random()*190;
+    d.animate([{transform:'translate(0,0) rotate(0deg)',opacity:1},
+      {transform:'translate('+Math.cos(ang)*dist+'px,'+(Math.sin(ang)*dist+150)+'px) rotate('+(Math.random()*720-360)+'deg)',opacity:0}],
+      {duration:1100+Math.random()*500,easing:'cubic-bezier(.2,.7,.4,1)'}).onfinish=()=>d.remove();
+  }
+}
+
+/* carry animation: a tens digit hops from one box to its left neighbour */
+function hopCarry(container,fromSel,toSel,value,after){
+  const from=container.querySelector(fromSel), to=container.querySelector(toSel);
+  const wrap=container.querySelector('.digits');
+  const fr=from.getBoundingClientRect(), tr=to.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
+  const f=document.createElement('div');
+  f.className='flyer';f.textContent=value;
+  f.style.left=(fr.left-wr.left+fr.width/2-22)+'px';
+  f.style.top=(fr.top-wr.top+fr.height/2-22)+'px';
+  wrap.appendChild(f);
+  A.hop();
+  const dx=(tr.left-fr.left), dy=-46;
+  f.animate([{transform:'translate(0,0) scale(1)'},
+             {transform:'translate('+dx/2+'px,'+dy+'px) scale(1.25)',offset:.5},
+             {transform:'translate('+dx+'px,0) scale(.7)',opacity:.2}],
+            {duration:780,easing:'cubic-bezier(.3,.9,.4,1)'}).onfinish=()=>{
+    f.remove(); to.classList.add('over'); setTimeout(()=>to.classList.remove('over'),520); after&&after();
+  };
+}
+
+/* ============ DEMO (12 × 34) ============ */
+const DEMO={a:12,b:34};
+let dStep=0,dSlots=null;
+function demoReset(){
+  dStep=0;
+  dSlots=buildBoard($('demoBoard'),DEMO,false);
+  setSteps($('demoSteps'),-1);
+  $('demoCombine').className='combine';$('demoCombine').innerHTML='';
+  $('demoNarr').className='feedback';
+  $('demoNarr').textContent='Write the two numbers one above the other. Now you only ever look at two digits at a time.';
+  $('demoNext').textContent='Look down the left';
+}
+function demoGo(){
+  const p=parts(DEMO.a,DEMO.b);
+  dStep++;
+  if(dStep<=3){
+    const s=dSlots[dStep-1];
+    setSteps($('demoSteps'),dStep-1);
+    dSlots.forEach(x=>x.classList.remove('live'));
+    s.classList.add('live','done');
+    const val=[p.L,p.M,p.R][dStep-1];
+    const inp=s.querySelector('input');
+    setTimeout(()=>{inp.value=val;s.querySelector('.box').classList.add('ok');A.ok();},620);
+    A.unlock();
+    $('demoNarr').className='feedback';
+    $('demoNarr').innerHTML=[
+      'Left column only: <b>1 × 3 = 3</b>. That is the tens-times-tens piece.',
+      'Now cross over: <b>1 × 4 = 4</b> and <b>2 × 3 = 6</b>. Add them — <b>10</b>. Both crossings live in the middle.',
+      'Right column only: <b>2 × 4 = 8</b>.'][dStep-1];
+    $('demoNext').textContent=['Cross the middle','Look down the right','Push them together'][dStep-1];
+  }
+  else if(dStep===4){
+    setSteps($('demoSteps'),3);
+    const c=$('demoCombine');
+    c.className='combine show';
+    c.innerHTML='<h3>Three results, side by side</h3>'+
+      '<div class="digits"><div class="dbox l" id="dL">'+p.L+'</div><div class="dbox m" id="dM">'+p.M+'</div><div class="dbox r" id="dR">'+p.R+'</div></div>'+
+      '<div class="carry-note" id="dNote">Only the middle is too big for one box — 10 needs a carry.</div>';
+    $('demoNarr').textContent='Any box holding 10 or more gives its tens to the box on its left.';
+    $('demoNext').textContent='Carry it across';
+  }
+  else if(dStep===5){
+    const c=$('demoCombine');
+    hopCarry(c,'#dM','#dL',p.cm,()=>{
+      $('dM').textContent=p.md; $('dL').textContent=p.l2;
+      $('dNote').textContent='The 1 moved left: 3 became 4, and the middle kept its 0.';
+      setTimeout(()=>{
+        c.querySelector('.digits').insertAdjacentHTML('afterend',
+          '<div class="final ok"><span class="lab">12 × 34 =</span><input value="'+p.answer+'" disabled></div>');
+        A.win();confetti();
+      },500);
+    });
+    $('demoNarr').innerHTML='Read the boxes left to right: <b>4, 0, 8</b> — and that is <b>408</b>.';
+    $('demoNext').textContent='Play the game';
+  }
+  else startGame();
+}
+$('startDemo').onclick=()=>{A.ensure();demoReset();show('demoPanel');};
+$('skipDemo').onclick=()=>{A.ensure();startGame();};
+$('demoSkip').onclick=startGame;
+$('demoNext').onclick=demoGo;
+
+/* ============ GAME ============ */
+let qi=0,slots=null,stage=0,clean=true,points=0,streak=0,best=0;
+const stats={n:0,c:0,clean:0};
+
+function renderProgress(){
+  const el=$('progress');el.innerHTML='';
+  QS.forEach((q,i)=>{const d=document.createElement('div');
+    d.className='dot '+(q.carry?'c':'n')+(i<qi?' done':'')+(i===qi?' now':'');el.appendChild(d);});
+}
+function setPts(){$('pts').textContent=points+' pts';}
+function startGame(){qi=0;points=0;streak=0;best=0;stats.n=stats.c=stats.clean=0;setPts();show('gamePanel');loadQ();}
+
+function loadQ(){
+  const q=QS[qi],p=parts(q.a,q.b);
+  stage=0;clean=true;
+  renderProgress();
+  $('qCount').textContent='Round '+(qi+1)+' of '+QS.length;
+  const tag=$('qTag');tag.className='tag '+(q.carry?'c':'n');tag.textContent=q.carry?'Carry round':'No carry';
+  $('streak').textContent=streak>1?('🔥 '+streak+' in a row'):'';
+  $('qTitle').textContent=q.a+' × '+q.b;
+  setSteps($('qSteps'),0);
+  slots=buildBoard($('qBoard'),q,true);
+  $('qCombine').className='combine';$('qCombine').innerHTML='';
+  $('qFeedback').className='feedback';
+  $('qFeedback').textContent='Start on the left. Only the two tens digits matter right now.';
+  $('qButtons').innerHTML='';
+  openStage(0);
+}
+function openStage(i){
+  stage=i;
+  const q=QS[qi],p=parts(q.a,q.b);
+  setSteps($('qSteps'),i);
+  slots.forEach((s,k)=>s.classList.toggle('live',k===i));
+  const s=slots[i],inp=s.querySelector('input');
+  inp.disabled=false;
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();checkStage(inp);}};
+  inp.onblur=()=>{if(inp.value.trim()!=='')checkStage(inp);};
+  A.unlock();
+  $('qButtons').innerHTML='<button class="btn" id="checkBtn">Check</button>'+
+    '<button class="btn ghost" id="hintBtn">Hint</button>';
+  $('checkBtn').onclick=()=>checkStage(inp);
+  $('hintBtn').onclick=()=>{
+    clean=false;
+    const words=[
+      'Ring the tens digits: '+p.a1+' and '+p.b1+'. Multiply just those two.',
+      'Two crossings: '+p.a1+' × '+p.b2+', then '+p.a2+' × '+p.b1+'. Add the pair.',
+      'Ring the ones digits: '+p.a2+' and '+p.b2+'. Multiply just those two.'][i];
+    $('qFeedback').className='feedback';$('qFeedback').textContent=words;
+  };
+  setTimeout(()=>inp.focus(),480);
+}
+function checkStage(inp){
+  const q=QS[qi],p=parts(q.a,q.b),box=inp.closest('.box');
+  if(box.classList.contains('ok'))return;
+  const raw=inp.value.trim();
+  if(!/^\d+$/.test(raw)){box.classList.add('bad');A.no();
+    $('qFeedback').className='feedback bad';$('qFeedback').textContent='Whole numbers only.';
+    setTimeout(()=>box.classList.remove('bad'),450);return;}
+  const truth=[p.L,p.M,p.R][stage];
+  if(Number(raw)===truth){
+    box.classList.remove('bad');box.classList.add('ok');inp.disabled=true;
+    A.ok();points+=clean?15:8;setPts();
+    slots[stage].classList.add('done');
+    $('qFeedback').className='feedback good';
+    $('qFeedback').textContent=['Left done. Now cross over the middle.',
+      'Both crossings added. One more column.',
+      'All three found. Time to push them together.'][stage];
+    if(stage<2) setTimeout(()=>openStage(stage+1),620);
+    else setTimeout(openCombine,680);
+  }else{
+    clean=false;streak=0;$('streak').textContent='';
+    box.classList.add('bad');A.no();
+    $('qFeedback').className='feedback bad';
+    $('qFeedback').textContent=stage===1
+      ? 'Not yet — the middle needs both crossings added together, not just one.'
+      : 'Not yet. Look only at that one column, nothing else.';
+    setTimeout(()=>{box.classList.remove('bad');inp.select();},450);
+  }
+}
+function openCombine(){
+  const q=QS[qi],p=parts(q.a,q.b),c=$('qCombine');
+  setSteps($('qSteps'),3);
+  slots.forEach(s=>s.classList.remove('live'));
+  c.className='combine show';
+  c.innerHTML='<h3>Push them together</h3>'+
+    '<div class="digits"><div class="dbox l" id="gL">'+p.L+'</div><div class="dbox m" id="gM">'+p.M+'</div><div class="dbox r" id="gR">'+p.R+'</div></div>'+
+    '<div class="carry-note" id="gNote">'+(q.carry
+      ? 'One of these boxes holds 10 or more. It has to hand its tens to the left.'
+      : 'Every box holds a single digit. Nothing to carry — just read them off.')+'</div>';
+  $('qFeedback').className='feedback';
+  $('qFeedback').textContent=q.carry?'Run the carry, then read the answer.':'Read the boxes left to right and type the answer.';
+  $('qButtons').innerHTML=q.carry
+    ? '<button class="btn amber" id="carryBtn">Run the carry</button>'
+    : '<button class="btn" id="readBtn">Read the answer</button>';
+  if(q.carry) $('carryBtn').onclick=runCarry;
+  else $('readBtn').onclick=openFinal;
+}
+function runCarry(){
+  const q=QS[qi],p=parts(q.a,q.b),c=$('qCombine');
+  $('qButtons').innerHTML='';
+  const stepTwo=()=>{
+    if(p.cm>0){
+      $('gNote').textContent='The middle is '+p.m2+' — keep the '+p.md+', carry '+p.cm+' to the left.';
+      hopCarry(c,'#gM','#gL',p.cm,()=>{
+        $('gM').textContent=p.md;$('gL').textContent=p.l2;
+        $('gNote').textContent='Left becomes '+p.l2+'. Every box is settled.';
+        setTimeout(openFinal,500);
+      });
+    }else{$('gNote').textContent='Middle is fine as it is. Every box is settled.';setTimeout(openFinal,400);}
+  };
+  if(p.cr>0){
+    $('gNote').textContent='The right is '+p.R+' — keep the '+p.r+', carry '+p.cr+' to the middle.';
+    hopCarry(c,'#gR','#gM',p.cr,()=>{
+      $('gR').textContent=p.r;$('gM').textContent=p.m2;
+      setTimeout(stepTwo,650);
+    });
+  } else stepTwo();
+}
+function openFinal(){
+  const q=QS[qi],p=parts(q.a,q.b),c=$('qCombine');
+  if(c.querySelector('.final'))return;
+  c.querySelector('.carry-note').insertAdjacentHTML('beforebegin','');
+  c.insertAdjacentHTML('beforeend',
+    '<div class="final"><span class="lab">'+q.a+' × '+q.b+' =</span>'+
+    '<input type="text" inputmode="numeric" id="finalInput" autocomplete="off" aria-label="Final answer"></div>');
+  $('qFeedback').className='feedback';
+  $('qFeedback').textContent='Read the three boxes left to right.';
+  $('qButtons').innerHTML='<button class="btn" id="finBtn">Lock it in</button>';
+  const fi=$('finalInput');
+  fi.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();checkFinal();}};
+  $('finBtn').onclick=checkFinal;
+  setTimeout(()=>fi.focus(),350);
+}
+function checkFinal(){
+  const q=QS[qi],p=parts(q.a,q.b),fi=$('finalInput'),wrap=fi.closest('.final');
+  const raw=fi.value.trim();
+  if(!/^\d+$/.test(raw)){wrap.className='final bad';A.no();
+    $('qFeedback').className='feedback bad';$('qFeedback').textContent='Type the answer as a whole number.';return;}
+  if(Number(raw)===p.answer){
+    wrap.className='final ok';fi.disabled=true;
+    A.win();confetti();
+    points+=clean?25:12;
+    if(clean){streak++;stats.clean++;best=Math.max(best,streak);}else streak=0;
+    setPts();
+    stats[q.carry?'c':'n']++;
+    $('qFeedback').className='feedback good';
+    $('qFeedback').textContent=clean?'Clean round — no hints, no retries.':'Locked in. '+q.a+' × '+q.b+' = '+p.answer+'.';
+    const last=qi===QS.length-1;
+    $('qButtons').innerHTML='<button class="btn" id="nextQ">'+(last?'See your score':'Next round')+'</button>';
+    $('nextQ').onclick=()=>{if(last)finish();else{qi++;loadQ();}};
+  }else{
+    clean=false;streak=0;$('streak').textContent='';
+    wrap.className='final bad';A.no();
+    $('qFeedback').className='feedback bad';
+    $('qFeedback').textContent='Read the boxes in order, left to right, with no gaps between them.';
+    setTimeout(()=>{wrap.className='final';fi.select();},500);
+  }
+}
+function finish(){
+  $('resScore').innerHTML=points+'<small> pts</small>';
+  $('resTitle').textContent=stats.clean===QS.length?'Ten rounds, every one clean.':'Ten rounds, crosswise.';
+  $('resLine').textContent=stats.clean>=8
+    ? 'That is fast enough to use in your head. Try it on any two-digit pair you meet today.'
+    : 'The three looks are landing. The carries are the part worth another run.';
+  $('resBreak').innerHTML=
+    '<div class="bd"><div class="n">'+stats.n+'/5</div><div class="l">No-carry rounds</div></div>'+
+    '<div class="bd"><div class="n">'+stats.c+'/5</div><div class="l">Carry rounds</div></div>'+
+    '<div class="bd"><div class="n">'+stats.clean+'/10</div><div class="l">Solved with no hints</div></div>'+
+    '<div class="bd"><div class="n">'+best+'</div><div class="l">Best clean streak</div></div>';
+  A.win();confetti();
+  show('resultPanel');
+}
+$('againBtn').onclick=startGame;
+</script>
+</body>
+</html>
