@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Area Model Multiplication — MyMasteryLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#FFFFFF;
+  --teal:#00A7B2;
+  --teal-deep:#00928E;
+  --teal-wash:#E8F7F8;
+  --teal-line:#9FDDE0;
+  --amber:#FAA71C;
+  --amber-wash:#FEF3DF;
+  --burnt:#D77F28;
+  --crimson:#C92426;
+  --crimson-wash:#FBE9E9;
+  --black:#000000;
+  --muted:#5A6366;
+  --rule:#DCE4E5;
+  --shadow:0 1px 0 var(--rule);
+  --r:14px;
+  --ease:cubic-bezier(.22,.68,.32,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--white);
+  color:var(--black);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  display:flex;
+  justify-content:center;
+}
+.stage{
+  width:100%;
+  max-width:940px;
+  padding:22px 20px 72px;
+  text-align:center;
+}
+
+/* ---------- header ---------- */
+.top{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding-bottom:14px;border-bottom:1px solid var(--rule);
+  text-align:left;
+}
+.brand{font-family:'Poppins',sans-serif;font-weight:600;font-size:15px;letter-spacing:.1px}
+.brand span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:12px;color:var(--muted)}
+.audio-controls{display:flex;gap:8px}
+.icon-btn{
+  width:40px;height:40px;border-radius:50%;border:1px solid var(--rule);
+  background:var(--white);cursor:pointer;font-size:16px;line-height:1;
+  display:grid;place-items:center;transition:border-color .18s,background .18s;
+}
+.icon-btn:hover{border-color:var(--teal)}
+.icon-btn[aria-pressed="true"]{background:var(--teal-wash);border-color:var(--teal)}
+.icon-btn.off{color:var(--muted);opacity:.55}
+
+/* ---------- headline ---------- */
+.hero{padding:34px 0 8px}
+.eyebrow{
+  font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:var(--teal-deep);
+  margin:0 0 10px;
+}
+h1{
+  font-family:'Poppins',sans-serif;font-weight:700;
+  font-size:clamp(28px,5.2vw,44px);line-height:1.12;letter-spacing:-.02em;margin:0;
+}
+.sub{max-width:52ch;margin:14px auto 0;color:var(--muted);font-size:15.5px}
+
+/* ---------- step rail ---------- */
+.rail{
+  display:flex;justify-content:center;align-items:stretch;gap:0;
+  margin:26px auto 0;max-width:620px;border:1px solid var(--rule);border-radius:var(--r);
+  overflow:hidden;
+}
+.rail-item{
+  flex:1;padding:10px 6px;font-size:12.5px;font-family:'Poppins',sans-serif;font-weight:500;
+  color:var(--muted);border-right:1px solid var(--rule);background:var(--white);
+  transition:background .25s,color .25s;
+}
+.rail-item:last-child{border-right:0}
+.rail-item b{display:block;font-size:11px;font-weight:600;color:var(--teal);opacity:.55}
+.rail-item.on{background:var(--teal);color:#fff}
+.rail-item.on b{color:#fff;opacity:.75}
+.rail-item.done{background:var(--teal-wash);color:var(--teal-deep)}
+
+/* ---------- buttons ---------- */
+.btn{
+  font-family:'Poppins',sans-serif;font-weight:600;font-size:15px;
+  padding:13px 26px;border-radius:999px;border:0;cursor:pointer;
+  background:var(--teal);color:#fff;transition:transform .15s var(--ease),background .2s;
+}
+.btn:hover{background:var(--teal-deep)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--rule)}
+.btn.ghost:hover{color:var(--black);border-color:var(--black);background:transparent}
+.btn.amber{background:var(--amber);color:#000}
+.btn.amber:hover{background:var(--burnt);color:#fff}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:4px}
+
+/* ---------- panels ---------- */
+.panel{display:none}
+.panel.active{display:block;animation:rise .5s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ---------- the rectangle ---------- */
+.model-wrap{
+  position:relative;margin:30px auto 0;max-width:660px;
+}
+.model-grid{
+  display:grid;gap:0;transition:gap .55s var(--ease);
+  border:2px solid var(--black);border-radius:10px;overflow:hidden;
+  transition:gap .55s var(--ease),border-color .4s,border-width .01s;
+}
+.model-grid.split{gap:9px;border-color:transparent;border-width:0;overflow:visible}
+.corner{background:var(--white)}
+.axis{
+  font-family:'Poppins',sans-serif;font-weight:600;font-size:clamp(13px,2.6vw,17px);
+  display:grid;place-items:center;color:var(--burnt);
+  opacity:0;transition:opacity .45s var(--ease) .25s;padding:6px 2px;
+}
+.model-grid.split .axis{opacity:1}
+.cell{
+  position:relative;display:grid;place-items:center;
+  min-height:clamp(62px,13vw,92px);
+  background:var(--teal-wash);
+  border:1px solid var(--teal-line);
+  border-radius:0;transition:border-radius .55s var(--ease),background .3s,border-color .3s,box-shadow .3s;
+}
+.model-grid.split .cell{border-radius:10px}
+.cell.solved{background:#fff;border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+.cell.wrong{border-color:var(--crimson);background:var(--crimson-wash);animation:shake .4s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.cell .mini{
+  position:absolute;top:6px;left:0;right:0;font-size:clamp(10px,2.2vw,12.5px);
+  color:var(--muted);font-family:'Poppins',sans-serif;font-weight:500;
+  opacity:0;transition:opacity .4s .3s;
+}
+.model-grid.split .cell .mini{opacity:1}
+.cell input{
+  width:76%;max-width:104px;text-align:center;border:0;border-bottom:2px dashed var(--teal);
+  background:transparent;font-family:'Poppins',sans-serif;font-weight:700;
+  font-size:clamp(17px,3.6vw,24px);color:var(--black);padding:10px 2px 4px;margin-top:10px;
+}
+.cell input:focus{outline:none;border-bottom-color:var(--amber);border-bottom-style:solid}
+.cell.solved input{border-bottom-color:transparent;color:var(--teal-deep)}
+.cell .tick{
+  position:absolute;right:8px;bottom:6px;color:var(--teal);font-size:14px;
+  opacity:0;transform:scale(.6);transition:opacity .25s,transform .25s var(--ease);
+}
+.cell.solved .tick{opacity:1;transform:scale(1)}
+.cell .val{font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(17px,3.6vw,24px);margin-top:10px}
+
+/* whole-rectangle overlay before the cut */
+.overlay{
+  position:absolute;inset:0;display:grid;place-items:center;
+  background:var(--teal-wash);border:2px solid var(--black);border-radius:10px;
+  transition:opacity .5s var(--ease),transform .5s var(--ease);
+  font-family:'Poppins',sans-serif;
+}
+.overlay.gone{opacity:0;transform:scale(1.015);pointer-events:none}
+.overlay .expr{font-size:clamp(26px,6vw,44px);font-weight:700;letter-spacing:-.01em}
+.overlay .hint{font-size:13px;color:var(--muted);font-weight:500;margin-top:6px}
+
+/* ---------- sum strip ---------- */
+.sum{
+  margin:26px auto 0;max-width:660px;padding:20px 18px;border:1px solid var(--rule);
+  border-radius:var(--r);display:none;
+}
+.sum.show{display:block;animation:rise .45s var(--ease) both}
+.sum-line{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;
+  font-family:'Poppins',sans-serif;font-weight:600;font-size:clamp(16px,3.4vw,22px);
+}
+.chip{
+  background:var(--amber-wash);border:1px solid var(--amber);border-radius:8px;
+  padding:5px 12px;opacity:0;transform:translateY(-8px);
+  animation:drop .4s var(--ease) forwards;
+}
+@keyframes drop{to{opacity:1;transform:none}}
+.plus{color:var(--muted)}
+.sum input{
+  width:130px;text-align:center;border:2px solid var(--teal);border-radius:10px;
+  font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(18px,4vw,24px);
+  padding:8px 6px;color:var(--black);background:var(--white);
+}
+.sum input:focus{outline:none;border-color:var(--amber)}
+.sum.correct input{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+.sum.err input{border-color:var(--crimson);background:var(--crimson-wash);animation:shake .4s}
+
+/* ---------- why card ---------- */
+.why{
+  margin:26px auto 0;max-width:620px;text-align:left;padding:20px 22px;
+  border-left:4px solid var(--amber);background:var(--amber-wash);border-radius:0 var(--r) var(--r) 0;
+  display:none;
+}
+.why.show{display:block;animation:rise .45s var(--ease) both}
+.why h3{font-family:'Poppins',sans-serif;font-size:15px;margin:0 0 6px}
+.why p{margin:0;font-size:15px;color:#332000}
+
+/* ---------- feedback line ---------- */
+.feedback{
+  min-height:24px;margin:18px auto 0;font-size:14.5px;font-weight:500;max-width:52ch;
+  color:var(--muted);transition:color .2s;
+}
+.feedback.good{color:var(--teal-deep)}
+.feedback.bad{color:var(--crimson)}
+
+/* ---------- progress ---------- */
+.progress{display:flex;justify-content:center;align-items:center;gap:7px;margin:24px 0 4px;flex-wrap:wrap}
+.dot{width:26px;height:6px;border-radius:99px;background:var(--rule);transition:background .3s,transform .3s}
+.dot.e.done{background:var(--teal)}
+.dot.m.done{background:var(--amber)}
+.dot.c.done{background:var(--crimson)}
+.dot.now{transform:scaleY(1.9)}
+.qmeta{
+  display:flex;justify-content:center;align-items:center;gap:10px;margin-top:14px;
+  font-size:12.5px;color:var(--muted);font-family:'Poppins',sans-serif;font-weight:500;
+}
+.tag{padding:3px 11px;border-radius:99px;border:1px solid var(--rule)}
+.tag.e{color:var(--teal-deep);border-color:var(--teal);background:var(--teal-wash)}
+.tag.m{color:var(--burnt);border-color:var(--amber);background:var(--amber-wash)}
+.tag.c{color:var(--crimson);border-color:var(--crimson);background:var(--crimson-wash)}
+
+/* ---------- demo narration ---------- */
+.narr{
+  margin:24px auto 0;max-width:560px;min-height:56px;font-size:16px;color:var(--black);
+}
+.narr b{color:var(--teal-deep)}
+
+/* ---------- results ---------- */
+.score{font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(46px,11vw,78px);line-height:1;margin:8px 0}
+.score small{font-size:.36em;color:var(--muted);font-weight:500}
+.breakdown{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+  max-width:620px;margin:28px auto 0;
+}
+.bd-item{border:1px solid var(--rule);border-radius:var(--r);padding:14px}
+.bd-item .n{font-family:'Poppins',sans-serif;font-weight:700;font-size:24px}
+.bd-item .l{font-size:12.5px;color:var(--muted)}
+.cta{
+  margin:34px auto 0;max-width:620px;padding:24px;border:1px solid var(--teal-line);
+  background:var(--teal-wash);border-radius:var(--r);
+}
+.cta h3{font-family:'Poppins',sans-serif;margin:0 0 6px;font-size:18px}
+.cta p{margin:0 0 16px;font-size:14.5px;color:#00494D}
+
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+
+@media (max-width:560px){
+  .stage{padding:16px 14px 56px}
+  .rail-item{font-size:11px;padding:8px 4px}
+  .cell input{max-width:82px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<main class="stage">
+
+  <div class="top">
+    <div class="brand">MyMasteryLab
+      <span>Concept Clarity Programme · Mastery over memorisation</span>
+    </div>
+    <div class="audio-controls">
+      <button class="icon-btn" id="musicBtn" aria-pressed="false" title="Background music" aria-label="Toggle background music">♪</button>
+      <button class="icon-btn" id="sfxBtn" aria-pressed="true" title="Sound effects" aria-label="Toggle sound effects">🔊</button>
+    </div>
+  </div>
+
+  <!-- ============ INTRO ============ -->
+  <section class="panel active" id="introPanel">
+    <div class="hero">
+      <p class="eyebrow">Step 3 of the Concept Clarity sequence</p>
+      <h1>See why multiplication works,<br>before you learn the shortcut.</h1>
+      <p class="sub">The area model turns a hard multiplication into a rectangle you can cut into easy pieces. Watch one worked example, then solve twelve of your own.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="startDemo">Watch 23 × 4 first</button>
+      <button class="btn ghost" id="skipDemo">Skip to the questions</button>
+    </div>
+    <p class="feedback">Turn the music on for a calmer session — the ♪ button, top right.</p>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="panel" id="demoPanel">
+    <div class="hero" style="padding-bottom:0">
+      <p class="eyebrow">Worked example</p>
+      <h1 style="font-size:clamp(24px,4.4vw,34px)">23 × 4</h1>
+    </div>
+    <div class="rail" id="demoRail">
+      <div class="rail-item" data-i="0"><b>1</b>Split</div>
+      <div class="rail-item" data-i="1"><b>2</b>Multiply</div>
+      <div class="rail-item" data-i="2"><b>3</b>Add</div>
+      <div class="rail-item" data-i="3"><b>4</b>Why</div>
+    </div>
+    <div class="model-wrap" id="demoWrap"></div>
+    <div class="sum" id="demoSum"></div>
+    <div class="narr" id="demoNarr"></div>
+    <div class="btn-row">
+      <button class="btn" id="demoNext">Next step</button>
+      <button class="btn ghost" id="demoSkip">Go to the questions</button>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="panel" id="quizPanel">
+    <div class="progress" id="progress"></div>
+    <div class="qmeta">
+      <span id="qCount">Question 1 of 12</span>
+      <span class="tag e" id="qTag">Easy</span>
+    </div>
+    <div class="hero" style="padding:18px 0 0">
+      <h1 id="qTitle" style="font-size:clamp(28px,6vw,46px)">14 × 3</h1>
+      <p class="sub" id="qPrompt">Cut the rectangle into place values, then fill every piece.</p>
+    </div>
+    <div class="rail" id="qRail">
+      <div class="rail-item" data-i="0"><b>1</b>Split</div>
+      <div class="rail-item" data-i="1"><b>2</b>Multiply</div>
+      <div class="rail-item" data-i="2"><b>3</b>Add</div>
+      <div class="rail-item" data-i="3"><b>4</b>Why</div>
+    </div>
+    <div class="model-wrap" id="qWrap"></div>
+    <div class="sum" id="qSum"></div>
+    <div class="why" id="qWhy"></div>
+    <div class="feedback" id="qFeedback"></div>
+    <div class="btn-row" id="qButtons"></div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section class="panel" id="resultPanel">
+    <div class="hero">
+      <p class="eyebrow">Session complete</p>
+      <h1 id="resTitle">Twelve rectangles, cut and solved.</h1>
+      <div class="score" id="resScore">0<small>/8 first try</small></div>
+      <p class="sub" id="resLine"></p>
+    </div>
+    <div class="breakdown" id="resBreak"></div>
+    <div class="cta">
+      <h3>Where this goes next</h3>
+      <p>Once the rectangle makes sense, the column method stops being a set of rules to remember — it is the same four pieces, written shorter. That is the order a MyMasteryLab mentor teaches it in.</p>
+      <button class="btn amber" id="againBtn">Run the activity again</button>
+    </div>
+    <footer>MyMasteryLab · Concept Clarity Programme · Area model, part of the primary multiplication sequence</footer>
+  </section>
+
+</main>
+
+<script>
+/* ================= AUDIO ================= */
+const A = {
+  ctx:null, master:null, musicGain:null, musicTimer:null, musicOn:false, sfxOn:true, step:0,
+  ensure(){
+    if(!this.ctx){
+      const C = window.AudioContext||window.webkitAudioContext;
+      if(!C) return false;
+      this.ctx = new C();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.9;
+      this.master.connect(this.ctx.destination);
+      this.musicGain = this.ctx.createGain();
+      this.musicGain.gain.value = 0;
+      this.musicGain.connect(this.master);
+    }
+    if(this.ctx.state==='suspended') this.ctx.resume();
+    return true;
+  },
+  tone(freq,dur,type='sine',delay=0,vol=0.18){
+    if(!this.sfxOn||!this.ensure()) return;
+    const t = this.ctx.currentTime+delay;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t+dur+0.05);
+  },
+  correct(){ this.tone(784,0.16,'sine',0,0.16); this.tone(1175,0.28,'sine',0.1,0.13); },
+  wrong(){ this.tone(196,0.2,'triangle',0,0.13); this.tone(165,0.26,'triangle',0.09,0.1); },
+  cut(){ this.tone(330,0.1,'triangle',0,0.1); this.tone(494,0.14,'triangle',0.07,0.09); },
+  pop(i){ this.tone(523.25*Math.pow(2,(i%4)/12),0.12,'sine',0,0.1); },
+  finish(){ [523,659,784,1047].forEach((f,i)=>this.tone(f,0.42,'sine',i*0.11,0.14)); },
+  /* ambient pad loop */
+  chord(freqs,when,len){
+    const t = this.ctx.currentTime+when;
+    freqs.forEach(f=>{
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain(), lp=this.ctx.createBiquadFilter();
+      lp.type='lowpass'; lp.frequency.value=900;
+      o.type='triangle'; o.frequency.setValueAtTime(f,t);
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.055,t+1.4);
+      g.gain.linearRampToValueAtTime(0.0001,t+len);
+      o.connect(lp); lp.connect(g); g.connect(this.musicGain);
+      o.start(t); o.stop(t+len+0.2);
+    });
+  },
+  loop(){
+    const prog=[[220,329.63,415.30],[196,293.66,392],[174.61,261.63,349.23],[164.81,246.94,329.63]];
+    this.chord(prog[this.step%4],0,4.6);
+    this.step++;
+  },
+  musicToggle(){
+    if(!this.ensure()) return false;
+    this.musicOn=!this.musicOn;
+    if(this.musicOn){
+      this.musicGain.gain.setTargetAtTime(0.6,this.ctx.currentTime,0.8);
+      this.loop(); this.musicTimer=setInterval(()=>this.loop(),4400);
+    }else{
+      this.musicGain.gain.setTargetAtTime(0,this.ctx.currentTime,0.4);
+      clearInterval(this.musicTimer);
+    }
+    return this.musicOn;
+  }
+};
+
+const musicBtn=document.getElementById('musicBtn'), sfxBtn=document.getElementById('sfxBtn');
+musicBtn.addEventListener('click',()=>{
+  const on=A.musicToggle();
+  musicBtn.setAttribute('aria-pressed',String(on));
+  musicBtn.classList.toggle('off',!on);
+});
+sfxBtn.addEventListener('click',()=>{
+  A.sfxOn=!A.sfxOn;
+  sfxBtn.setAttribute('aria-pressed',String(A.sfxOn));
+  sfxBtn.classList.toggle('off',!A.sfxOn);
+  sfxBtn.textContent = A.sfxOn?'🔊':'🔇';
+  if(A.sfxOn) A.tone(660,0.12);
+});
+
+/* ================= QUESTION BANK ================= */
+/* every product is computed at runtime from the splits — no stored answers */
+const QUESTIONS=[
+  {a:14,  sa:[10,4],      b:3,  sb:[3],     lvl:'e',
+   why:"A 14-by-3 rectangle covers the same space whether you look at it whole or cut into a 10-by-3 piece and a 4-by-3 piece. Cutting changes the view, never the area."},
+  {a:26,  sa:[20,6],      b:5,  sb:[5],     lvl:'e',
+   why:"26 fives is 20 fives plus 6 more fives. You never have to hold 26 in your head — only a ten-fact and a small fact."},
+  {a:37,  sa:[30,7],      b:6,  sb:[6],     lvl:'e',
+   why:"The 7 × 6 piece spills past 10, so 42 pushes four extra tens into the total. The model shows that carry in the open instead of hiding it above a column."},
+  {a:17,  sa:[10,7],      b:13, sb:[10,3],  lvl:'m',
+   why:"Both numbers only just pass ten, so every piece is small — but there are still four of them. Leave one out and the answer drops by exactly that piece's area."},
+  {a:45,  sa:[40,5],      b:12, sb:[10,2],  lvl:'m',
+   why:"12 is 10 and 2, so this is 45 tens plus 45 doubled. The top row of the rectangle already carries 450 of the 540."},
+  {a:42,  sa:[40,2],      b:25, sb:[20,5],  lvl:'m',
+   why:"Both numbers split now, so the rectangle is cut twice — once across, once down. Four pieces, and each one is a fact you already know."},
+  {a:36,  sa:[30,6],      b:24, sb:[20,4],  lvl:'m',
+   why:"Two pieces here are both 120: thirty fours and six twenties. Same area, different shape. That is the distributive property, visible."},
+  {a:58,  sa:[50,8],      b:32, sb:[30,2],  lvl:'m',
+   why:"The 50 × 30 piece alone is 1500 — most of the answer. Reading the biggest piece first is how you estimate before you calculate."},
+  {a:63,  sa:[60,3],      b:47, sb:[40,7],  lvl:'c',
+   why:"Not one of these pieces is a friendly round number, yet each is still a single times-table fact. The difficulty grew; the method did not."},
+  {a:89,  sa:[80,9],      b:76, sb:[70,6],  lvl:'c',
+   why:"89 and 76 sit just under 90 and 80, so the answer has to land a little under 7200. The 80 × 70 piece tells you that before you calculate a single other piece."},
+  {a:123, sa:[100,20,3],  b:45, sb:[40,5],  lvl:'c',
+   why:"Three columns, two rows, six pieces. The method never changes as numbers grow — only the number of pieces does."},
+  {a:247, sa:[200,40,7],  b:36, sb:[30,6],  lvl:'c',
+   why:"Every part of 247 meets every part of 36 — nothing skipped, nothing carried in secret. The column method you will learn next is exactly this, written shorter."}
+];
+const LVL={e:'Easy',m:'Moderate',c:'Challenging'};
+const COUNT=QUESTIONS.reduce((o,q)=>(o[q.lvl]++,o),{e:0,m:0,c:0});
+
+/* ================= HELPERS ================= */
+const $=id=>document.getElementById(id);
+function show(panel){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $(panel).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+/* proportional column widths, floored so small place values stay readable */
+function widths(parts){
+  const mx=Math.max(...parts), floor=mx*0.2;
+  return parts.map(v=>Math.max(v,floor).toFixed(2)+'fr').join(' ');
+}
+function setRail(railEl,i){
+  railEl.querySelectorAll('.rail-item').forEach(el=>{
+    const n=+el.dataset.i;
+    el.classList.toggle('on',n===i);
+    el.classList.toggle('done',n<i);
+  });
+}
+/* builds the rectangle: axis labels + one cell per partial product */
+function buildModel(wrap,q,interactive){
+  wrap.innerHTML='';
+  const grid=document.createElement('div');
+  grid.className='model-grid';
+  grid.style.gridTemplateColumns='minmax(42px,.55fr) '+widths(q.sa);
+  grid.style.gridTemplateRows='auto '+q.sb.map(()=>'auto').join(' ');
+
+  const corner=document.createElement('div'); corner.className='corner'; grid.appendChild(corner);
+  q.sa.forEach(c=>{
+    const d=document.createElement('div'); d.className='axis'; d.textContent=c; grid.appendChild(d);
+  });
+  q.sb.forEach((r,ri)=>{
+    const rl=document.createElement('div'); rl.className='axis'; rl.textContent=r; grid.appendChild(rl);
+    q.sa.forEach((c,ci)=>{
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.dataset.answer=String(r*c);          // computed, never typed by hand
+      cell.dataset.key=ri+'-'+ci;
+      const mini=document.createElement('div');
+      mini.className='mini'; mini.textContent=c+' × '+r;
+      cell.appendChild(mini);
+      if(interactive){
+        const inp=document.createElement('input');
+        inp.type='text'; inp.inputMode='numeric'; inp.autocomplete='off';
+        inp.setAttribute('aria-label',c+' times '+r);
+        cell.appendChild(inp);
+      }else{
+        const v=document.createElement('div'); v.className='val'; v.textContent='';
+        cell.appendChild(v);
+      }
+      const tick=document.createElement('div'); tick.className='tick'; tick.textContent='✓';
+      cell.appendChild(tick);
+      grid.appendChild(cell);
+    });
+  });
+  wrap.appendChild(grid);
+
+  const ov=document.createElement('div');
+  ov.className='overlay';
+  ov.innerHTML='<div><div class="expr">'+q.a+' × '+q.b+'</div><div class="hint">one whole rectangle</div></div>';
+  wrap.appendChild(ov);
+  return {grid,overlay:ov};
+}
+function partials(q){
+  const out=[];
+  q.sb.forEach(r=>q.sa.forEach(c=>out.push(r*c)));
+  return out;
+}
+
+/* ================= DEMO (23 × 4) ================= */
+const DEMO={a:23,sa:[20,3],b:4,sb:[4]};
+let demoStep=0, demoRefs=null;
+const demoNarr=$('demoNarr'), demoSum=$('demoSum');
+
+function demoReset(){
+  demoStep=0;
+  demoRefs=buildModel($('demoWrap'),DEMO,false);
+  demoSum.className='sum'; demoSum.innerHTML='';
+  demoNarr.innerHTML='One rectangle, 23 units across and 4 units down. Its area <i>is</i> the answer to 23 × 4 — we just need an easy way to measure it.';
+  setRail($('demoRail'),0);
+  $('demoNext').textContent='Split into place values';
+  $('demoNext').disabled=false;
+}
+function demoAdvance(){
+  demoStep++;
+  const cells=[...demoRefs.grid.querySelectorAll('.cell')];
+  if(demoStep===1){
+    demoRefs.overlay.classList.add('gone');
+    demoRefs.grid.classList.add('split');
+    A.cut();
+    setRail($('demoRail'),1);
+    demoNarr.innerHTML='23 is <b>20 and 3</b>. Cut the rectangle there. Nothing was added or removed — the same area is now two friendlier pieces.';
+    $('demoNext').textContent='Multiply each piece';
+  }
+  else if(demoStep===2){
+    cells.forEach((c,i)=>{
+      setTimeout(()=>{
+        c.querySelector('.val').textContent=c.dataset.answer;
+        c.classList.add('solved'); A.pop(i);
+      },i*420);
+    });
+    setRail($('demoRail'),2);
+    demoNarr.innerHTML='<b>20 × 4 = 80</b> and <b>3 × 4 = 12</b>. Two facts you already know, instead of one you do not.';
+    $('demoNext').textContent='Add the pieces';
+  }
+  else if(demoStep===3){
+    const p=partials(DEMO);
+    demoSum.className='sum show';
+    demoSum.innerHTML='<div class="sum-line">'+
+      p.map((v,i)=>'<span class="chip" style="animation-delay:'+(i*0.12)+'s">'+v+'</span>').join('<span class="plus">+</span>')+
+      '<span class="plus">=</span><span class="chip" style="animation-delay:.5s;background:var(--teal-wash);border-color:var(--teal)">'+(DEMO.a*DEMO.b)+'</span></div>';
+    setTimeout(()=>A.correct(),600);
+    setRail($('demoRail'),3);
+    demoNarr.innerHTML='<b>80 + 12 = 92.</b> The parts always rebuild the whole.';
+    $('demoNext').textContent='Why this works';
+  }
+  else if(demoStep===4){
+    setRail($('demoRail'),3);
+    demoNarr.innerHTML='A rectangle cut into pieces still covers the same space. So 23 lots of 4 must equal 20 lots of 4 plus 3 lots of 4. That is the whole idea — and it is why the column method works too. <b>Your turn.</b>';
+    $('demoNext').textContent='Start the '+QUESTIONS.length+' questions';
+  }
+  else{ startQuiz(); }
+}
+$('startDemo').addEventListener('click',()=>{A.ensure();demoReset();show('demoPanel');});
+$('skipDemo').addEventListener('click',()=>{A.ensure();startQuiz();});
+$('demoSkip').addEventListener('click',startQuiz);
+$('demoNext').addEventListener('click',demoAdvance);
+
+/* ================= QUIZ ================= */
+let qi=0, stage=0, refs=null, cellsDone=0, firstTry=true, mistakes=0;
+const stats={e:0,m:0,c:0,attempts:0,clean:0};
+
+function renderProgress(){
+  const p=$('progress'); p.innerHTML='';
+  QUESTIONS.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className='dot '+q.lvl+(i<qi?' done':'')+(i===qi?' now':'');
+    p.appendChild(d);
+  });
+}
+function startQuiz(){ qi=0; stats.e=stats.m=stats.c=stats.clean=0; show('quizPanel'); loadQuestion(); }
+
+function loadQuestion(){
+  const q=QUESTIONS[qi];
+  stage=0; cellsDone=0; firstTry=true; mistakes=0;
+  renderProgress();
+  $('qCount').textContent='Question '+(qi+1)+' of '+QUESTIONS.length;
+  const tag=$('qTag'); tag.className='tag '+q.lvl; tag.textContent=LVL[q.lvl];
+  $('qTitle').textContent=q.a+' × '+q.b;
+  $('qPrompt').textContent = q.sb.length===1
+    ? 'Split the top number into tens and ones, then measure each piece.'
+    : 'Both numbers split here. Cut across and down, then measure all '+(q.sa.length*q.sb.length)+' pieces.';
+  setRail($('qRail'),0);
+  $('qSum').className='sum'; $('qSum').innerHTML='';
+  $('qWhy').className='why'; $('qWhy').innerHTML='';
+  $('qFeedback').className='feedback';
+  $('qFeedback').textContent='Look at '+q.a+' first. What is it made of?';
+  refs=buildModel($('qWrap'),q,true);
+  refs.grid.querySelectorAll('input').forEach(i=>i.disabled=true);
+  $('qButtons').innerHTML='<button class="btn" id="cutBtn">Split '+q.a+
+    (q.sb.length>1?' and '+q.b:'')+'</button>';
+  $('cutBtn').addEventListener('click',doSplit);
+}
+
+function doSplit(){
+  const q=QUESTIONS[qi];
+  stage=1;
+  refs.overlay.classList.add('gone');
+  refs.grid.classList.add('split');
+  A.cut();
+  setRail($('qRail'),1);
+  $('qFeedback').className='feedback';
+  $('qFeedback').textContent = q.sa.join(' + ')+(q.sb.length>1?'  and  '+q.sb.join(' + '):'')+' — now fill every piece. Press Enter to check.';
+  $('qButtons').innerHTML='<button class="btn ghost" id="hintBtn">Show me one piece</button>';
+  $('hintBtn').addEventListener('click',giveHint);
+  const inputs=[...refs.grid.querySelectorAll('input')];
+  inputs.forEach((inp,idx)=>{
+    inp.disabled=false;
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();checkCell(inp,inputs,idx);} });
+    inp.addEventListener('blur',()=>{ if(inp.value.trim()!=='') checkCell(inp,inputs,idx,true); });
+  });
+  setTimeout(()=>inputs[0].focus(),620);
+}
+
+function checkCell(inp,inputs,idx,silent){
+  const cell=inp.closest('.cell');
+  if(cell.classList.contains('solved')) return;
+  const raw=inp.value.trim();
+  if(raw==='') return;
+  if(!/^\d+$/.test(raw)){
+    cell.classList.add('wrong'); A.wrong();
+    $('qFeedback').className='feedback bad';
+    $('qFeedback').textContent='Whole numbers only in the boxes.';
+    setTimeout(()=>cell.classList.remove('wrong'),450);
+    return;
+  }
+  stats.attempts++;
+  if(Number(raw)===Number(cell.dataset.answer)){
+    cell.classList.remove('wrong');
+    cell.classList.add('solved');
+    inp.readOnly=true; inp.disabled=true;
+    A.correct(); cellsDone++;
+    $('qFeedback').className='feedback good';
+    $('qFeedback').textContent=cell.querySelector('.mini').textContent+' = '+cell.dataset.answer+'. That piece is measured.';
+    const next=inputs.find(i=>!i.disabled);
+    if(next) setTimeout(()=>next.focus(),120);
+    if(cellsDone===inputs.length) setTimeout(openSum,520);
+  }else{
+    firstTry=false; mistakes++;
+    cell.classList.add('wrong'); A.wrong();
+    const m=cell.querySelector('.mini').textContent;
+    $('qFeedback').className='feedback bad';
+    $('qFeedback').textContent = mistakes>=2
+      ? 'Not yet. Try it as a simple fact first, then attach the zeros: '+m+'.'
+      : 'Check that one again — it is only '+m+'.';
+    setTimeout(()=>{cell.classList.remove('wrong');inp.select();},450);
+  }
+}
+
+function giveHint(){
+  const cell=[...refs.grid.querySelectorAll('.cell')].find(c=>!c.classList.contains('solved'));
+  if(!cell) return;
+  firstTry=false;
+  const inp=cell.querySelector('input');
+  inp.value=cell.dataset.answer;
+  cell.classList.add('solved'); inp.disabled=true; cellsDone++;
+  A.pop(cellsDone);
+  $('qFeedback').className='feedback';
+  $('qFeedback').textContent='Filled in for you: '+cell.querySelector('.mini').textContent+' = '+cell.dataset.answer+'. Keep going.';
+  const next=refs.grid.querySelector('input:not([disabled])');
+  if(next) next.focus();
+  if(cellsDone===refs.grid.querySelectorAll('input').length) setTimeout(openSum,420);
+}
+
+function openSum(){
+  const q=QUESTIONS[qi], p=partials(q);
+  stage=2; setRail($('qRail'),2);
+  const sum=$('qSum');
+  sum.className='sum show';
+  sum.innerHTML='<div class="sum-line">'+
+    p.map((v,i)=>'<span class="chip" style="animation-delay:'+(i*0.1)+'s">'+v+'</span>').join('<span class="plus">+</span>')+
+    '<span class="plus">=</span><input type="text" inputmode="numeric" id="totalInput" aria-label="Total" autocomplete="off"></div>';
+  $('qFeedback').className='feedback';
+  $('qFeedback').textContent='Every piece is measured. Add them to rebuild the whole rectangle.';
+  $('qButtons').innerHTML='<button class="btn" id="checkTotal">Check the total</button>';
+  $('checkTotal').addEventListener('click',checkTotal);
+  const ti=$('totalInput');
+  ti.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();checkTotal();} });
+  setTimeout(()=>ti.focus(),400);
+}
+
+function checkTotal(){
+  const q=QUESTIONS[qi], sum=$('qSum'), ti=$('totalInput');
+  const raw=ti.value.trim();
+  if(!/^\d+$/.test(raw)){
+    sum.className='sum show err'; A.wrong();
+    $('qFeedback').className='feedback bad';
+    $('qFeedback').textContent='Type the total as a whole number.';
+    return;
+  }
+  stats.attempts++;
+  const truth=q.a*q.b;                       // checked against the real product
+  if(Number(raw)===truth){
+    sum.className='sum show correct';
+    ti.disabled=true; A.finish();
+    stats[q.lvl]++;
+    if(firstTry) stats.clean++;
+    revealWhy();
+  }else{
+    firstTry=false;
+    sum.className='sum show err'; A.wrong();
+    const p=partials(q);
+    $('qFeedback').className='feedback bad';
+    $('qFeedback').textContent='Not quite. Add the big pieces first: '+p.slice().sort((x,y)=>y-x).slice(0,2).join(' + ')+', then bring in the rest.';
+    setTimeout(()=>{sum.className='sum show';ti.select();},500);
+  }
+}
+
+function revealWhy(){
+  const q=QUESTIONS[qi];
+  stage=3; setRail($('qRail'),3);
+  const why=$('qWhy');
+  why.className='why show';
+  why.innerHTML='<h3>Why '+q.a+' × '+q.b+' = '+(q.a*q.b)+'</h3><p>'+q.why+'</p>';
+  $('qFeedback').className='feedback good';
+  $('qFeedback').textContent = firstTry ? 'Solved cleanly, first attempt.' : 'Solved. The retries are where the learning happened.';
+  const last = qi===QUESTIONS.length-1;
+  $('qButtons').innerHTML='<button class="btn" id="nextQ">'+(last?'See your summary':'Next question')+'</button>';
+  $('nextQ').addEventListener('click',()=>{
+    if(last) finish();
+    else{ qi++; loadQuestion(); }
+  });
+}
+
+/* ================= RESULT ================= */
+function finish(){
+  const total=QUESTIONS.length;
+  $('resScore').innerHTML=stats.clean+'<small>/'+total+' first try</small>';
+  $('resTitle').textContent = stats.clean===total
+    ? 'Twelve rectangles, every one first time.'
+    : 'Twelve rectangles, cut and solved.';
+  $('resLine').textContent = stats.clean>=9
+    ? 'The model is secure. The next step is compressing it into the column method — same pieces, less writing.'
+    : 'The method is landing. Run it once more, and watch how much less you need the hint button.';
+  $('resBreak').innerHTML=
+    '<div class="bd-item"><div class="n">'+stats.e+'/'+COUNT.e+'</div><div class="l">Easy — 2-digit × 1-digit</div></div>'+
+    '<div class="bd-item"><div class="n">'+stats.m+'/'+COUNT.m+'</div><div class="l">Moderate — 2-digit × 2-digit</div></div>'+
+    '<div class="bd-item"><div class="n">'+stats.c+'/'+COUNT.c+'</div><div class="l">Challenging — larger splits</div></div>'+
+    '<div class="bd-item"><div class="n">'+stats.attempts+'</div><div class="l">Boxes checked</div></div>';
+  A.finish();
+  show('resultPanel');
+}
+$('againBtn').addEventListener('click',startQuiz);
+
+/* integrity check: splits must rebuild their numbers */
+QUESTIONS.forEach(q=>{
+  const sa=q.sa.reduce((x,y)=>x+y,0), sb=q.sb.reduce((x,y)=>x+y,0);
+  if(sa!==q.a||sb!==q.b) console.error('Split mismatch',q);
+  if(partials(q).reduce((x,y)=>x+y,0)!==q.a*q.b) console.error('Partials mismatch',q);
+});
+</script>
+</body>
+</html>
